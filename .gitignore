@@ -23,9 +23,12 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 
-# Photos du club : non versionnées tant que le droit à l'image n'est pas confirmé
-# avec le bureau (dépôt GitHub public — un ajout resterait dans l'historique git
-# même après suppression). Voir EXPERIENCE.md > Contraintes de contenu.
+# Visuels de travail (placeholders, exemples Instagram, photos du club) : non
+# versionnés. Les photos attendent la confirmation du droit à l'image avec le
+# bureau, et le dépôt GitHub est public — un ajout resterait dans l'historique
+# git même après suppression. Voir EXPERIENCE.md > Contraintes de contenu.
+# Les vrais assets de production auront leur propre emplacement, à définir.
+/asset_placeholder/
 /assets/
 
 # BMAD : installation, outputs et skills installées — outillage local, non versionné
