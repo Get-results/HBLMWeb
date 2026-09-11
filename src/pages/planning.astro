@@ -10,114 +10,62 @@ const contactUrl = baseUrl.endsWith('/') ? `${baseUrl}inscription#contact-form` 
     <div class="page-header">
       <p class="eyebrow">HBLM · Handball Lunel-Marsillargues</p>
       <h1 class="page-title">Planning des<br>entraînements<span class="accent-dot">.</span></h1>
-      <p class="page-sub">Les créneaux de la semaine, gymnase par gymnase.</p>
+      {/* Formulation volontairement neutre : annoncer « les créneaux de la
+          semaine » juste au-dessus d'un bloc « en cours de préparation » se
+          lit comme une promesse non tenue. À revoir quand le planning
+          reviendra. */}
+      <p class="page-sub">Les horaires d'entraînement de toutes nos équipes.</p>
     </div>
 
-    <!-- TODO: Remplacer par les vrais créneaux du club -->
-    <dl class="planning-list">
-      
-      <div class="day-row">
-        <dt class="day-head">
-          <span class="day-name">Lundi</span>
-          <span class="day-place">Gymnase <span class="place-name">Arnassan</span> (Lunel)</span>
-        </dt>
-        <dd class="slot-row">
-          <span class="slot"><span class="cat">-15 ans</span> <span class="time">18h–19h30</span></span>
-        </dd>
-      </div>
-
-      <div class="day-row">
-        <dt class="day-head">
-          <span class="day-name">Mardi</span>
-          <span class="day-place">Gymnase <span class="place-name">Spinosi</span> (Marsillargues)</span>
-        </dt>
-        <dd class="slot-row">
-          <span class="slot"><span class="cat">-13 ans</span> <span class="time">17h30–19h</span></span>
-        </dd>
-      </div>
-
-      <div class="day-row">
-        <dt class="day-head">
-          <span class="day-name">Mardi</span>
-          <span class="day-place">Gymnase <span class="place-name">Arnassan</span> (Lunel)</span>
-        </dt>
-        <dd class="slot-row">
-          <span class="slot"><span class="cat">-18 ans</span> <span class="time">19h–20h30</span></span>
-        </dd>
-      </div>
-
-      <div class="day-row">
-        <dt class="day-head">
-          <span class="day-name">Mardi</span>
-          <span class="day-place">Gymnase <span class="place-name">Pierre de Coubertin</span> (Lunel-Viel)</span>
-        </dt>
-        <dd class="slot-row">
-          <span class="slot"><span class="cat">Seniors Compétition</span> <span class="time">20h30–22h</span></span>
-        </dd>
-      </div>
-
-      <div class="day-row">
-        <dt class="day-head">
-          <span class="day-name">Mercredi</span>
-          <span class="day-place">Gymnase <span class="place-name">Arnassan</span> (Lunel)</span>
-        </dt>
-        <dd class="slot-row">
-          <span class="slot"><span class="cat">Baby-hand (3-5 ans)</span> <span class="time">10h–11h</span></span>
-          <span class="slot"><span class="cat">École de hand (6-10 ans)</span> <span class="time">14h–15h30</span></span>
-          <span class="slot"><span class="cat">-15 ans</span> <span class="time">18h–19h30</span></span>
-        </dd>
-      </div>
-
-      <div class="day-row">
-        <dt class="day-head">
-          <span class="day-name">Jeudi</span>
-          <span class="day-place">Gymnase <span class="place-name">Spinosi</span> (Marsillargues)</span>
-        </dt>
-        <dd class="slot-row">
-          <span class="slot"><span class="cat">-13 ans</span> <span class="time">17h30–19h</span></span>
-        </dd>
-      </div>
-
-      <div class="day-row">
-        <dt class="day-head">
-          <span class="day-name">Jeudi</span>
-          <span class="day-place">Gymnase <span class="place-name">Arnassan</span> (Lunel)</span>
-        </dt>
-        <dd class="slot-row">
-          <span class="slot"><span class="cat">-18 ans</span> <span class="time">19h–20h30</span></span>
-        </dd>
-      </div>
-
-      <div class="day-row">
-        <dt class="day-head">
-          <span class="day-name">Jeudi</span>
-          <span class="day-place">Gymnase <span class="place-name">Pierre de Coubertin</span> (Lunel-Viel)</span>
-        </dt>
-        <dd class="slot-row">
-          <span class="slot"><span class="cat">Seniors Compétition</span> <span class="time">20h30–22h</span></span>
-        </dd>
-      </div>
-
-      <div class="day-row">
-        <dt class="day-head">
-          <span class="day-name">Vendredi</span>
-          <span class="day-place">Collège de <span class="place-name">Lansargues</span></span>
-        </dt>
-        <dd class="slot-row">
-          <span class="slot"><span class="cat">Loisir Adultes</span> <span class="time">20h–21h30</span></span>
-        </dd>
-      </div>
-
-    </dl>
-
-    <div class="info-callout">
-      <div class="icon" aria-hidden="true">!</div>
-      <p>Le planning peut évoluer en cours de saison — un doute ? <a href={contactUrl}>Contactez le club</a>.</p>
+    {/* Les créneaux réels n'ont pas encore été transmis par le bureau du club.
+        Cette page affichait auparavant des exemples fabriqués, publiés tels
+        quels — un visiteur pouvait se déplacer sur un horaire inventé.
+        En attendant les vrais horaires : aucun créneau affiché.
+        Voir A-FAIRE-HORS-CODE.md → « Vrais créneaux d'entraînement ». */}
+    <div class="preparation">
+      <p class="preparation-title">Planning en cours de préparation</p>
+      <p class="preparation-text">
+        Les créneaux de la saison sont en cours de finalisation avec les
+        entraîneurs et les gymnases. Ils seront publiés ici dès qu'ils seront
+        confirmés.
+      </p>
+      <p class="preparation-text">
+        Besoin d'un horaire dès maintenant ? <a href={contactUrl}>Contactez le club</a>,
+        nous vous répondrons directement.
+      </p>
     </div>
+
   </div>
 </BaseLayout>
 
 <style>
+  /* Bloc affiché tant que les créneaux réels ne sont pas transmis. */
+  .preparation {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: var(--space-8) var(--space-6);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-surface);
+    text-align: center;
+  }
+
+  .preparation-title {
+    margin: 0 0 var(--space-4) 0;
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 1.25rem;
+  }
+
+  .preparation-text {
+    margin: 0 0 var(--space-3) 0;
+    color: var(--color-text-muted);
+  }
+
+  .preparation-text:last-child {
+    margin-bottom: 0;
+  }
+
   .page {
     width: 100%;
     padding: var(--space-section-y) 6vw;
@@ -162,6 +110,11 @@ const contactUrl = baseUrl.endsWith('/') ? `${baseUrl}inscription#contact-form` 
     margin: 0;
   }
 
+  /* Styles des créneaux — volontairement conservés alors que le balisage
+     correspondant est retiré. Ils reviennent tels quels dès que le bureau
+     transmet les horaires réels ; les supprimer imposerait de tout réécrire.
+     Concerne : .planning-list, .day-row, .day-head, .day-name, .day-place,
+     .slot-row, .slot, .info-callout. */
   .planning-list {
     max-width: 900px;
     margin: 0 auto;
