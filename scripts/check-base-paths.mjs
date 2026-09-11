@@ -13,8 +13,10 @@ const htmlFiles = (dir) =>
 		e.isDirectory() ? htmlFiles(join(dir, e.name)) : e.name.endsWith('.html') ? [join(dir, e.name)] : [],
 	);
 
-// src="/x" ou href="/x", en excluant `//host` (protocole-relatif) et les chemins déjà préfixés.
-const OFFENDER = new RegExp(`(?:src|href)="(/(?!/|${base.slice(1)}/)[^"]*)"`, 'g');
+// src="/x", href="/x" ou action="/x", en excluant `//host` (protocole-relatif)
+// et les chemins déjà préfixés. `action` compte : un <form action="/api/…"> sur
+// un site statique pointe hors du site et perd la soumission en silence.
+const OFFENDER = new RegExp(`(?:src|href|action)="(/(?!/|${base.slice(1)}/)[^"]*)"`, 'g');
 
 const offenders = htmlFiles('dist').flatMap((file) =>
 	[...readFileSync(file, 'utf8').matchAll(OFFENDER)].map((m) => `  ${relative('dist', file)} → ${m[1]}`),

@@ -6,6 +6,8 @@ Le projet repose sur une architecture **Static Islands** (zéro JavaScript côt�
 
 > **Architecture de référence :** Pour une vue approfondie des décisions d'architecture (AD-1 à AD-12) et des invariants techniques du projet, consultez le document [`_bmad-output/planning-artifacts/architecture/architecture-HBLMWeb-2026-09-10/ARCHITECTURE-SPINE.md`](./_bmad-output/planning-artifacts/architecture/architecture-HBLMWeb-2026-09-10/ARCHITECTURE-SPINE.md).
 
+> **À faire hors code :** contenus attendus du bureau du club, comptes à créer, réglages dans des interfaces tierces et décisions en attente sont centralisés dans [`A-FAIRE-HORS-CODE.md`](./A-FAIRE-HORS-CODE.md). Tout ce qui ne peut pas être réglé depuis le dépôt va là, et nulle part ailleurs.
+
 ---
 
 ## Prérequis

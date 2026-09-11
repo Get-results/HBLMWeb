@@ -52,9 +52,19 @@ const umamiId = import.meta.env.PUBLIC_UMAMI_ID;
 		</script>
 	</head>
 	<body>
-		<ThemeToggle />
+		{/* Lien d'évitement : premier élément focusable de la page, invisible tant
+		    qu'il n'a pas le focus. Permet de sauter la navigation, répétée sur
+		    chaque page, pour atteindre directement le contenu (WCAG 2.4.1). */}
+		<a href="#contenu" class="skip-link">Aller au contenu</a>
 		<Header />
-		<main>
+		{/* Après le Header dans le DOM : le bouton est en position fixed, donc sa
+		    place ici ne change rien visuellement, mais l'ordre de tabulation
+		    devient naturel (navigation d'abord, réglage d'affichage ensuite). */}
+		<ThemeToggle />
+		{/* tabindex="-1" : sans lui, certains navigateurs font défiler jusqu'à
+		    l'ancre sans y déplacer le focus clavier — le lien d'évitement ne
+		    servirait alors à rien. */}
+		<main id="contenu" tabindex="-1">
 			<slot />
 		</main>
 		<Footer />

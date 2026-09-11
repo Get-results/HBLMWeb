@@ -1,0 +1,32 @@
+---
+/* Page d'arrivée après l'envoi du formulaire de contact.
+   Web3Forms y redirige via le champ caché `redirect` de ContactForm.
+   Sans elle, le visiteur atterrit sur la page de remerciement de Web3Forms,
+   hors charte et sans retour vers le site. */
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<BaseLayout title="Message envoyé | HBLM">
+  <div class="container">
+    <header class="page-header">
+      <h1 class="title">Message envoyé</h1>
+      <p class="subtitle">Merci, nous avons bien reçu votre message</p>
+    </header>
+
+    <section class="content-section">
+      <div class="card accent-card">
+        <h2>Et maintenant ?</h2>
+        <p>Un membre du club vous répondra dans les prochains jours à l'adresse que vous nous avez indiquée.</p>
+        <p>Pensez à vérifier vos courriers indésirables : notre réponse peut s'y glisser.</p>
+      </div>
+
+      <div class="card cta-card">
+        <h2>En attendant</h2>
+        <p>Découvrez les créneaux d'entraînement de nos équipes.</p>
+        <a href={`${base}/planning`} class="button">Voir le planning</a>
+      </div>
+    </section>
+  </div>
+</BaseLayout>

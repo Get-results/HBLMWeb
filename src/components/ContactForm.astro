@@ -1,21 +1,78 @@
 ---
+/* Le site est statique (GitHub Pages, AD-5) : aucune route serveur ne peut
+   traiter un POST. L'envoi passe donc par un service tiers — Web3Forms — dont
+   l'endpoint et la clé sont fournis par variables d'env, même motif que Umami
+   dans BaseLayout.
+
+   Tant que PUBLIC_CONTACT_ENDPOINT est absent, on n'affiche PAS un formulaire :
+   un formulaire sans endpoint valide perd les messages en silence, ce qui est
+   pire que pas de formulaire du tout. On affiche le contact direct à la place.
+
+   L'endpoint est volontairement une variable et non une URL en dur : le jour où
+   le club veut son propre backend (Cloudflare Worker…), on change la variable
+   et aucune ligne de ce composant ne bouge. */
+const endpoint = import.meta.env.PUBLIC_CONTACT_ENDPOINT;
+const accessKey = import.meta.env.PUBLIC_CONTACT_ACCESS_KEY;
+const email = import.meta.env.PUBLIC_CONTACT_EMAIL;
+
+/* Web3Forms redirige vers sa propre page de remerciement si on ne lui en donne
+   pas une. On lui passe la nôtre, en URL absolue (le champ `redirect` n'accepte
+   pas de chemin relatif). Astro.site vaut l'URL de production ; en dev il peut
+   être absent, auquel cas on omet le champ et Web3Forms fait son repli. */
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const redirectUrl = Astro.site ? new URL(`${base}/merci`, Astro.site).href : undefined;
 ---
-<form id="contact-form" class="contact-form" action="/api/contact" method="POST">
-  <h3>Nous contacter</h3>
-  <div class="form-group">
-    <label for="name">Votre nom</label>
-    <input type="text" id="name" name="name" required />
+
+{endpoint ? (
+  <form id="contact-form" class="contact-form" action={endpoint} method="POST">
+    <h3>Nous contacter</h3>
+
+    {/* Champs de configuration Web3Forms — invisibles pour le visiteur.
+        `access_key` identifie la boîte de destination ; elle est publique par
+        conception et n'autorise l'envoi que vers l'adresse enregistrée. */}
+    {accessKey && <input type="hidden" name="access_key" value={accessKey} />}
+    <input type="hidden" name="subject" value="Message depuis le site du HBLM" />
+    <input type="hidden" name="from_name" value="Site HBLM" />
+    {redirectUrl && <input type="hidden" name="redirect" value={redirectUrl} />}
+
+    <div class="form-group">
+      <label for="name">Votre nom</label>
+      <input type="text" id="name" name="name" required />
+    </div>
+    <div class="form-group">
+      <label for="email">Votre email</label>
+      <input type="email" id="email" name="email" required />
+    </div>
+    <div class="form-group">
+      <label for="message">Votre message</label>
+      <textarea id="message" name="message" rows="4" required></textarea>
+    </div>
+
+    {/* Piège à robots : invisible et hors du parcours clavier. Web3Forms rejette
+        tout envoi où `botcheck` est rempli — c'est leur convention. */}
+    <input type="checkbox" name="botcheck" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+    <p class="form-privacy">
+      Vos coordonnées servent uniquement à répondre à votre message et ne sont
+      ni revendues ni utilisées à d'autres fins.
+    </p>
+    <button type="submit" class="button">Envoyer</button>
+  </form>
+) : (
+  <div id="contact-form" class="contact-form">
+    <h3>Nous contacter</h3>
+    <p>
+      {email
+        ? "Écrivez-nous, nous répondons sous quelques jours."
+        : "Le formulaire de contact n'est pas encore actif. En attendant, passez nous voir au gymnase ou contactez-nous via les réseaux du club."}
+    </p>
+    {email && (
+      <p class="contact-info">
+        <a href={`mailto:${email}`}>{email}</a>
+      </p>
+    )}
   </div>
-  <div class="form-group">
-    <label for="email">Votre email</label>
-    <input type="email" id="email" name="email" required />
-  </div>
-  <div class="form-group">
-    <label for="message">Votre message</label>
-    <textarea id="message" name="message" rows="4" required></textarea>
-  </div>
-  <button type="submit" class="button">Envoyer</button>
-</form>
+)}
 
 <style>
   .contact-form {
@@ -56,5 +113,19 @@
     outline: 2px solid var(--color-accent);
     outline-offset: -1px;
     border-color: var(--color-accent);
+  }
+  /* Honeypot : retiré du flux, du rendu et du parcours d'accessibilité. */
+  .hp-field {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+  .form-privacy {
+    margin-bottom: var(--space-4);
+    font-size: 0.8125rem;
+    opacity: 0.8;
+    text-align: left;
   }
 </style>
