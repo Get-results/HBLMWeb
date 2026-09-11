@@ -1,0 +1,173 @@
+---
+/*
+ * Carte d'actualité — coin "griffé" (clip-path + griffures accent).
+ * Pattern fidèle au mock key-actualites-section.html.
+ *
+ * Utilisée dans le carrousel d'actualités de l'accueil et sur la
+ * future page "Vie du club".
+ *
+ * Props :
+ *   title       — titre de l'actu
+ *   description — texte court
+ *   date        — label de date affiché dans le badge accent
+ *   category    — label de catégorie (badge sombre)
+ *   icon        — HTML SVG du placeholder (slot nommé "icon", optionnel)
+ */
+interface Props {
+	title: string;
+	description: string;
+	date: string;
+	category: string;
+}
+
+const { title, description, date, category } = Astro.props;
+---
+
+<article class="news-card">
+	<div class="card-visual">
+		<slot name="icon">
+			{/* Icône placeholder par défaut — ballon de handball stylisé */}
+			<svg class="visual-icon" viewBox="0 0 24 24" width="52" height="52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+				<circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5" />
+				<path d="M4 12c2-3 14-3 16 0M4 12c2 3 14 3 16 0M12 3v18" stroke="currentColor" stroke-width="1.5" />
+			</svg>
+		</slot>
+	</div>
+	<div class="card-body">
+		<div class="badge-row">
+			<span class="badge badge-accent">{date}</span>
+			<span class="badge badge-category">{category}</span>
+		</div>
+		<h3 class="card-title">{title}</h3>
+		<p class="card-desc">{description}</p>
+	</div>
+</article>
+
+<style>
+	.news-card {
+		flex: 0 0 auto;
+		width: 320px;
+		scroll-snap-align: start;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		position: relative;
+
+		/* Coin "griffé" — signature visuelle HBLM (DESIGN.md > Shapes) */
+		clip-path: polygon(
+			0 0,
+			100% 0,
+			100% calc(100% - 22px),
+			calc(100% - 22px) 100%,
+			0 100%
+		);
+	}
+
+	/* Griffures du tigre dans le coin découpé */
+	.news-card::before {
+		content: '';
+		position: absolute;
+		right: 3px;
+		bottom: 3px;
+		width: 20px;
+		height: 20px;
+		background:
+			linear-gradient(135deg, transparent 47%, var(--color-accent) 47.5%, var(--color-accent) 50%, transparent 50.5%),
+			linear-gradient(135deg, transparent 55%, var(--color-accent) 55.5%, var(--color-accent) 58%, transparent 58.5%),
+			linear-gradient(135deg, transparent 63%, var(--color-accent) 63.5%, var(--color-accent) 66%, transparent 66.5%);
+		pointer-events: none;
+		opacity: 0.9;
+		z-index: 3;
+	}
+
+	/* Visuel placeholder — motif de rayures et icône centrée */
+	.card-visual {
+		aspect-ratio: var(--ratio-card-visual);
+		background:
+			repeating-linear-gradient(
+				135deg,
+				var(--color-visual-a) 0px,
+				var(--color-visual-a) 10px,
+				var(--color-visual-b) 10px,
+				var(--color-visual-b) 20px
+			);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-bottom: 1px solid var(--color-border);
+		position: relative;
+	}
+
+	.visual-icon {
+		opacity: 0.55;
+		color: var(--color-text);
+	}
+
+	/* Corps de la carte */
+	.card-body {
+		padding: 20px 20px 24px;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+		flex: 1;
+	}
+
+	/* Badges pilules chevauchant le visuel */
+	.badge-row {
+		display: flex;
+		gap: var(--space-2);
+		align-items: center;
+		flex-wrap: wrap;
+		margin-top: -34px;
+		position: relative;
+		z-index: 2;
+	}
+
+	.badge {
+		display: inline-block;
+		font-family: var(--font-body);
+		font-weight: var(--weight-body-strong);
+		font-size: 12px;
+		letter-spacing: 0.02em;
+		padding: 6px 14px;
+		border-radius: var(--radius-full);
+		box-shadow: 0 1px 0 rgba(34, 34, 32, 0.08);
+		white-space: nowrap;
+	}
+
+	/* Badge accent — texte TOUJOURS #222220 fixe (DESIGN.md > Colors, règle stricte) */
+	.badge-accent {
+		background: var(--color-accent);
+		color: var(--color-on-accent);
+	}
+
+	/* Badge catégorie — fond = couleur de texte, texte = couleur de surface (inversé) */
+	.badge-category {
+		background: var(--color-text);
+		color: var(--color-surface);
+	}
+
+	.card-title {
+		font-size: 20px;
+		line-height: 1.22;
+		margin: var(--space-1) 0 0;
+	}
+
+	.card-desc {
+		font-size: 14px;
+		line-height: 1.5;
+		color: var(--color-text-muted);
+		margin: 0;
+	}
+
+	/* Mobile : les cartes prennent 78vw */
+	@media (max-width: 639px) {
+		.news-card {
+			width: 78vw;
+			flex-basis: 78vw;
+		}
+	}
+</style>

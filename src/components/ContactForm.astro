@@ -1,0 +1,60 @@
+---
+---
+<form id="contact-form" class="contact-form" action="/api/contact" method="POST">
+  <h3>Nous contacter</h3>
+  <div class="form-group">
+    <label for="name">Votre nom</label>
+    <input type="text" id="name" name="name" required />
+  </div>
+  <div class="form-group">
+    <label for="email">Votre email</label>
+    <input type="email" id="email" name="email" required />
+  </div>
+  <div class="form-group">
+    <label for="message">Votre message</label>
+    <textarea id="message" name="message" rows="4" required></textarea>
+  </div>
+  <button type="submit" class="button">Envoyer</button>
+</form>
+
+<style>
+  .contact-form {
+    margin-top: var(--space-6);
+    padding: var(--space-6);
+    background-color: var(--color-input-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+  .contact-form h3 {
+    margin-bottom: var(--space-4);
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+  }
+  .form-group {
+    margin-bottom: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    text-align: left;
+  }
+  .form-group label {
+    font-weight: var(--weight-body-strong);
+    font-size: 0.875rem;
+  }
+  .form-group input,
+  .form-group textarea {
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    background-color: var(--color-surface);
+    color: var(--color-text);
+  }
+  .form-group input:focus,
+  .form-group textarea:focus {
+    outline: 2px solid var(--color-accent);
+    outline-offset: -1px;
+    border-color: var(--color-accent);
+  }
+</style>

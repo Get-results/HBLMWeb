@@ -1,0 +1,247 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Le club - HBLM">
+	<div class="page-container">
+		<header class="page-header">
+			<h1 class="display">Le club</h1>
+			<p class="intro">
+				Le Handball Lunel-Marsillargues (HBLM) est un club associatif dynamique, animé par des bénévoles passionnés.
+			</p>
+		</header>
+
+		<section class="club-section">
+			<h2>Notre fonctionnement</h2>
+			<p>
+				En tant qu'association loi 1901, notre structure repose sur l'engagement de nos bénévoles. Nous accueillons les joueurs et joueuses de tout âge, dès 3 ans avec le baby-hand, jusqu'aux catégories seniors. Que vous cherchiez la compétition ou la pratique en loisir, vous trouverez votre place parmi nous.
+			</p>
+			
+			<div class="stats-card">
+				<div class="stat-number display">351</div>
+				<div class="stat-label">licenciés en 2025</div>
+				<div class="stat-note">Un record historique pour le club</div>
+			</div>
+		</section>
+
+		<section class="club-section">
+			<h2>Le bureau</h2>
+			<p>L'équipe dirigeante qui fait vivre le club au quotidien :</p>
+			<ul class="bureau-list">
+				<li>
+					<span class="role">Président·e</span>
+					<span class="name">[Nom à compléter]</span>
+				</li>
+				<li>
+					<span class="role">Secrétaire</span>
+					<span class="name">[Nom à compléter]</span>
+				</li>
+				<li>
+					<span class="role">Trésorier·ère</span>
+					<span class="name">[Nom à compléter]</span>
+				</li>
+			</ul>
+		</section>
+
+		<section class="club-section">
+			<h2>Nos gymnases</h2>
+			<p>Nos entraînements et matchs se déroulent sur 4 installations :</p>
+			<div class="gyms-grid">
+				<article class="gym-card">
+					<div class="gym-info">
+						<h3>Gymnase Arnassan</h3>
+						<p class="gym-location">Lunel</p>
+					</div>
+				</article>
+				<article class="gym-card">
+					<div class="gym-info">
+						<h3>Gymnase Spinosi</h3>
+						<p class="gym-location">Marsillargues</p>
+					</div>
+				</article>
+				<article class="gym-card">
+					<div class="gym-info">
+						<h3>Collège de Lansargues</h3>
+						<p class="gym-location">Lansargues</p>
+					</div>
+				</article>
+				<article class="gym-card">
+					<div class="gym-info">
+						<h3>Gymnase Pierre de Coubertin</h3>
+						<p class="gym-location">Lunel-Viel</p>
+					</div>
+				</article>
+			</div>
+		</section>
+	</div>
+</BaseLayout>
+
+<style>
+	.page-container {
+		padding: var(--space-6) var(--space-4);
+		max-width: 800px;
+		margin: 0 auto;
+	}
+
+	.page-header {
+		margin-bottom: var(--space-section-y);
+		text-align: center;
+	}
+
+	.page-header h1 {
+		margin-bottom: var(--space-4);
+		font-size: clamp(2.5rem, 8vw, 4rem);
+	}
+
+	.intro {
+		font-size: 1.125rem;
+		color: var(--color-text-muted);
+		max-width: 600px;
+		margin: 0 auto;
+	}
+
+	.club-section {
+		margin-bottom: var(--space-section-y);
+	}
+
+	.club-section h2 {
+		font-size: clamp(1.75rem, 5vw, 2.5rem);
+		margin-bottom: var(--space-6);
+	}
+
+	.club-section p {
+		margin-bottom: var(--space-4);
+	}
+
+	/* Stats */
+	.stats-card {
+		background-color: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-8);
+		text-align: center;
+		margin-top: var(--space-8);
+	}
+
+	.stat-number {
+		font-size: clamp(4rem, 10vw, 6rem);
+		color: var(--color-accent);
+		line-height: 1;
+		margin-bottom: var(--space-2);
+	}
+
+	.stat-label {
+		font-family: var(--font-heading);
+		font-size: clamp(1.25rem, 4vw, 1.75rem);
+		font-weight: var(--weight-heading);
+		margin-bottom: var(--space-2);
+	}
+
+	.stat-note {
+		font-size: 0.875rem;
+		color: var(--color-text-muted);
+	}
+
+	/* Bureau */
+	.bureau-list {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+	}
+
+	.bureau-list li {
+		background-color: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+	}
+
+	.bureau-list .role {
+		font-size: var(--size-eyebrow);
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-eyebrow);
+		font-weight: var(--weight-body-strong);
+		color: var(--color-text-muted);
+	}
+
+	.bureau-list .name {
+		font-family: var(--font-heading);
+		font-weight: var(--weight-heading);
+		font-size: 1.125rem;
+		color: var(--color-text);
+	}
+
+	/* Gyms Grid */
+	.gyms-grid {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: var(--space-card-gap);
+		margin-top: var(--space-6);
+	}
+
+	.gym-card {
+		background-color: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-6);
+		position: relative;
+		overflow: hidden;
+		/* Coin griffé (clip-path pour retirer le coin) */
+		clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 0 100%);
+	}
+
+	/* Ajout de griffures (scratches) en haut à droite avec la couleur accent */
+	.gym-card::after {
+		content: '';
+		position: absolute;
+		top: 0;
+		right: 12px;
+		width: 24px;
+		height: 24px;
+		background-image: repeating-linear-gradient(
+			45deg,
+			transparent,
+			transparent 2px,
+			var(--color-accent) 2px,
+			var(--color-accent) 4px
+		);
+		opacity: 0.8;
+	}
+
+	.gym-info h3 {
+		font-size: 1.25rem;
+		margin-bottom: var(--space-1);
+	}
+
+	.gym-location {
+		color: var(--color-text-muted);
+		font-size: 0.875rem;
+		margin: 0;
+	}
+
+	@media (min-width: 640px) {
+		.page-container {
+			padding: var(--space-8) var(--space-6);
+		}
+		
+		.bureau-list {
+			flex-direction: row;
+			flex-wrap: wrap;
+		}
+		
+		.bureau-list li {
+			flex: 1;
+			min-width: 200px;
+		}
+
+		.gyms-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+</style>

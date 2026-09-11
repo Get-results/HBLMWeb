@@ -1,0 +1,122 @@
+---
+/*
+ * Bascule clair/sombre. Monté une seule fois par BaseLayout, jamais par page.
+ *
+ * Sans choix explicite, le thème suit `prefers-color-scheme` et aucun
+ * `data-theme` n'est posé ; un clic force un thème et le persiste. Le script
+ * précoce de BaseLayout réapplique ce choix avant le premier paint.
+ *
+ * `aria-pressed` ne peut pas être connu au rendu serveur (il dépend du
+ * localStorage et de la préférence système du visiteur) : il est rendu à
+ * "false" puis corrigé par le script ci-dessous. L'icône, elle, est pilotée en
+ * CSS pur pour qu'elle soit juste dès le premier paint, sans attendre le JS.
+ */
+---
+
+<button
+	id="theme-toggle"
+	class="theme-toggle"
+	type="button"
+	aria-label="Basculer entre thème clair et sombre"
+	aria-pressed="false"
+>
+	<svg class="icon icon-moon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+		<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+	</svg>
+	<svg class="icon icon-sun" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+		<circle cx="12" cy="12" r="4"></circle>
+		<path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+	</svg>
+</button>
+
+<style>
+	.theme-toggle {
+		position: fixed;
+		top: var(--space-4);
+		right: var(--space-4);
+		z-index: 100;
+
+		/* Zone tactile ≥44px sur mobile, icône de 20px centrée dedans. */
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 44px;
+		height: 44px;
+		padding: 0;
+
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-full);
+		background-color: var(--color-surface);
+		color: var(--color-text);
+		cursor: pointer;
+	}
+
+	/* Le focus visible vient de la règle :focus-visible globale (global.css) —
+	   pas de règle de focus propre au composant. */
+
+	.icon {
+		display: block;
+	}
+
+	/* L'icône annonce l'action, pas l'état : en clair on propose la lune.
+	   Les trois cas reprennent exactement la cascade de tokens.css —
+	   clair par défaut, sombre système sauf clair forcé, sombre forcé. */
+	.icon-sun {
+		display: none;
+	}
+
+	@media (prefers-color-scheme: dark) {
+		:global(html:not([data-theme='light'])) .icon-moon {
+			display: none;
+		}
+
+		:global(html:not([data-theme='light'])) .icon-sun {
+			display: block;
+		}
+	}
+
+	:global(html[data-theme='dark']) .icon-moon {
+		display: none;
+	}
+
+	:global(html[data-theme='dark']) .icon-sun {
+		display: block;
+	}
+</style>
+
+<script>
+	const STORAGE_KEY = 'hblm-theme';
+	const root = document.documentElement;
+	const button = document.getElementById('theme-toggle');
+	const systemDark = window.matchMedia('(prefers-color-scheme: dark)');
+
+	/* Le thème réellement affiché : un choix forcé s'il existe, sinon le système. */
+	function effectiveTheme() {
+		const forced = root.getAttribute('data-theme');
+		if (forced === 'dark' || forced === 'light') return forced;
+		return systemDark.matches ? 'dark' : 'light';
+	}
+
+	function syncPressed() {
+		button?.setAttribute('aria-pressed', String(effectiveTheme() === 'dark'));
+	}
+
+	syncPressed();
+
+	button?.addEventListener('click', () => {
+		const next = effectiveTheme() === 'dark' ? 'light' : 'dark';
+		root.setAttribute('data-theme', next);
+		syncPressed();
+		try {
+			localStorage.setItem(STORAGE_KEY, next);
+		} catch {
+			/* Navigation privée stricte : la bascule marche, elle ne survit pas au rechargement. */
+		}
+	});
+
+	/* Tant qu'aucun choix n'est forcé, la page suit le système en direct :
+	   l'icône bascule seule en CSS, aria-pressed doit suivre aussi. */
+	systemDark.addEventListener('change', () => {
+		if (!root.hasAttribute('data-theme')) syncPressed();
+	});
+</script>

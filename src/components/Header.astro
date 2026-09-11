@@ -1,0 +1,189 @@
+---
+/*
+ * Navigation principale du site.
+ * Montée une seule fois par BaseLayout, jamais par page.
+ *
+ * Mobile : menu hamburger qui affiche la liste de liens en overlay.
+ * Desktop (≥640px) : liens horizontaux dans la barre.
+ *
+ * Le ThemeToggle reste indépendant (fixé en z-index: 100), le header
+ * ne le contient pas pour garder les deux composants découplés.
+ */
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<header class="site-header">
+	<a href={`${base}/`} class="site-logo" aria-label="Accueil HBLM">
+		<span class="logo-text">HBLM</span><span class="logo-dot">.</span>
+	</a>
+
+	<button
+		id="nav-toggle"
+		class="nav-toggle"
+		type="button"
+		aria-label="Ouvrir le menu"
+		aria-expanded="false"
+		aria-controls="nav-menu"
+	>
+		<svg class="icon-menu" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+			<line x1="3" y1="6" x2="21" y2="6" />
+			<line x1="3" y1="12" x2="21" y2="12" />
+			<line x1="3" y1="18" x2="21" y2="18" />
+		</svg>
+		<svg class="icon-close" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+			<line x1="18" y1="6" x2="6" y2="18" />
+			<line x1="6" y1="6" x2="18" y2="18" />
+		</svg>
+	</button>
+
+	<nav id="nav-menu" class="nav-menu" aria-label="Navigation principale">
+		<ul class="nav-list">
+			<li><a href={`${base}/planning`}>Planning</a></li>
+			<li><a href={`${base}/inscription`}>Inscription</a></li>
+			<li><a href={`${base}/stages`}>Stages</a></li>
+			<li><a href={`${base}/le-club`}>Le club</a></li>
+			<li><a href={`${base}/matchs`}>Matchs</a></li>
+		</ul>
+	</nav>
+</header>
+
+<style>
+	.site-header {
+		position: sticky;
+		top: 0;
+		z-index: 50;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: var(--space-4) 5vw;
+		background-color: var(--color-bg);
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	/* Logo texte */
+	.site-logo {
+		display: inline-flex;
+		align-items: baseline;
+		text-decoration: none;
+		font-family: var(--font-heading);
+		font-weight: var(--weight-heading);
+		font-size: 24px;
+		color: var(--color-text);
+	}
+
+	.logo-dot {
+		color: var(--color-accent);
+	}
+
+	/* Hamburger — visible uniquement sur mobile */
+	.nav-toggle {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 44px;
+		height: 44px;
+		padding: 0;
+		border: none;
+		border-radius: var(--radius-full);
+		background: transparent;
+		color: var(--color-text);
+		cursor: pointer;
+	}
+
+	.icon-close {
+		display: none;
+	}
+
+	.nav-toggle[aria-expanded='true'] .icon-menu {
+		display: none;
+	}
+
+	.nav-toggle[aria-expanded='true'] .icon-close {
+		display: block;
+	}
+
+	/* Menu mobile — overlay plein écran */
+	.nav-menu {
+		display: none;
+		position: fixed;
+		inset: 0;
+		top: 57px; /* hauteur du header (padding + taille de police) */
+		z-index: 49;
+		background-color: var(--color-bg);
+		padding: var(--space-8) 5vw;
+	}
+
+	.nav-menu.is-open {
+		display: block;
+	}
+
+	.nav-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-6);
+	}
+
+	.nav-list a {
+		display: block;
+		text-decoration: none;
+		font-family: var(--font-heading);
+		font-weight: var(--weight-heading);
+		font-size: 20px;
+		color: var(--color-text);
+		padding: var(--space-2) 0;
+	}
+
+	.nav-list a:hover {
+		color: var(--color-accent);
+	}
+
+	/* Desktop : ≥640px */
+	@media (min-width: 640px) {
+		.nav-toggle {
+			display: none;
+		}
+
+		.nav-menu {
+			display: block;
+			position: static;
+			background: none;
+			padding: 0;
+		}
+
+		.nav-list {
+			flex-direction: row;
+			gap: var(--space-6);
+		}
+
+		.nav-list a {
+			font-size: 14px;
+			font-weight: var(--weight-body-strong);
+			font-family: var(--font-body);
+			padding: 0;
+		}
+	}
+</style>
+
+<script>
+	const toggle = document.getElementById('nav-toggle');
+	const menu = document.getElementById('nav-menu');
+
+	toggle?.addEventListener('click', () => {
+		const isOpen = toggle.getAttribute('aria-expanded') === 'true';
+		toggle.setAttribute('aria-expanded', String(!isOpen));
+		toggle.setAttribute('aria-label', isOpen ? 'Ouvrir le menu' : 'Fermer le menu');
+		menu?.classList.toggle('is-open', !isOpen);
+	});
+
+	/* Ferme le menu quand on clique un lien (navigation SPA-like d'Astro ou non) */
+	menu?.querySelectorAll('a').forEach((link) => {
+		link.addEventListener('click', () => {
+			toggle?.setAttribute('aria-expanded', 'false');
+			toggle?.setAttribute('aria-label', 'Ouvrir le menu');
+			menu.classList.remove('is-open');
+		});
+	});
+</script>

@@ -3,6 +3,9 @@ import '@fontsource/poppins/800.css';
 import '@fontsource/poppins/900.css';
 import '@fontsource/work-sans/400.css';
 import '@fontsource/work-sans/600.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import ThemeToggle from '../components/ThemeToggle.astro';
 import '../styles/tokens.css';
 import '../styles/global.css';
 
@@ -12,6 +15,15 @@ interface Props {
 
 const { title } = Astro.props;
 const favicon = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/favicon.svg`;
+
+/* Story 1.4 — Mesure d'audience sans cookies (NFR5, AD-11).
+   Umami est inclus UNE SEULE FOIS ici, jamais page par page.
+   Configurer les deux variables dans un fichier .env à la racine :
+     PUBLIC_UMAMI_URL=https://ton-instance-umami.example.com/script.js
+     PUBLIC_UMAMI_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+   Sans ces variables le script n'est tout simplement pas rendu. */
+const umamiUrl = import.meta.env.PUBLIC_UMAMI_URL;
+const umamiId = import.meta.env.PUBLIC_UMAMI_ID;
 ---
 
 <html lang="fr">
@@ -21,10 +33,30 @@ const favicon = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/favicon.svg`;
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
+		{/* Umami — mesure d'audience sans cookies ni profilage (NFR5).
+		    Ne rend rien tant que PUBLIC_UMAMI_URL et PUBLIC_UMAMI_ID ne sont pas configurés. */}
+		{umamiUrl && umamiId && (
+			<script defer src={umamiUrl} data-website-id={umamiId}></script>
+		)}
+		{/* Applique un thème forcé avant le premier paint — sinon le thème système
+		    s'affiche puis bascule visiblement. Doit rester inline et synchrone. */}
+		<script is:inline>
+			try {
+				var stored = localStorage.getItem('hblm-theme');
+				if (stored === 'light' || stored === 'dark') {
+					document.documentElement.setAttribute('data-theme', stored);
+				}
+			} catch (e) {
+				/* localStorage indisponible : on retombe sur prefers-color-scheme. */
+			}
+		</script>
 	</head>
 	<body>
+		<ThemeToggle />
+		<Header />
 		<main>
 			<slot />
 		</main>
+		<Footer />
 	</body>
 </html>

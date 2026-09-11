@@ -1,0 +1,48 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ContactForm from '../components/ContactForm.astro';
+
+const baseUrl = import.meta.env.BASE_URL;
+const essaiUrl = baseUrl.endsWith('/') ? `${baseUrl}essai` : `${baseUrl}/essai`;
+---
+
+<BaseLayout title="Inscription | HBLM">
+  <div class="container">
+    <header class="page-header">
+      <h1 class="title">Inscription</h1>
+      <p class="subtitle">Rejoignez le Handball Lunel-Marsillargues</p>
+    </header>
+    
+    <section class="content-section">
+      <div class="card">
+        <h2>Bienvenue au club !</h2>
+        <p>Le HBLM vous accueille dès l'âge de 3 ans (baby-hand) jusqu'aux seniors. Que vous souhaitiez jouer en compétition ou simplement pour le plaisir et le loisir, il y a une place pour vous sur le terrain.</p>
+        <p>Les inscriptions se déroulent généralement en début de saison, courant septembre.</p>
+      </div>
+
+      <div class="card">
+        <h2>Pièces à fournir</h2>
+        <ul class="list">
+          <li>Certificat médical (ou questionnaire de santé)</li>
+          <li>Photo d'identité récente</li>
+          <li>Règlement de la licence</li>
+        </ul>
+      </div>
+
+      <div class="card accent-card">
+        <h2>Tarifs</h2>
+        <!-- TODO: contenu à fournir par le club. Les vrais tarifs viendront de la collection categories (Story 2.1) -->
+        <p class="placeholder">[Tarif à compléter]</p>
+      </div>
+
+      <div class="card cta-card">
+        <h2>Envie d'essayer ?</h2>
+        <p>Venez tester le handball ! Nous proposons des séances d'essai gratuites avant toute inscription définitive.</p>
+        <a href={essaiUrl} class="button">Trouver ma catégorie et faire un essai</a>
+      </div>
+
+      <ContactForm />
+    </section>
+  </div>
+</BaseLayout>
+

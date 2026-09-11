@@ -1,0 +1,120 @@
+---
+/*
+ * Bloc-lien rapide pour la section "raccourcis" de l'accueil.
+ * Carte avec coin griffé, icône décorative, titre et description courte.
+ *
+ * Props :
+ *   href        — URL de destination
+ *   title       — titre du raccourci
+ *   description — texte d'accompagnement
+ *   icon        — slot nommé pour l'icône SVG
+ */
+interface Props {
+	href: string;
+	title: string;
+	description: string;
+}
+
+const { href, title, description } = Astro.props;
+---
+
+<a href={href} class="quick-link">
+	<div class="ql-icon">
+		<slot name="icon" />
+	</div>
+	<div class="ql-content">
+		<span class="ql-title">{title}</span>
+		<span class="ql-desc">{description}</span>
+	</div>
+	<span class="ql-arrow" aria-hidden="true">→</span>
+</a>
+
+<style>
+	.quick-link {
+		display: flex;
+		align-items: center;
+		gap: var(--space-4);
+		padding: var(--space-6);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		text-decoration: none;
+		color: var(--color-text);
+		position: relative;
+		transition: transform 0.15s ease;
+
+		/* Coin griffé */
+		clip-path: polygon(
+			0 0,
+			100% 0,
+			100% calc(100% - 16px),
+			calc(100% - 16px) 100%,
+			0 100%
+		);
+	}
+
+	/* Griffures */
+	.quick-link::before {
+		content: '';
+		position: absolute;
+		right: 2px;
+		bottom: 2px;
+		width: 14px;
+		height: 14px;
+		background:
+			linear-gradient(135deg, transparent 47%, var(--color-accent) 47.5%, var(--color-accent) 50%, transparent 50.5%),
+			linear-gradient(135deg, transparent 55%, var(--color-accent) 55.5%, var(--color-accent) 58%, transparent 58.5%),
+			linear-gradient(135deg, transparent 63%, var(--color-accent) 63.5%, var(--color-accent) 66%, transparent 66.5%);
+		pointer-events: none;
+		opacity: 0.9;
+	}
+
+	.quick-link:hover {
+		transform: translateY(-2px);
+	}
+
+	.ql-icon {
+		flex-shrink: 0;
+		width: 44px;
+		height: 44px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: var(--radius-md);
+		background: var(--color-bg);
+		color: var(--color-text);
+	}
+
+	.ql-icon :global(svg) {
+		width: 24px;
+		height: 24px;
+		opacity: 0.7;
+	}
+
+	.ql-content {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+
+	.ql-title {
+		font-family: var(--font-heading);
+		font-weight: var(--weight-heading);
+		font-size: 16px;
+		color: var(--color-text);
+	}
+
+	.ql-desc {
+		font-size: 14px;
+		color: var(--color-text-muted);
+		line-height: 1.4;
+	}
+
+	.ql-arrow {
+		flex-shrink: 0;
+		font-size: 18px;
+		color: var(--color-text-muted);
+		margin-right: var(--space-2);
+	}
+</style>

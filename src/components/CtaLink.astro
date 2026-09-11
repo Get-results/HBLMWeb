@@ -1,0 +1,49 @@
+---
+/*
+ * Bouton CTA principal — lien pilule.
+ * Un seul CTA de premier plan par section (DESIGN.md > Components).
+ *
+ * Props :
+ *   href  — URL de destination
+ *   label — texte du bouton (avec flèche affichée par défaut)
+ */
+interface Props {
+	href: string;
+	label: string;
+}
+
+const { href, label } = Astro.props;
+---
+
+<a href={href} class="cta-link">
+	{label} <span class="arrow" aria-hidden="true">→</span>
+</a>
+
+<style>
+	.cta-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 10px;
+		background: var(--color-cta-bg);
+		color: var(--color-cta-text);
+		font-family: var(--font-body);
+		font-weight: var(--weight-body-strong);
+		font-size: 15px;
+		letter-spacing: 0.02em;
+		padding: var(--space-4) 34px;
+		border-radius: var(--radius-full);
+		border: none;
+		text-decoration: none;
+		cursor: pointer;
+		transition: opacity 0.15s ease;
+	}
+
+	.cta-link:hover {
+		opacity: 0.85;
+	}
+
+	.arrow {
+		font-size: 16px;
+		transform: translateY(-1px);
+	}
+</style>
