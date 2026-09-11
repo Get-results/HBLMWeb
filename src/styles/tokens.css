@@ -9,6 +9,15 @@
 	--color-accent: #F2C230;
 	--color-cta-bg: #222220;
 	--color-cta-text: #F2C230;
+	--color-input-bg: #FCFBF9;
+	--color-visual-a: #DAD7D1;
+	--color-visual-b: #CFCCC5;
+
+	/* Texte posé sur --color-accent. Valeur FIXE, identique dans les deux thèmes :
+	   --color-accent ne bascule pas, donc un texte qui suit le thème devient
+	   illisible en sombre (1.47:1). Ne jamais utiliser var(--color-text) sur
+	   un fond accent. Règle stricte DESIGN.md > Colors. */
+	--color-on-accent: #222220;
 }
 
 /* Thème sombre selon la préférence système, sauf si un thème clair est explicitement forcé */
@@ -22,6 +31,10 @@
 		--color-accent: #F2C230;
 		--color-cta-bg: #F2C230;
 		--color-cta-text: #201F1C;
+		--color-input-bg: #232220;
+		--color-visual-a: #35332F;
+		--color-visual-b: #3B3934;
+		/* --color-on-accent n'est volontairement PAS redéfini ici. */
 	}
 }
 
@@ -35,4 +48,50 @@
 	--color-accent: #F2C230;
 	--color-cta-bg: #F2C230;
 	--color-cta-text: #201F1C;
+	--color-input-bg: #232220;
+	--color-visual-a: #35332F;
+	--color-visual-b: #3B3934;
+	/* --color-on-accent n'est volontairement PAS redéfini ici. */
+}
+
+/* ---------------------------------------------------------------------------
+   Tokens non-couleur (DESIGN.md > Shapes, Layout & Spacing, Typography).
+   Ne basculent pas avec le thème : déclarés une seule fois.
+   --------------------------------------------------------------------------- */
+
+:root {
+	/* Gabarit du visuel de carte. 3:2 retenu après essai sur photos réelles du club :
+	   1.9:1 et 16:9 amputent la rangée avant des photos de groupe (le cas dominant),
+	   4:3 rend le visuel trop haut pour une rangée de cartes défilante. */
+	--ratio-card-visual: 3 / 2;
+
+	--radius-sm: 8px;
+	--radius-md: 12px;
+	--radius-lg: 18px;
+	--radius-full: 9999px;
+
+	--space-1: 4px;
+	--space-2: 8px;
+	--space-3: 12px;
+	--space-4: 16px;
+	--space-6: 24px;
+	--space-8: 32px;
+	--space-card-gap: 24px;
+	--space-section-y: clamp(48px, 8vw, 96px);
+
+	--font-display: 'Poppins', system-ui, sans-serif;
+	--font-heading: 'Poppins', system-ui, sans-serif;
+	--font-body: 'Work Sans', system-ui, sans-serif;
+
+	--weight-display: 900;
+	--weight-heading: 800;
+	--weight-body: 400;
+	--weight-body-strong: 600;
+
+	--size-body: 16px;
+	--size-eyebrow: 13px;
+	--leading-display: 0.92;
+	--leading-body: 1.5;
+	--tracking-display: -0.02em;
+	--tracking-eyebrow: 0.18em;
 }
