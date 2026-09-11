@@ -47,10 +47,16 @@ inventé ici finirait publié comme une information officielle.
 - [ ] **Composition du bureau** — nom du/de la président·e, secrétaire, trésorier·ère.
   → `src/pages/le-club.astro:31-42`, actuellement `[Nom à compléter]` ×3.
 - [ ] **Vrais créneaux d'entraînement** — jour, gymnase, catégorie, horaires, pour toutes
-  les équipes.
-  → `src/pages/planning.astro:16`, **les créneaux actuellement affichés sont des exemples
-  fabriqués**. C'est le point le plus sensible de la liste : un parent qui se déplace sur un
-  horaire inventé, c'est une confiance perdue.
+  les équipes. *Le point le plus attendu du site.*
+  → `src/pages/planning.astro` affiche « Planning en cours de préparation » depuis le
+  11/09/2026. Les exemples fabriqués qui y figuraient ont été retirés : ils étaient
+  **publiés en ligne** et un parent pouvait se déplacer sur un horaire inventé.
+  → Les styles des créneaux sont conservés dans la page : dès que les horaires arrivent,
+  il n'y a que le balisage à réécrire.
+  → Format attendu, par jour : gymnase + une ligne par catégorie avec son horaire.
+    Exemple : *Lundi — Gymnase Arnassan (Lunel) — -15 ans, 18h–19h30*.
+  → Penser aussi à rétablir la sous-ligne de la page et le rappel « le planning peut
+  évoluer en cours de saison », retirés avec les créneaux.
 - [ ] **Mentions légales** — nom de l'association, adresse du siège, n° RNA ou SIRET,
   directeur·rice de publication, hébergeur (GitHub Pages, GitHub Inc.). Obligatoire pour un
   site d'association accessible au public.
@@ -83,6 +89,7 @@ Journal des arbitrages, pour ne pas les rejouer dans six mois.
 | 11/09/2026 | **Pas de nom de domaine** pour l'instant, on reste sur `github.io` | Aller au plus simple tant que le site n'est pas en production. Le club en possède un, activable plus tard. |
 | 11/09/2026 | L'endpoint du formulaire reste une **variable d'environnement** | Passer plus tard à un backend maison ne coûtera qu'un changement de variable, aucune ligne de code. |
 | 11/09/2026 | Pages jalons créées pour `/essai`, `/matchs`, `/vie-du-club` | Ces liens existaient déjà dans la navigation et renvoyaient des 404. Seront remplacées par les Stories 2.3, 3.2 et 4.3. |
+| 11/09/2026 | **Page Planning passée en « en cours de préparation »** | Les créneaux affichés étaient fabriqués et le site est publiquement accessible. Mieux vaut annoncer l'absence d'horaires que publier de faux horaires. |
 
 ---
 
