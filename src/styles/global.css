@@ -1,0 +1,41 @@
+/* Reset minimal + socle typographique/accessibilité — mobile-first */
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	font-family: 'Work Sans', system-ui, sans-serif;
+	font-weight: 400;
+	font-size: 16px;
+	line-height: 1.5;
+	color: var(--color-text);
+	background-color: var(--color-bg);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	margin: 0;
+	font-family: 'Poppins', system-ui, sans-serif;
+	font-weight: 800;
+}
+
+/* Titres "display" (gros titres de section) — surcharger le poids via .display si besoin */
+.display {
+	font-weight: 900;
+}
+
+/* Focus clavier visible, contraste ≥3:1 sur le fond dans les deux thèmes :
+   on réutilise la couleur de texte du thème (déjà ≥4.5:1 sur bg/surface) plutôt que l'accent. */
+:focus-visible {
+	outline: 2px solid var(--color-text);
+	outline-offset: 2px;
+}
+
