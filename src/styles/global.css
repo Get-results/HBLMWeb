@@ -39,6 +39,48 @@ h6 {
 	outline-offset: 2px;
 }
 
+/* La cible du lien d'évitement reçoit le focus par programme (tabindex="-1") :
+   pas de contour, il n'a pas été atteint au clavier et l'encadrer surprendrait. */
+main:focus {
+	outline: none;
+}
+
+/* Lien d'évitement — hors écran tant qu'il n'a pas le focus, puis ramené en haut
+   à gauche. On ne l'escamote pas avec `display: none` : il doit rester atteignable
+   au clavier et annonçable par un lecteur d'écran. */
+.skip-link {
+	position: absolute;
+	top: var(--space-4);
+	left: var(--space-4);
+	z-index: 200; /* au-dessus du bouton de thème (z-index: 100) */
+	transform: translateY(calc(-100% - var(--space-4) * 2));
+	padding: var(--space-3) var(--space-4);
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-sm);
+	background-color: var(--color-surface);
+	color: var(--color-text);
+	font-weight: var(--weight-body-strong);
+	text-decoration: none;
+}
+
+.skip-link:focus {
+	position: fixed;
+	transform: none;
+}
+
+/* Respect de « réduire les animations » : les transitions du site sont courtes et
+   purement décoratives, on les neutralise entièrement plutôt qu'à moitié. */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}
+
 
 /* Classes de structure communes (pages statiques comme Inscription, Stages, etc.) */
 .container {
