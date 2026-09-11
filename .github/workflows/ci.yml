@@ -1,0 +1,32 @@
+# Vérification des pull requests.
+# Le workflow de déploiement ne tourne qu'après un merge sur main : sans ce
+# check, une PR qui casse le build ne se découvre qu'une fois fusionnée.
+# `npm run build` enchaîne astro build puis check:paths (garde-fou AD-5).
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Les variables PUBLIC_* sont volontairement absentes ici : le build doit
+      # passer sans elles. C'est ce qui garantit que le site reste constructible
+      # quand une variable manque, avec les replis prévus.
+      - name: Build
+        run: npm run build
