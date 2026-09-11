@@ -57,17 +57,39 @@ inventé ici finirait publié comme une information officielle.
     Exemple : *Lundi — Gymnase Arnassan (Lunel) — -15 ans, 18h–19h30*.
   → Penser aussi à rétablir la sous-ligne de la page et le rappel « le planning peut
   évoluer en cours de saison », retirés avec les créneaux.
-- [ ] **Mentions légales** — nom de l'association, adresse du siège, n° RNA ou SIRET,
-  directeur·rice de publication, hébergeur (GitHub Pages, GitHub Inc.). Obligatoire pour un
-  site d'association accessible au public.
-  → le footer ne contient aujourd'hui qu'un `© 2026` (`src/components/Footer.astro`).
-  À confirmer avec le bureau, éventuellement avec la mairie ou le comité départemental.
+- [ ] **Mentions légales** — la page existe désormais (`src/pages/mentions-legales.astro`,
+  liée depuis le footer) avec **14 champs à compléter** : dénomination officielle, siège,
+  n° RNA, SIRET, téléphone, e-mail, agrément Jeunesse et Sports / affiliation FFHandball,
+  directeur·rice de publication, crédits photo, auteur du logo, boîte destinataire du
+  formulaire, e-mail et adresse postale pour l'exercice des droits RGPD, date de mise à jour.
+  → **16 questions prêtes à envoyer au bureau** dans la description de la PR #3.
+  → Point à valider : la durée de conservation des messages est proposée à **12 mois**.
+  Aucune durée n'est imposée par la CNIL, c'est au bureau de trancher.
+- [ ] **Autorisations de droit à l'image** — à vérifier pour les photos déjà publiées,
+  **en particulier celles de mineurs**. Si les accords écrits n'existent pas, il faut les
+  recueillir ou retirer les photos. Soulevé lors de la rédaction des mentions légales.
 
 ### Non bloquant, mais visible comme « trou » dans la page
 
-- [ ] **Tarifs des licences** par catégorie — `src/pages/inscription.astro:35`
-  (`[Tarif à compléter]`). Alimentera aussi la Story 2.1 (collection `categories`).
+- [ ] **Données des catégories** — la collection `src/content/categories/` existe (Story 2.1)
+  avec 8 fiches créées, toutes vides et marquées `dataStatus: a-confirmer`. Rien ne s'affiche
+  sur le site tant qu'une fiche n'est pas passée à `confirme`. Pour chaque catégorie :
+  - bornes d'**années de naissance** (sans elles, « Trouver ma catégorie » renverra toujours
+    vers le contact générique — c'est le cœur de la Story 2.3)
+  - **quelles catégories sont scindées** féminines / masculins (`mixte` est une valeur d'attente)
+  - **tarif de licence**
+  - **créneaux** : jour, heure de début, heure de fin, gymnase
+  - **essai possible ou non** (« on ne sait pas encore » est une réponse valide)
+  - **référent** : nom + mail ou téléphone, *avec l'accord de la personne* — le site et le
+    dépôt sont publics
+  - la **saison de référence** (ex. 2026-2027)
+  → Procédure : remplir le YAML, puis passer `dataStatus` à `confirme`. Le build refuse une
+  fiche `confirme` incomplète, donc une erreur de saisie bloque avant publication.
 - [ ] **Stages** : dates, horaires, tarifs — `src/pages/stages.astro:24-26`.
+- [ ] **Confirmer le chiffre « 351 licenciés en 2025 »** affiché sur la page Le club
+  (`src/pages/le-club.astro:20-22`). Il vient du brief projet, relevé sur l'ancien site
+  WordPress — ce n'est donc pas une donnée inventée, mais il porte le millésime 2025 alors
+  que la saison 2026-2027 commence. À actualiser ou à confirmer.
 - [ ] **Liste et adresses des gymnases** — 4 installations annoncées, à confirmer
   (`src/pages/le-club.astro:47+`).
 - [ ] **Liens des réseaux sociaux** du club (Instagram, Facebook) — plusieurs pages y
@@ -89,6 +111,8 @@ Journal des arbitrages, pour ne pas les rejouer dans six mois.
 | 11/09/2026 | **Pas de nom de domaine** pour l'instant, on reste sur `github.io` | Aller au plus simple tant que le site n'est pas en production. Le club en possède un, activable plus tard. |
 | 11/09/2026 | L'endpoint du formulaire reste une **variable d'environnement** | Passer plus tard à un backend maison ne coûtera qu'un changement de variable, aucune ligne de code. |
 | 11/09/2026 | Pages jalons créées pour `/essai`, `/matchs`, `/vie-du-club` | Ces liens existaient déjà dans la navigation et renvoyaient des 404. Seront remplacées par les Stories 2.3, 3.2 et 4.3. |
+| 11/09/2026 | Les catégories ne s'affichent que si `dataStatus: confirme` | Un drapeau explicite par fiche, plutôt que la confiance. Le build refuse une fiche confirmée incomplète : impossible de publier un tarif ou un créneau à moitié saisi. |
+| 11/09/2026 | Mentions légales livrées « à trous » plutôt qu'attendues | Le bureau complète des champs balisés au lieu de partir d'une page blanche. Aucune valeur juridique n'est inventée : un champ vide vaut mieux qu'un faux SIRET. |
 | 11/09/2026 | **Page Planning passée en « en cours de préparation »** | Les créneaux affichés étaient fabriqués et le site est publiquement accessible. Mieux vaut annoncer l'absence d'horaires que publier de faux horaires. |
 
 ---

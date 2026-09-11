@@ -38,3 +38,6 @@ pnpm-debug.log*
 
 # Verrou local du planificateur Claude Code
 /.claude/scheduled_tasks.lock
+
+# Worktrees créés par les agents (dépôts git imbriqués, jamais à versionner)
+.claude/worktrees/
