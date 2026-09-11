@@ -27,3 +27,11 @@ pnpm-debug.log*
 # avec le bureau (dépôt GitHub public — un ajout resterait dans l'historique git
 # même après suppression). Voir EXPERIENCE.md > Contraintes de contenu.
 /assets/
+
+# BMAD : installation, outputs et skills installées — outillage local, non versionné
+/_bmad/
+/_bmad-output/
+/.claude/skills/bmad-*/
+
+# Verrou local du planificateur Claude Code
+/.claude/scheduled_tasks.lock
