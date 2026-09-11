@@ -1,0 +1,27 @@
+---
+/* Jalon en attendant la Story 2.3 (« Trouver ma catégorie », parcours complet).
+   La page existe dès maintenant parce que l'accueil et la page Inscription
+   pointent dessus : un CTA qui renvoie un 404 est pire qu'un CTA qui annonce
+   la suite. À remplacer intégralement par le parcours de la Story 2.3. */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ContactForm from '../components/ContactForm.astro';
+---
+
+<BaseLayout title="Faire un essai | HBLM">
+  <div class="container">
+    <header class="page-header">
+      <h1 class="title">Faire un essai</h1>
+      <p class="subtitle">Venez tester le handball, sans engagement</p>
+    </header>
+
+    <section class="content-section">
+      <div class="card">
+        <h2>Comment ça se passe ?</h2>
+        <p>Le HBLM propose des séances d'essai gratuites avant toute inscription. Vous venez, vous jouez, et vous décidez ensuite.</p>
+        <p>L'outil qui vous orientera automatiquement vers la bonne catégorie selon votre âge arrive prochainement. En attendant, écrivez-nous : nous vous indiquons le créneau qui vous correspond.</p>
+      </div>
+
+      <ContactForm />
+    </section>
+  </div>
+</BaseLayout>
