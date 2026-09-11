@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ContactForm from '../components/ContactForm.astro';
+import CategoriesInfos from '../components/CategoriesInfos.astro';
 
 const baseUrl = import.meta.env.BASE_URL;
 const essaiUrl = baseUrl.endsWith('/') ? `${baseUrl}essai` : `${baseUrl}/essai`;
@@ -29,11 +30,12 @@ const essaiUrl = baseUrl.endsWith('/') ? `${baseUrl}essai` : `${baseUrl}/essai`;
         </ul>
       </div>
 
-      <div class="card accent-card">
-        <h2>Tarifs</h2>
-        <!-- TODO: contenu à fournir par le club. Les vrais tarifs viendront de la collection categories (Story 2.1) -->
-        <p class="placeholder">[Tarif à compléter]</p>
-      </div>
+      {/* Les tarifs viennent de la collection `categories` (Story 2.1) et non
+          d'un texte saisi ici : c'est la même source que « Trouver ma catégorie »,
+          donc les deux ne peuvent pas diverger. Tant qu'aucune fiche n'est
+          confirmée par le bureau, le composant affiche « en cours de
+          préparation » — jamais un tarif inventé. */}
+      <CategoriesInfos mode="tarifs" />
 
       <div class="card cta-card">
         <h2>Envie d'essayer ?</h2>
