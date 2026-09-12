@@ -1,0 +1,165 @@
+---
+/* Affichage des informations de catégorie (créneaux, tarif, essai, référent)
+   sur les pages statiques — Inscription et Faire un essai.
+
+   Ce composant n'est PAS l'île « Trouver ma catégorie » (Story 2.3, AD-7) : il
+   ne résout aucun profil, il liste. La résolution restera l'affaire du seul
+   `CategoryFinder`, pour qu'il n'existe jamais deux calculs de catégorie.
+
+   Invariant tenu ici : il ne lit la collection qu'à travers
+   `getCategoriesPubliees()`, qui ne rend que les fiches validées par le bureau.
+   Tant qu'il n'y en a aucune, on affiche un état « en cours de préparation »
+   explicite plutôt qu'un tableau de valeurs inventées — le site est en ligne, et
+   un horaire faux fait se déplacer un parent pour rien. */
+import { getCategoriesPubliees, formaterCreneau, formaterTarif } from '../lib/categories';
+
+interface Props {
+	/* Change le titre et la phrase d'accroche, pas les données affichées :
+	   une catégorie montre les mêmes informations où qu'on la consulte. */
+	mode?: 'tarifs' | 'creneaux';
+}
+
+const { mode = 'tarifs' } = Astro.props;
+
+const titre = mode === 'tarifs' ? 'Tarifs par catégorie' : 'Créneaux et catégories';
+const accroche =
+	mode === 'tarifs'
+		? 'Le tarif de licence dépend de la catégorie.'
+		: "Chaque catégorie a ses créneaux et sa disponibilité d'essai.";
+
+const categories = await getCategoriesPubliees();
+const saisons = [...new Set(categories.map(({ data }) => data.season).filter(Boolean))];
+---
+
+{
+	categories.length === 0 ? (
+		<div class="card accent-card">
+			<h2>{titre}</h2>
+			<p class="placeholder">Informations en cours de préparation.</p>
+			<p>
+				{accroche} Nous publierons les catégories du club dès que le bureau aura validé les
+				créneaux, les tarifs et les référents. Nous préférons ne rien afficher plutôt
+				qu'afficher une information dont nous ne sommes pas sûrs.
+			</p>
+			<p>
+				D'ici là, écrivez-nous&nbsp;: nous vous indiquons directement le créneau et le tarif qui
+				vous concernent. <a href="#contact-form">Aller au formulaire de contact</a>.
+			</p>
+		</div>
+	) : (
+		<div class="card">
+			<h2>{titre}</h2>
+			<p>
+				{accroche}
+				{saisons.length === 1 && <> Informations de la saison {saisons[0]}.</>}
+			</p>
+
+			{/* `id={categorie-<id>}` : ancre stable vers une catégorie précise, qui ne
+			    dépend pas du libellé — celui-ci peut changer d'une saison à l'autre. */}
+			<ul class="categories">
+				{categories.map(({ id, data }) => (
+					<li class="categorie" id={`categorie-${id}`}>
+						<h3>{data.label}</h3>
+
+						<dl>
+							<dt>Créneaux</dt>
+							<dd>
+								<ul class="creneaux">
+									{data.trainingSlots.map((creneau) => (
+										<li>{formaterCreneau(creneau)}</li>
+									))}
+								</ul>
+							</dd>
+
+							<dt>Licence</dt>
+							{/* Non-null assumé : le schéma refuse au build une fiche confirmée sans tarif. */}
+							<dd>{formaterTarif(data.licenseFee!)}</dd>
+
+							{/* `trialAvailable: null` (non renseigné) n'affiche pas de ligne « essai » :
+							    un « indisponible » par défaut serait un renseignement faux (FR-3). */}
+							{data.trialAvailable !== null && (
+								<>
+									<dt>Séance d'essai</dt>
+									<dd>{data.trialAvailable ? 'Possible' : 'Pas de créneau d’essai actuellement'}</dd>
+								</>
+							)}
+
+							{data.contact && (
+								<>
+									<dt>Référent</dt>
+									<dd>
+										{data.contact.name}
+										{data.contact.email && (
+											<>
+												{' — '}
+												<a href={`mailto:${data.contact.email}`}>
+													Écrire à {data.contact.name}
+												</a>
+											</>
+										)}
+										{data.contact.phone && <> — {data.contact.phone}</>}
+									</dd>
+								</>
+							)}
+						</dl>
+					</li>
+				))}
+			</ul>
+		</div>
+	)
+}
+
+<style>
+	.categories {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-6);
+	}
+
+	.categorie + .categorie {
+		padding-top: var(--space-6);
+		border-top: 1px solid var(--color-border);
+	}
+
+	.categorie h3 {
+		font-family: var(--font-heading);
+		font-weight: var(--weight-heading);
+		font-size: 1.125rem;
+		margin-bottom: var(--space-3);
+		color: var(--color-text);
+	}
+
+	dl {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: var(--space-1);
+		margin: 0;
+	}
+
+	dt {
+		font-weight: var(--weight-body-strong);
+		color: var(--color-text);
+	}
+
+	dd {
+		margin: 0 0 var(--space-3) 0;
+		color: var(--color-text-muted);
+	}
+
+	.creneaux {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	/* Deux colonnes dès qu'il y a la place — mobile-first, on élargit. */
+	@media (min-width: 480px) {
+		dl {
+			grid-template-columns: minmax(7rem, auto) 1fr;
+			column-gap: var(--space-4);
+		}
+	}
+</style>

@@ -1,0 +1,38 @@
+# FICHE DE DÉMONSTRATION — ne décrit AUCUNE catégorie réelle du club.
+# Elle existe pour montrer la forme complète attendue quand le bureau aura
+# fourni les vraies informations : c'est le modèle à copier, pas une donnée.
+#
+# `dataStatus: exemple` la tient hors de toute page publique — les helpers de
+# src/lib/categories.ts ne rendent que les fiches `confirme`. C'est aussi
+# pourquoi ses valeurs sont ostensiblement fictives : si un jour un filtre
+# lâchait, on doit le voir immédiatement.
+
+label: "EXEMPLE — ne pas publier"
+order: 999
+dataStatus: exemple
+
+gender: F
+practice: null
+
+birthYearFrom: 2014
+birthYearTo: 2015
+
+season: "2026-2027"
+
+trainingSlots:
+  - day: mardi
+    startTime: "17:30"
+    endTime: "19:00"
+    venue: "Gymnase EXEMPLE (commune EXEMPLE)"
+  - day: jeudi
+    startTime: "17:30"
+    endTime: "19:00"
+    venue: "Gymnase EXEMPLE (commune EXEMPLE)"
+
+licenseFee: 111
+trialAvailable: true
+
+contact:
+  name: "Référent·e EXEMPLE"
+  email: "exemple@exemple.invalid"
+  phone: "00 00 00 00 00"
