@@ -3,6 +3,143 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 const baseUrl = import.meta.env.BASE_URL;
 const contactUrl = baseUrl.endsWith('/') ? `${baseUrl}inscription#contact-form` : `${baseUrl}/inscription#contact-form`;
+
+/* Créneaux transmis par le bureau le 12/09/2026 (visuels officiels du club,
+   saison 2026-2027). Regroupés par catégorie et non par jour : un parent
+   cherche « quand s'entraîne mon enfant », pas « qui joue le mardi ».
+
+   `gymnase: null` = seule la commune est connue. Les visuels du club n'indiquent
+   que « Lunel », « Marsillargues » ou « Lansargues », or le club dispose de
+   plusieurs installations dont deux à Lunel. Tant que la correspondance exacte
+   n'est pas transmise, on affiche « gymnase à préciser » — dire la commune sans
+   inventer la salle.
+
+   `groupe` reprend les mentions des visuels (G1&2, D1, Éq.1...) : ce sont des
+   distinctions internes entre équipes d'une même catégorie. */
+const filieres = [
+  {
+    titre: 'École de hand',
+    categories: [
+      {
+        nom: '-7 ans et Baby-hand',
+        code: 'U7',
+        creneaux: [{ jour: 'Samedi', debut: '9h00', fin: '10h00', commune: 'Lunel', gymnase: null, groupe: null }],
+      },
+      {
+        nom: '-9 ans mixte',
+        code: 'U9',
+        creneaux: [
+          { jour: 'Mercredi', debut: '16h00', fin: '17h30', commune: 'Marsillargues', gymnase: null, groupe: null },
+          { jour: 'Samedi', debut: '10h00', fin: '11h30', commune: 'Lunel', gymnase: null, groupe: null },
+        ],
+      },
+    ],
+  },
+  {
+    titre: 'Filière féminine',
+    categories: [
+      {
+        nom: '-11 ans filles',
+        code: 'U11',
+        creneaux: [
+          { jour: 'Mardi', debut: '17h30', fin: '19h00', commune: 'Lunel', gymnase: null, groupe: null },
+          { jour: 'Jeudi', debut: '17h30', fin: '19h00', commune: 'Lansargues', gymnase: null, groupe: null },
+        ],
+      },
+      {
+        nom: '-13 ans filles',
+        code: 'U13',
+        creneaux: [
+          { jour: 'Lundi', debut: '17h30', fin: '19h00', commune: 'Lunel', gymnase: null, groupe: 'D1' },
+          { jour: 'Mercredi', debut: '18h30', fin: '20h00', commune: 'Lansargues', gymnase: null, groupe: 'D1 & D2' },
+          { jour: 'Jeudi', debut: '18h00', fin: '19h30', commune: 'Marsillargues', gymnase: null, groupe: 'D2' },
+        ],
+      },
+      {
+        nom: '-15 ans filles',
+        code: 'U15',
+        creneaux: [
+          { jour: 'Mercredi', debut: '17h30', fin: '19h00', commune: 'Lunel', gymnase: null, groupe: 'Div. 1' },
+          { jour: 'Vendredi', debut: '19h00', fin: '20h30', commune: 'Lansargues', gymnase: null, groupe: 'Div. 1 & 2' },
+        ],
+      },
+      {
+        nom: '-18 ans filles',
+        code: 'U18',
+        creneaux: [
+          { jour: 'Mercredi', debut: '19h00', fin: '20h30', commune: 'Marsillargues', gymnase: null, groupe: 'Équipe 1' },
+          { jour: 'Jeudi', debut: '19h00', fin: '20h30', commune: 'Lunel', gymnase: null, groupe: 'Équipe 2' },
+          { jour: 'Vendredi', debut: '19h00', fin: '20h30', commune: 'Lunel', gymnase: null, groupe: 'Équipe 1' },
+        ],
+      },
+    ],
+  },
+  {
+    titre: 'Filière masculine',
+    categories: [
+      {
+        nom: '-11 ans garçons',
+        code: 'U11',
+        creneaux: [
+          { jour: 'Lundi', debut: '18h00', fin: '19h30', commune: 'Marsillargues', gymnase: null, groupe: null },
+          { jour: 'Vendredi', debut: '17h30', fin: '19h00', commune: 'Lunel', gymnase: null, groupe: null },
+        ],
+      },
+      {
+        nom: '-13 ans garçons',
+        code: 'U13',
+        creneaux: [
+          { jour: 'Mercredi', debut: '17h30', fin: '19h00', commune: 'Marsillargues', gymnase: null, groupe: 'G1 & G2' },
+          { jour: 'Vendredi', debut: '18h30', fin: '20h00', commune: 'Marsillargues', gymnase: null, groupe: 'G1 & G2' },
+        ],
+      },
+      {
+        nom: '-15 ans garçons',
+        code: 'U15',
+        creneaux: [
+          { jour: 'Lundi', debut: '19h00', fin: '20h30', commune: 'Lunel', gymnase: null, groupe: 'G1 & G2' },
+          { jour: 'Mardi', debut: '17h30', fin: '19h00', commune: 'Lunel', gymnase: null, groupe: null },
+          { jour: 'Mercredi', debut: '19h00', fin: '20h30', commune: 'Lunel', gymnase: null, groupe: 'G1' },
+          { jour: 'Jeudi', debut: '17h30', fin: '19h00', commune: 'Lunel', gymnase: null, groupe: 'G2' },
+        ],
+      },
+    ],
+  },
+  {
+    titre: 'Séniors',
+    categories: [
+      {
+        nom: 'Séniors filles',
+        code: 'SF',
+        creneaux: [
+          { jour: 'Mercredi', debut: '20h30', fin: '22h30', commune: 'Marsillargues', gymnase: null, groupe: null },
+          { jour: 'Vendredi', debut: '20h30', fin: '22h30', commune: 'Lunel', gymnase: null, groupe: null },
+        ],
+      },
+      {
+        nom: 'Séniors garçons',
+        code: 'SG',
+        creneaux: [
+          { jour: 'Mardi', debut: '20h30', fin: '22h30', commune: 'Lunel', gymnase: null, groupe: null },
+          { jour: 'Jeudi', debut: '20h30', fin: '22h30', commune: 'Lunel', gymnase: null, groupe: null },
+        ],
+      },
+      {
+        nom: 'Séniors loisirs',
+        code: 'SL',
+        creneaux: [
+          { jour: 'Lundi', debut: '20h30', fin: '22h30', commune: 'Lunel', gymnase: null, groupe: null },
+          { jour: 'Mercredi', debut: '20h30', fin: '22h30', commune: 'Lunel', gymnase: null, groupe: null },
+        ],
+      },
+    ],
+  },
+];
+
+const saison = '2026-2027';
+const gymnasesIncomplets = filieres.some((f) =>
+  f.categories.some((c) => c.creneaux.some((cr) => cr.gymnase === null)),
+);
 ---
 
 <BaseLayout title="Planning des entraînements | HBLM">
@@ -10,62 +147,55 @@ const contactUrl = baseUrl.endsWith('/') ? `${baseUrl}inscription#contact-form` 
     <div class="page-header">
       <p class="eyebrow">HBLM · Handball Lunel-Marsillargues</p>
       <h1 class="page-title">Planning des<br>entraînements<span class="accent-dot">.</span></h1>
-      {/* Formulation volontairement neutre : annoncer « les créneaux de la
-          semaine » juste au-dessus d'un bloc « en cours de préparation » se
-          lit comme une promesse non tenue. À revoir quand le planning
-          reviendra. */}
-      <p class="page-sub">Les horaires d'entraînement de toutes nos équipes.</p>
+      <p class="page-sub">Les créneaux de la saison {saison}, catégorie par catégorie.</p>
     </div>
 
-    {/* Les créneaux réels n'ont pas encore été transmis par le bureau du club.
-        Cette page affichait auparavant des exemples fabriqués, publiés tels
-        quels — un visiteur pouvait se déplacer sur un horaire inventé.
-        En attendant les vrais horaires : aucun créneau affiché.
-        Voir A-FAIRE-HORS-CODE.md → « Vrais créneaux d'entraînement ». */}
-    <div class="preparation">
-      <p class="preparation-title">Planning en cours de préparation</p>
-      <p class="preparation-text">
-        Les créneaux de la saison sont en cours de finalisation avec les
-        entraîneurs et les gymnases. Ils seront publiés ici dès qu'ils seront
-        confirmés.
+    {gymnasesIncomplets && (
+      <p class="avis-gymnases">
+        Les horaires ci-dessous sont ceux de la saison {saison}. Le gymnase exact de
+        chaque créneau sera précisé prochainement&nbsp;: seule la commune est indiquée
+        pour l'instant. <a href={contactUrl}>Un doute&nbsp;? Contactez le club.</a>
       </p>
-      <p class="preparation-text">
-        Besoin d'un horaire dès maintenant ? <a href={contactUrl}>Contactez le club</a>,
-        nous vous répondrons directement.
-      </p>
-    </div>
+    )}
+
+    {filieres.map((filiere) => (
+      <section class="filiere">
+        <h2 class="filiere-titre">{filiere.titre}</h2>
+
+        <ul class="categories">
+          {filiere.categories.map((categorie) => (
+            <li class="categorie">
+              <h3 class="categorie-nom">
+                <span class="categorie-code">{categorie.code}</span>
+                {categorie.nom}
+              </h3>
+              <ul class="creneaux">
+                {categorie.creneaux.map((creneau) => (
+                  <li class="creneau">
+                    <span class="creneau-jour">{creneau.jour}</span>
+                    <span class="creneau-heure">{creneau.debut}&nbsp;–&nbsp;{creneau.fin}</span>
+                    <span class="creneau-lieu">
+                      {creneau.gymnase ?? 'gymnase à préciser'} · {creneau.commune}
+                    </span>
+                    {creneau.groupe && <span class="creneau-groupe">{creneau.groupe}</span>}
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+
+    <p class="rappel">
+      Le planning peut évoluer en cours de saison — un doute&nbsp;?
+      <a href={contactUrl}>Contactez le club</a>.
+    </p>
 
   </div>
 </BaseLayout>
 
 <style>
-  /* Bloc affiché tant que les créneaux réels ne sont pas transmis. */
-  .preparation {
-    max-width: 640px;
-    margin: 0 auto;
-    padding: var(--space-8) var(--space-6);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    background-color: var(--color-surface);
-    text-align: center;
-  }
-
-  .preparation-title {
-    margin: 0 0 var(--space-4) 0;
-    font-family: var(--font-heading);
-    font-weight: 800;
-    font-size: 1.25rem;
-  }
-
-  .preparation-text {
-    margin: 0 0 var(--space-3) 0;
-    color: var(--color-text-muted);
-  }
-
-  .preparation-text:last-child {
-    margin-bottom: 0;
-  }
-
   .page {
     width: 100%;
     padding: var(--space-section-y) 6vw;
@@ -110,172 +240,116 @@ const contactUrl = baseUrl.endsWith('/') ? `${baseUrl}inscription#contact-form` 
     margin: 0;
   }
 
-  /* Styles des créneaux — volontairement conservés alors que le balisage
-     correspondant est retiré. Ils reviennent tels quels dès que le bureau
-     transmet les horaires réels ; les supprimer imposerait de tout réécrire.
-     Concerne : .planning-list, .day-row, .day-head, .day-name, .day-place,
-     .slot-row, .slot, .info-callout. */
-  .planning-list {
-    max-width: 900px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+  /* Le planning se lit catégorie par catégorie : un parent cherche son enfant,
+     pas son jour de la semaine. Les filières servent de repères visuels. */
+  .filiere {
+    max-width: 860px;
+    margin: 0 auto 48px;
+  }
+
+  .filiere-titre {
+    font-family: var(--font-heading);
+    font-weight: 900;
+    font-size: 22px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0 0 18px;
+  }
+
+  .categories,
+  .creneaux {
+    list-style: none;
+    margin: 0;
     padding: 0;
   }
 
-  .day-row {
-    position: relative;
-    background: var(--color-surface);
+  .categories {
+    display: grid;
+    gap: 14px;
+  }
+
+  .categorie {
+    padding: 22px 24px 24px;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
-    padding: 26px 28px 30px;
+    background-color: var(--color-surface);
+  }
+
+  .categorie-nom {
     display: flex;
-    flex-direction: column;
-    gap: 16px;
-    clip-path: polygon(
-      0 0,
-      100% 0,
-      100% calc(100% - 26px),
-      calc(100% - 26px) 100%,
-      0 100%
-    );
-  }
-
-  .day-row::before {
-    content: "";
-    position: absolute;
-    right: 4px;
-    bottom: 4px;
-    width: 22px;
-    height: 22px;
-    background:
-      linear-gradient(135deg, transparent 47%, var(--color-accent) 47.5%, var(--color-accent) 50%, transparent 50.5%),
-      linear-gradient(135deg, transparent 55%, var(--color-accent) 55.5%, var(--color-accent) 58%, transparent 58.5%),
-      linear-gradient(135deg, transparent 63%, var(--color-accent) 63.5%, var(--color-accent) 66%, transparent 66.5%);
-    pointer-events: none;
-    opacity: 0.9;
-  }
-
-  .day-head {
-    display: flex;
-    align-items: baseline;
-    gap: 14px;
-    flex-wrap: wrap;
-    margin: 0;
-  }
-
-  .day-name {
-    display: inline-block;
-    font-family: var(--font-heading);
-    font-weight: var(--weight-heading);
-    font-size: 22px;
-    color: var(--color-text);
-    margin: 0;
-    text-transform: uppercase;
-    letter-spacing: -0.01em;
-    white-space: nowrap;
-  }
-
-  .day-place {
-    display: inline-block;
-    font-size: 14px;
-    color: var(--color-text-muted);
-    line-height: 1.4;
-    margin: 0;
-  }
-
-  .day-place .place-name {
-    font-weight: var(--weight-body-strong);
-    color: var(--color-text);
-  }
-
-  .slot-row {
-    display: flex;
+    align-items: center;
     gap: 10px;
-    flex-wrap: wrap;
-    margin: 0;
-  }
-
-  .slot {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 6px;
-    background: var(--color-accent);
-    color: var(--color-on-accent);
-    font-family: var(--font-body);
-    font-weight: var(--weight-body-strong);
-    font-size: 13px;
-    letter-spacing: 0.01em;
-    padding: 8px 16px;
-    border-radius: var(--radius-full);
-    box-shadow: 0 1px 0 rgba(34,34,32,0.08);
-    white-space: nowrap;
-  }
-
-  .slot .cat {
     font-family: var(--font-heading);
-    font-weight: var(--weight-heading);
-    font-size: 13px;
-  }
-
-  .slot.dark {
-    background: var(--color-text);
-    color: var(--color-surface);
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :global(:root:not([data-theme='light'])) .slot.dark {
-      background: var(--color-border);
-      color: var(--color-text);
-    }
-  }
-  :global(:root[data-theme="dark"]) .slot.dark {
-    background: var(--color-border);
-    color: var(--color-text);
-  }
-
-  .slot .time {
-    color: inherit;
-    opacity: 0.85;
-    font-weight: var(--weight-body-strong);
-  }
-
-  .info-callout {
-    max-width: 900px;
-    margin: 40px auto 0;
-    background: var(--color-surface);
-    border: 1px dashed var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: 22px 26px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .info-callout .icon {
-    flex: 0 0 auto;
-    width: 34px;
-    height: 34px;
-    border-radius: var(--radius-full);
-    background: var(--color-accent);
-    color: var(--color-on-accent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--font-heading);
-    font-weight: var(--weight-display);
+    font-weight: 800;
     font-size: 18px;
+    margin: 0 0 14px;
   }
 
-  .info-callout p {
-    margin: 0;
+  .categorie-code {
+    flex: none;
+    padding: 3px 9px;
+    border-radius: var(--radius-full);
+    background-color: var(--color-accent);
+    /* Texte fixe sur l'accent : l'accent ne change pas entre les thèmes, un
+       texte qui suivrait le thème deviendrait illisible en sombre (DESIGN.md). */
+    color: #222220;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+  }
+
+  .creneaux {
+    display: grid;
+    gap: 8px;
+  }
+
+  .creneau {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 12px;
+    font-size: 15px;
+  }
+
+  .creneau-jour {
+    min-width: 5.5em;
+    font-weight: var(--weight-body-strong);
+  }
+
+  .creneau-heure {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .creneau-lieu {
+    color: var(--color-text-muted);
+  }
+
+  .creneau-groupe {
+    padding: 2px 8px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    color: var(--color-text-muted);
+  }
+
+  .avis-gymnases,
+  .rappel {
+    max-width: 860px;
+    margin: 0 auto 32px;
+    padding: 14px 18px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
     font-size: 14.5px;
     line-height: 1.55;
     color: var(--color-text-muted);
   }
 
-  .info-callout a {
+  .rappel {
+    margin-top: 8px;
+    margin-bottom: 0;
+  }
+
+  .avis-gymnases a,
+  .rappel a {
     color: var(--color-text);
     font-weight: var(--weight-body-strong);
     text-decoration: underline;
@@ -284,10 +358,6 @@ const contactUrl = baseUrl.endsWith('/') ? `${baseUrl}inscription#contact-form` 
 
   @media (max-width: 640px) {
     .page { padding: 48px 5vw 64px; }
-    .day-row { padding: 22px 20px 26px; }
-    .day-head { flex-direction: column; gap: 4px; }
-    .slot-row { gap: 8px; }
-    .slot { font-size: 12.5px; padding: 7px 13px; }
-    .info-callout { flex-direction: column; align-items: flex-start; text-align: left; }
+    .categorie { padding: 20px 18px 22px; }
   }
 </style>
