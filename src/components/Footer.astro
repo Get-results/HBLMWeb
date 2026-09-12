@@ -27,7 +27,13 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		</nav>
 	</div>
 
-	<p class="footer-legal">© 2026 Handball Lunel-Marsillargues</p>
+	{/* Les mentions légales doivent rester accessibles depuis chaque page (LCEN) :
+	    leur place est donc ici, dans le footer monté par BaseLayout, et non dans
+	    la navigation principale. */}
+	<p class="footer-legal">
+		<span>© 2026 Handball Lunel-Marsillargues</span>
+		<a href={`${base}/mentions-legales`}>Mentions légales</a>
+	</p>
 </footer>
 
 <style>
@@ -95,6 +101,19 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		color: var(--color-text-muted);
 		letter-spacing: var(--tracking-eyebrow);
 		text-transform: uppercase;
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2) var(--space-4);
+	}
+
+	.footer-legal a {
+		color: var(--color-text-muted);
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+
+	.footer-legal a:hover {
+		color: var(--color-text);
 	}
 
 	@media (min-width: 640px) {
