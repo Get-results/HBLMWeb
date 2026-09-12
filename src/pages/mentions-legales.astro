@@ -1,0 +1,298 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+/* Page obligatoire : la LCEN (art. 1-1, issu de la refonte par la loi SREN du
+   21 mai 2024) impose à tout éditeur d'un service de communication au public en
+   ligne de tenir ces informations à disposition du public. Le site collectant
+   par ailleurs des données via le formulaire de contact, on y adjoint
+   l'information RGPD (art. 13) plutôt que de créer une seconde page : un club
+   amateur maintiendra plus sûrement une page unique que deux.
+
+   Les valeurs que seul le bureau connaît restent des champs à compléter
+   explicites. Écrire un faux n° RNA ou un directeur de publication inventé
+   serait plus grave que l'absence de mention : ces informations engagent
+   juridiquement l'association. */
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+/* Le bloc RGPD décrit la collecte opérée par le formulaire de contact. Tant que
+   celui-ci n'a pas d'endpoint configuré, aucun formulaire n'est rendu sur le
+   site (voir ContactForm.astro) et donc aucune donnée n'est collectée : décrire
+   un traitement inexistant serait aussi faux que de l'omettre quand il existe.
+   On se cale donc sur la même variable, et la page reste juste toute seule. */
+const formulaireActif = Boolean(import.meta.env.PUBLIC_CONTACT_ENDPOINT);
+
+/* Adresse postale du siège — seul canal d'exercice des droits tant qu'aucune
+   adresse e-mail n'est publiée (décision du bureau du 12/09/2026). */
+const adresseSiege = 'Rue Tivoli, 34400 Lunel';
+const derniereMaj = '12 septembre 2026';
+
+/* L'adresse de GitHub, Inc. est reprise de la déclaration de confidentialité
+   officielle de GitHub (section « Contact Us ») — c'est l'hébergeur au sens de
+   la LCEN puisque le site est publié via GitHub Pages. */
+---
+
+<BaseLayout title="Mentions légales | HBLM">
+	<div class="container">
+		<header class="page-header">
+			<h1 class="title">Mentions légales</h1>
+			<p class="subtitle">
+				Informations sur l'éditeur, l'hébergeur et le traitement de vos données
+			</p>
+		</header>
+
+		<section class="content-section">
+			<div class="card">
+				<h2>Éditeur du site</h2>
+				<p>
+					Le présent site est édité par l'association <strong>Handball Lunel-Marsillargues</strong>,
+					association régie par la loi du 1<sup>er</sup> juillet 1901 et le décret du 16 août 1901.
+				</p>
+				{/* Ni téléphone ni e-mail : décision assumée du bureau le 12/09/2026, pour
+				    ne pas exposer la ligne personnelle d'un bénévole au démarchage. Le
+				    champ est donc omis plutôt que laissé vide. À revoir si le club se
+				    dote d'une ligne dédiée ou d'une adresse pérenne. */}
+				<dl class="identite">
+					<dt>Dénomination</dt>
+					<dd>Handball Lunel Marsillargues</dd>
+					<dt>Siège social</dt>
+					<dd>{adresseSiege}</dd>
+					<dt>Numéro RNA</dt>
+					<dd>W343007841</dd>
+					<dt>Numéro SIRET</dt>
+					<dd>447 747 866 000 39</dd>
+					<dt>Agrément / affiliation FFHandball</dt>
+					<dd>S-099-99</dd>
+				</dl>
+			</div>
+
+			<div class="card">
+				<h2>Directeur ou directrice de la publication</h2>
+				<p>
+					Le directeur ou la directrice de la publication est, sauf désignation
+					contraire par le bureau, le président ou la présidente de l'association.
+				</p>
+				<dl class="identite">
+					<dt>Nom et prénom</dt>
+					<dd>Blandine Rey</dd>
+					<dt>Qualité</dt>
+					<dd>Présidente de l'association</dd>
+				</dl>
+			</div>
+
+			<div class="card">
+				<h2>Hébergeur</h2>
+				<p>
+					Le site est hébergé par le service GitHub Pages, fourni par&nbsp;:
+				</p>
+				<ul class="list">
+					<li><strong>GitHub, Inc.</strong></li>
+					<li>88 Colin P. Kelly Jr. St., San Francisco, CA 94107, États-Unis</li>
+					<li>
+						Contact&nbsp;:
+						<a href="https://support.github.com/" rel="external noopener">support.github.com</a>
+					</li>
+				</ul>
+				<p class="placeholder">
+					GitHub, Inc. ne publie pas de numéro de téléphone d'assistance&nbsp;: le
+					support se fait exclusivement en ligne.
+				</p>
+			</div>
+
+			<div class="card">
+				<h2>Propriété intellectuelle</h2>
+				<p>
+					L'ensemble des contenus de ce site (textes, mise en page, logo,
+					photographies, documents téléchargeables) est la propriété de
+					l'association Handball Lunel-Marsillargues ou de leurs auteurs
+					respectifs, et est protégé par le code de la propriété intellectuelle.
+				</p>
+				<p>
+					Toute reproduction, représentation, adaptation ou diffusion, totale ou
+					partielle, sans autorisation écrite préalable, est interdite.
+				</p>
+				<p>
+					Les photographies représentant des personnes ne sont publiées qu'avec
+					l'autorisation des personnes concernées ou de leurs représentants
+					légaux. Pour demander le retrait d'une photographie vous représentant
+					ou représentant votre enfant, écrivez à l'adresse
+					postale du siège indiquée plus haut&nbsp;: la demande est traitée sans
+					avoir à être motivée.
+				</p>
+				{/* Crédits photographiques et auteur du logo : section facultative écartée
+				    par le bureau le 12/09/2026. Rien ne l'impose — à rétablir si le club
+				    veut créditer un photographe ou protéger explicitement son identité
+				    visuelle. */}
+			</div>
+
+			{formulaireActif ? (
+				<div class="card">
+					<h2>Données personnelles</h2>
+
+					<h3>Quelles données sont collectées</h3>
+					<p>
+						Le site ne dépose aucun cookie publicitaire et ne pratique aucun
+						profilage. Les seules données personnelles collectées le sont lorsque
+						vous utilisez volontairement le formulaire de contact&nbsp;: votre
+						<strong>nom</strong>, votre <strong>adresse e-mail</strong> et le contenu de
+						votre <strong>message</strong>.
+					</p>
+
+					<h3>Responsable du traitement</h3>
+					<p>
+						L'association Handball Lunel Marsillargues, dont le siège figure plus
+						haut sur cette page.
+					</p>
+
+					<h3>Finalité et base légale</h3>
+					<p>
+						Vos données servent uniquement à traiter votre demande et à y répondre.
+						Le traitement repose sur l'intérêt légitime de l'association à répondre
+						aux personnes qui la sollicitent (art. 6.1.f du RGPD)&nbsp;; aucun
+						consentement préalable n'est donc requis, et vos données ne sont ni
+						revendues ni utilisées à d'autres fins.
+					</p>
+
+					<h3>Destinataires et sous-traitant technique</h3>
+					<p>
+						Les messages sont consultés par les seuls membres du bureau concernés
+						par votre demande. Le site étant statique, l'acheminement du formulaire
+						passe par le prestataire technique <strong>Web3Forms</strong>, qui relaie
+						le message vers la boîte e-mail du club.
+					</p>
+
+					<h3>Durée de conservation</h3>
+					<p>
+						Les messages reçus sont conservés le temps nécessaire au traitement de
+						la demande, puis supprimés au plus tard <strong>douze mois</strong> après
+						le dernier échange, sauf si la demande donne lieu à une adhésion&nbsp;:
+						les données relèvent alors du dossier de licence.
+					</p>
+
+					<h3>Vos droits</h3>
+					<p>
+						Vous disposez d'un droit d'accès, de rectification, d'effacement, de
+						limitation et d'opposition sur les données vous concernant, ainsi que
+						d'un droit à la portabilité. Pour les exercer, écrivez par courrier au
+						siège de l'association&nbsp;: <strong>{adresseSiege}</strong>, en
+						précisant votre demande. Une réponse vous sera apportée dans un délai
+						d'un mois.
+					</p>
+					<p>
+						Si vous estimez, après nous avoir contactés, que vos droits ne sont pas
+						respectés, vous pouvez adresser une réclamation à la CNIL&nbsp;:
+						<a href="https://www.cnil.fr/fr/plaintes" rel="external noopener">cnil.fr/fr/plaintes</a>.
+					</p>
+				</div>
+			) : (
+				<div class="card">
+					<h2>Données personnelles</h2>
+					<p>
+						<strong>Ce site ne collecte aucune donnée personnelle.</strong> Il ne
+						dépose aucun cookie publicitaire, ne pratique aucun profilage, et ne
+						comporte à ce jour aucun formulaire de saisie. Aucune information vous
+						concernant n'est donc enregistrée lorsque vous le consultez.
+					</p>
+					<p>
+						Un formulaire de contact sera mis en service prochainement&nbsp;: cette
+						page sera alors complétée des informations correspondantes (finalité,
+						durée de conservation, exercice de vos droits) avant toute collecte.
+					</p>
+					<p>
+						Pour toute question relative à vos données, écrivez au siège de
+						l'association&nbsp;: <strong>{adresseSiege}</strong>. Vous pouvez
+						également adresser une réclamation à la CNIL&nbsp;:
+						<a href="https://www.cnil.fr/fr/plaintes" rel="external noopener">cnil.fr/fr/plaintes</a>.
+					</p>
+				</div>
+			)}
+
+			<div class="card">
+				<h2>Mesure d'audience</h2>
+				<p>
+					Lorsqu'elle est activée, la mesure d'audience du site repose sur une
+					solution sans cookie et sans identification individuelle&nbsp;: aucune
+					donnée personnelle n'est collectée à ce titre et aucun consentement
+					n'est donc requis.
+				</p>
+			</div>
+
+			<div class="card">
+				<h2>Liens vers d'autres sites</h2>
+				<p>
+					Ce site peut renvoyer vers des sites tiers (fédération, comité,
+					partenaires, réseaux sociaux). L'association n'exerce aucun contrôle
+					sur leur contenu et décline toute responsabilité à leur égard.
+				</p>
+			</div>
+
+			<div class="card accent-card">
+				<h2>Une question sur cette page&nbsp;?</h2>
+				<p>
+					Pour toute question relative à ces mentions légales ou au traitement de
+					vos données, {formulaireActif
+						? 'utilisez le formulaire de contact.'
+						: "écrivez-nous au siège de l'association."}
+				</p>
+				<p>
+					{formulaireActif
+						? <a class="button" href={`${base}/inscription#contact-form`}>Nous contacter</a>
+						: <strong>{adresseSiege}</strong>}
+				</p>
+				<p class="maj">Dernière mise à jour&nbsp;: {derniereMaj}</p>
+			</div>
+		</section>
+	</div>
+</BaseLayout>
+
+<style>
+	/* Les sous-titres de la section « Données personnelles » : le contenu est
+	   long, la hiérarchie h3 évite un mur de texte indifférencié. */
+	.card h3 {
+		font-family: var(--font-heading);
+		font-weight: var(--weight-heading);
+		font-size: 18px;
+		margin: var(--space-6) 0 var(--space-2);
+	}
+
+	.card h3:first-of-type {
+		margin-top: var(--space-4);
+	}
+
+	/* Les informations d'identification sont des paires étiquette/valeur : une
+	   liste de définitions les restitue correctement aux lecteurs d'écran, là où
+	   une suite de <p><strong> ne porte aucune relation. */
+	.identite {
+		margin: var(--space-4) 0 0;
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: var(--space-1) 0;
+	}
+
+	.identite dt {
+		font-weight: var(--weight-body-strong);
+		font-size: 0.875rem;
+		color: var(--color-text-muted);
+	}
+
+	.identite dd {
+		margin: 0 0 var(--space-3);
+	}
+
+	@media (min-width: 40rem) {
+		.identite {
+			grid-template-columns: max-content 1fr;
+			column-gap: var(--space-6);
+		}
+
+		.identite dd {
+			margin-bottom: var(--space-2);
+		}
+	}
+
+	.maj {
+		margin-top: var(--space-4);
+		font-size: 0.8125rem;
+		color: var(--color-text-muted);
+	}
+</style>

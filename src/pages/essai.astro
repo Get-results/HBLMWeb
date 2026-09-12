@@ -5,6 +5,7 @@
    la suite. À remplacer intégralement par le parcours de la Story 2.3. */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ContactForm from '../components/ContactForm.astro';
+import CategoriesInfos from '../components/CategoriesInfos.astro';
 ---
 
 <BaseLayout title="Faire un essai | HBLM">
@@ -20,6 +21,11 @@ import ContactForm from '../components/ContactForm.astro';
         <p>Le HBLM propose des séances d'essai gratuites avant toute inscription. Vous venez, vous jouez, et vous décidez ensuite.</p>
         <p>L'outil qui vous orientera automatiquement vers la bonne catégorie selon votre âge arrive prochainement. En attendant, écrivez-nous : nous vous indiquons le créneau qui vous correspond.</p>
       </div>
+
+      {/* En attendant le parcours de la Story 2.3, on montre déjà les catégories
+          confirmées (créneaux + dispo essai) issues de la collection `categories`.
+          Même composant, même source que la page Inscription. */}
+      <CategoriesInfos mode="creneaux" />
 
       <ContactForm />
     </section>

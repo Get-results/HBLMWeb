@@ -38,3 +38,10 @@ pnpm-debug.log*
 
 # Verrou local du planificateur Claude Code
 /.claude/scheduled_tasks.lock
+
+# Worktrees créés par les agents (dépôts git imbriqués, jamais à versionner)
+.claude/worktrees/
+
+# Gabarit de travail rempli avec le bureau : contient des données personnelles
+# (noms, téléphone, adresse). Ne doit jamais partir dans un commit.
+MENTIONS-LEGALES-A-REMPLIR.md
