@@ -15,8 +15,8 @@ const bureau = [
 ];
 
 /* Les autres membres du conseil d'administration n'ont pas de fonction
-   nominative : sept cartes portant toutes « Membre du CA » seraient du bruit.
-   Une liste simple suffit et reste lisible. */
+   nominative, mais ils reçoivent la même carte que le bureau : ce sont des
+   bénévoles au même titre, et les distinguer visuellement les dévalorisait. */
 const conseilAdministration = [
 	'Violaine Lagarrigue',
 	'Clément Pollano',
@@ -59,7 +59,7 @@ const saison = '2026-2027';
 			</p>
 
 			<h3 class="sous-titre">Le bureau</h3>
-			<ul class="bureau-list">
+			<ul class="membres">
 				{bureau.map((membre) => (
 					<li>
 						<span class="role">{membre.role}</span>
@@ -69,9 +69,12 @@ const saison = '2026-2027';
 			</ul>
 
 			<h3 class="sous-titre">Les autres membres du conseil d'administration</h3>
-			<ul class="ca-list">
+			<ul class="membres">
 				{conseilAdministration.map((nom) => (
-					<li>{nom}</li>
+					<li>
+						<span class="role">Membre du CA</span>
+						<span class="name">{nom}</span>
+					</li>
 				))}
 			</ul>
 		</section>
@@ -186,35 +189,23 @@ const saison = '2026-2027';
 		margin: var(--space-6) 0 var(--space-4);
 	}
 
-	/* Les membres sans fonction nominative : une liste de noms, pas des cartes.
-	   Sept cartes identiques portant « Membre du CA » n'apporteraient rien. */
-	.ca-list {
+	/* Grille et non flex : en flex, une dernière carte esseulée sur sa ligne
+	   s'étire sur toute la largeur (flex: 1) et casse l'alignement. La grille
+	   garde des cartes de largeur identique quel que soit le nombre d'éléments.
+
+	   Le bureau et les autres membres du CA partagent exactement la même carte :
+	   ce sont des bénévoles de même rang, les distinguer visuellement revenait à
+	   hiérarchiser. Seuls les sous-titres séparent les deux groupes. */
+	.membres {
 		list-style: none;
 		padding: 0;
 		margin: 0;
-		display: flex;
-		flex-wrap: wrap;
-		gap: var(--space-2) var(--space-3);
-	}
-
-	.ca-list li {
-		padding: var(--space-2) var(--space-4);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-full);
-		background-color: var(--color-surface);
-		font-size: 0.9375rem;
-	}
-
-	.bureau-list {
-		list-style: none;
-		padding: 0;
-		margin: 0;
-		display: flex;
-		flex-direction: column;
+		display: grid;
+		grid-template-columns: 1fr;
 		gap: var(--space-4);
 	}
 
-	.bureau-list li {
+	.membres li {
 		background-color: var(--color-surface);
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-md);
@@ -224,7 +215,7 @@ const saison = '2026-2027';
 		gap: var(--space-1);
 	}
 
-	.bureau-list .role {
+	.membres .role {
 		font-size: var(--size-eyebrow);
 		text-transform: uppercase;
 		letter-spacing: var(--tracking-eyebrow);
@@ -232,7 +223,7 @@ const saison = '2026-2027';
 		color: var(--color-text-muted);
 	}
 
-	.bureau-list .name {
+	.membres .name {
 		font-family: var(--font-heading);
 		font-weight: var(--weight-heading);
 		font-size: 1.125rem;
@@ -292,14 +283,9 @@ const saison = '2026-2027';
 			padding: var(--space-8) var(--space-6);
 		}
 		
-		.bureau-list {
-			flex-direction: row;
-			flex-wrap: wrap;
-		}
-		
-		.bureau-list li {
-			flex: 1;
-			min-width: 200px;
+		/* Deux colonnes : le bureau tient en deux lignes de deux cartes. */
+		.membres {
+			grid-template-columns: repeat(2, 1fr);
 		}
 
 		.gyms-grid {
