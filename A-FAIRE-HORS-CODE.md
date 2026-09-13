@@ -79,11 +79,12 @@ inventé ici finirait publié comme une information officielle.
   catégorie suffit (`trialAvailable` dans `src/content/categories/*.yaml`).
 - [ ] **Référent par catégorie** — nom + mail ou téléphone publiable, avec l'accord de la
   personne (site et dépôt publics). Sans référent, le contact générique s'affiche.
-- [ ] **Le Handfit — public visé** — tarif (150 €) et créneau (samedi 11h30-12h30, gymnase
-  Arnassan, transmis le 13/09/2026) sont connus. **Il manque une seule chose** : à partir de
-  quel âge, et mixte ou non. Sans borne d'année de naissance, la fiche ne peut pas être
-  confirmée ni proposée par « Trouver ma catégorie ».
-  → Une réponse du type « adultes, à partir de 16 ans, mixte » suffit à la publier.
+- [x] **Le Handfit** — tarif 150 €, samedi 11h30-12h30 au gymnase Arnassan, réservé aux
+  adultes (même borne que les séniors loisirs). Publié, et proposé comme troisième choix
+  dans « Trouver ma catégorie » à côté de Compétition et Loisir.
+- [ ] **Genre du Handfit** — `mixte` est déduit par analogie avec les séniors loisirs, le
+  bureau ne l'a pas précisé. À confirmer, ou à corriger si le Handfit s'adresse à un public
+  particulier (`gender` dans `src/content/categories/handfit.yaml`).
 - [x] **Les garçons nés en 2009, 2010 et 2011** — le bureau a confirmé le 13/09/2026 qu'il
   **n'existe pas d'équipe -18 masculins** cette saison. Le comportement actuel est donc le
   bon : « Trouver ma catégorie » affiche le contact du club plutôt qu'une catégorie

@@ -51,9 +51,12 @@ const categories = defineCollection({
 			/* Critères de résolution du profil saisi dans « Trouver ma catégorie »
 			   (AD-7, props `{ birthYear, gender }`). */
 			gender: z.enum(['F', 'M', 'mixte']),
-			/* Distinction compétition/loisir, posée dans l'île pour les profils
-			   adultes. `null` = sans objet (catégories de jeunes). */
-			practice: z.enum(['competition', 'loisir']).nullable().default(null),
+			/* Type de pratique, posé dans l'île aux seuls profils adultes.
+			   `null` = sans objet (catégories de jeunes).
+			   `handfit` est une troisième voie et non un sous-cas du loisir : le club
+			   le tarife séparément et lui donne son propre créneau. Le fondre dans
+			   `loisir` aurait obligé à le distinguer autrement ensuite. */
+			practice: z.enum(['competition', 'loisir', 'handfit']).nullable().default(null),
 
 			/* Bornes d'années de naissance, incluses. `birthYearFrom` = la plus
 			   ancienne acceptée, `birthYearTo` = la plus récente. `null` = pas de

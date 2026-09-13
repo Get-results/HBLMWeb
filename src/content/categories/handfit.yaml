@@ -4,21 +4,26 @@
 # Créneau : transmis par le bureau le 13/09/2026 — il n'apparaît sur aucun des
 # quatre visuels de planning, d'où sa saisie séparée.
 #
-# dataStatus: a-confirmer -> cette fiche n'est PAS publiée. Il manque le public
-# visé : sans borne d'année de naissance, « Trouver ma catégorie » ne peut pas
-# la proposer, et le schéma refuse de la confirmer.
-#   → Question au bureau : à partir de quel âge, et mixte ou non ?
-# Voir A-FAIRE-HORS-CODE.md.
+# Public : adultes, même borne que les séniors loisirs (bureau, 13/09/2026).
+#
+# `practice: handfit` est une troisième voie à côté de `competition` et
+# `loisir`, et non un sous-cas du loisir : le club le tarife séparément et lui
+# donne son propre créneau. Il apparaît comme un troisième choix dans
+# « Trouver ma catégorie », posé aux seuls profils adultes.
+#
+# À CONFIRMER : le genre `mixte` est déduit par analogie avec les séniors
+# loisirs, le bureau ne l'a pas précisé. À corriger si le Handfit s'adresse à
+# un public particulier.
 
 label: "Handfit"
 order: 90
-dataStatus: a-confirmer
+dataStatus: confirme
 
 gender: mixte
-practice: loisir
+practice: handfit
 
 birthYearFrom: null
-birthYearTo: null
+birthYearTo: 2008
 
 season: "2026-2027"
 

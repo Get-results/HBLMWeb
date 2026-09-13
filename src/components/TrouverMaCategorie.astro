@@ -34,7 +34,7 @@ const anneeMax = new Date().getFullYear();
 const anneeMin = 1930;
 
 const genres: Genre[] = ['F', 'M'];
-const pratiques: (Pratique | null)[] = [null, 'competition', 'loisir'];
+const pratiques: (Pratique | null)[] = [null, 'competition', 'loisir', 'handfit'];
 
 /* Table précalculée. Seules les combinaisons qui résolvent y figurent : une
    absence signifie « aucune catégorie », que le client traduit en contact
@@ -126,6 +126,9 @@ const fiches = Object.fromEntries(
 				</button>
 				<button type="button" role="radio" aria-checked="false" data-valeur="loisir" tabindex="-1">
 					<span class="marque" aria-hidden="true"></span>Loisir
+				</button>
+				<button type="button" role="radio" aria-checked="false" data-valeur="handfit" tabindex="-1">
+					<span class="marque" aria-hidden="true"></span>Handfit
 				</button>
 			</div>
 		</div>
