@@ -25,6 +25,10 @@ birthYearTo: 2008
 
 season: "2026-2027"
 
+# Poules FFHandball de cette catégorie (API des matchs, AD-4).
+poolIds:
+  - "193636"
+
 trainingSlots:
   - day: mercredi
     startTime: "20:30"

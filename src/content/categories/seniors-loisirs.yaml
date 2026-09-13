@@ -25,6 +25,10 @@ birthYearTo: 2008
 
 season: "2026-2027"
 
+# Aucune poule : cette catégorie ne joue pas en championnat.
+# Vide est un état normal, pas une donnée manquante.
+poolIds: []
+
 trainingSlots:
   - day: lundi
     startTime: "20:30"
