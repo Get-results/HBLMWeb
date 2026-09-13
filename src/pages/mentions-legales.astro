@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { contactClub } from '../lib/contact';
 
 /* Page obligatoire : la LCEN (art. 1-1, issu de la refonte par la loi SREN du
    21 mai 2024) impose à tout éditeur d'un service de communication au public en
@@ -22,9 +23,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
    On se cale donc sur la même variable, et la page reste juste toute seule. */
 const formulaireActif = Boolean(import.meta.env.PUBLIC_CONTACT_ENDPOINT);
 
-/* Adresse postale du siège — seul canal d'exercice des droits tant qu'aucune
-   adresse e-mail n'est publiée (décision du bureau du 12/09/2026). */
-const adresseSiege = 'Rue Tivoli, 34400 Lunel';
+/* Adresse du siège lue depuis la source unique du contact (Story 2.2, AD-8) :
+   la même valeur alimente GenericContact et le parcours « Trouver ma catégorie ».
+   La coder en dur ici aurait créé une seconde vérité, vouée à diverger le jour
+   où le club déménage. */
+const adresseSiege = contactClub.adressePostale;
 const derniereMaj = '12 septembre 2026';
 
 /* L'adresse de GitHub, Inc. est reprise de la déclaration de confidentialité

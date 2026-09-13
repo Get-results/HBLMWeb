@@ -85,6 +85,16 @@ inventé ici finirait publié comme une information officielle.
   - la **saison de référence** (ex. 2026-2027)
   → Procédure : remplir le YAML, puis passer `dataStatus` à `confirme`. Le build refuse une
   fiche `confirme` incomplète, donc une erreur de saisie bloque avant publication.
+  → **Les fiches contiennent désormais des valeurs provisoires** pour rendre le parcours
+  « Trouver ma catégorie » testable. Elles ne sont visibles qu'en `npm run dev`, jamais sur
+  le site publié. Chaque fichier dit en en-tête ce qui est réel et ce qui ne l'est pas :
+  - `trainingSlots` — **réels**, repris des visuels du club
+  - `birthYearFrom` / `birthYearTo` — **provisoires**, tranches d'âge usuelles à confirmer
+  - `licenseFee` — **provisoire**, valeur d'exemple
+  - `trialAvailable` — **provisoire** (`true` partout sauf `seniors-loisirs`)
+  - `contact` — non renseigné, le parcours affiche alors le contact générique
+  → Les 12 fiches suivent la structure réelle du planning (catégories scindées
+  féminines/masculins). Si le bureau confirme une autre répartition, renommer les fichiers.
 - [ ] **Stages** : dates, horaires, tarifs — `src/pages/stages.astro:24-26`.
 - [ ] **Confirmer le chiffre « 351 licenciés en 2025 »** affiché sur la page Le club
   (`src/pages/le-club.astro:20-22`). Il vient du brief projet, relevé sur l'ancien site

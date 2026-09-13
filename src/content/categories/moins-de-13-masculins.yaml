@@ -17,24 +17,28 @@
 # POUR PUBLIER : remplacer les valeurs provisoires par les vraies, puis passer
 # dataStatus à `confirme`. Le build refuse une fiche confirmée incomplète.
 
-label: "-7 ans et baby-hand"
-order: 10
+label: "-13 ans garçons"
+order: 41
 dataStatus: a-confirmer
 
-gender: mixte
+gender: M
 practice: null
 
-birthYearFrom: 2020
-birthYearTo: 2021
+birthYearFrom: 2014
+birthYearTo: 2015
 
 season: "2026-2027"
 
 trainingSlots:
-  - day: samedi
-    startTime: "09:00"
-    endTime: "10:00"
-    venue: "Gymnase Arnassan (Lunel)"
+  - day: mercredi
+    startTime: "17:30"
+    endTime: "19:00"
+    venue: "Gymnase Spinosi (Marsillargues)"
+  - day: vendredi
+    startTime: "18:30"
+    endTime: "20:00"
+    venue: "Gymnase Spinosi (Marsillargues)"
 
-licenseFee: 110
+licenseFee: 140
 trialAvailable: true
 contact: null
