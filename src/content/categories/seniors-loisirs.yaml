@@ -11,30 +11,33 @@
 #   • birthYearFrom / birthYearTo — PROVISOIRES : tranches d'âge usuelles, à
 #     faire confirmer par le bureau. Ce sont elles qui résolvent le profil.
 #   • licenseFee — PROVISOIRE, valeur d'exemple. À remplacer.
-#   • trialAvailable — PROVISOIRE (true). À confirmer catégorie par catégorie.
-#   • contact — non renseigné : le parcours affiche alors le contact générique.
+#   • trialAvailable / contact — non renseignés, en attente du bureau.
 #
 # POUR PUBLIER : remplacer les valeurs provisoires par les vraies, puis passer
 # dataStatus à `confirme`. Le build refuse une fiche confirmée incomplète.
 
-label: "-7 ans et baby-hand"
-order: 10
+label: "Séniors loisirs"
+order: 80
 dataStatus: a-confirmer
 
 gender: mixte
-practice: null
+practice: loisir
 
-birthYearFrom: 2020
-birthYearTo: 2021
+birthYearFrom: null
+birthYearTo: 2008
 
 season: "2026-2027"
 
 trainingSlots:
-  - day: samedi
-    startTime: "09:00"
-    endTime: "10:00"
+  - day: lundi
+    startTime: "20:30"
+    endTime: "22:30"
+    venue: "Gymnase Arnassan (Lunel)"
+  - day: mercredi
+    startTime: "20:30"
+    endTime: "22:30"
     venue: "Gymnase Arnassan (Lunel)"
 
-licenseFee: 110
-trialAvailable: true
+licenseFee: 150
+trialAvailable: null
 contact: null

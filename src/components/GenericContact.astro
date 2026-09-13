@@ -1,0 +1,77 @@
+---
+/* Contact de repli réutilisable — Story 2.2, AD-8.
+
+   Un seul composant, une seule source (`src/lib/contact.ts`). Il s'affiche
+   partout où le site ne peut pas donner mieux : catégorie sans référent, profil
+   non résolu, disponibilité d'essai inconnue. Le principe tenu ici est celui de
+   tout le projet — devant une information manquante, on dit à qui s'adresser
+   plutôt que d'afficher une valeur fausse. */
+import { contactClub, formulaireDisponible } from '../lib/contact';
+
+interface Props {
+	/* Phrase d'introduction adaptée au contexte d'appel. Le contact lui-même ne
+	   change jamais : c'est tout l'intérêt d'un composant unique. */
+	intro?: string;
+	/* Sur fond déjà encadré (une fiche de résultat), la bordure ferait un cadre
+	   dans un cadre. */
+	discret?: boolean;
+}
+
+const {
+	intro = "Écrivez-nous, nous vous répondrons directement.",
+	discret = false,
+} = Astro.props;
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<div class:list={['contact-generique', { discret }]}>
+	<p class="intro">{intro}</p>
+
+	{formulaireDisponible ? (
+		<p><a class="lien" href={`${base}/inscription#contact-form`}>Utiliser le formulaire de contact</a></p>
+	) : contactClub.email ? (
+		<p><a class="lien" href={`mailto:${contactClub.email}`}>{contactClub.email}</a></p>
+	) : (
+		<p class="adresse">
+			{contactClub.nom}<br />
+			{contactClub.adressePostale}
+		</p>
+	)}
+</div>
+
+<style>
+	.contact-generique {
+		padding: var(--space-4) var(--space-5);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		background-color: var(--color-input-bg);
+	}
+
+	.contact-generique.discret {
+		padding: 0;
+		border: 0;
+		background: none;
+	}
+
+	.intro {
+		margin: 0 0 var(--space-2);
+	}
+
+	.adresse {
+		margin: 0;
+		color: var(--color-text-muted);
+		line-height: 1.45;
+	}
+
+	.lien {
+		font-weight: var(--weight-body-strong);
+		color: var(--color-text);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+
+	p:last-child {
+		margin-bottom: 0;
+	}
+</style>

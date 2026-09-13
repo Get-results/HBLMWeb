@@ -1,0 +1,415 @@
+---
+/* « Trouver ma catégorie » — Story 2.3, AD-7.
+
+   Île interactive : le seul endroit du site qui exécute du JavaScript côté
+   client. Le reste des pages reste statique (Static Islands).
+
+   UNE SEULE RÉSOLUTION. La logique vit dans `src/lib/categories.ts` et tourne
+   AU BUILD : on précalcule ici la table profil → catégorie, et le navigateur ne
+   fait qu'une consultation. Réécrire la résolution en JS aurait créé un second
+   calcul, voué à diverger du premier — c'est exactement ce que l'architecture
+   interdit. Effet de bord utile : la table ne contient que les profils qui
+   résolvent, donc elle reste petite.
+
+   Devant l'inconnu, le contact générique. Profil non résolu, disponibilité
+   d'essai non renseignée, catégorie sans référent : dans les trois cas on
+   affiche GenericContact (Story 2.2) au lieu d'un résultat faux (FR-3). */
+import GenericContact from './GenericContact.astro';
+import {
+	getCategoriesResolvables,
+	resoudreCategorie,
+	estProfilAdulte,
+	formaterCreneau,
+	formaterTarif,
+	apercuActif,
+	type Genre,
+	type Pratique,
+} from '../lib/categories';
+
+const categories = await getCategoriesResolvables();
+
+/* Bornes de saisie : 1930 couvre largement les vétérans, l'année courante évite
+   qu'on propose une année future. */
+const anneeMax = new Date().getFullYear();
+const anneeMin = 1930;
+
+const genres: Genre[] = ['F', 'M'];
+const pratiques: (Pratique | null)[] = [null, 'competition', 'loisir'];
+
+/* Table précalculée. Seules les combinaisons qui résolvent y figurent : une
+   absence signifie « aucune catégorie », que le client traduit en contact
+   générique. */
+const table: Record<string, string> = {};
+const anneesAdultes: number[] = [];
+
+for (let annee = anneeMin; annee <= anneeMax; annee++) {
+	if (estProfilAdulte(categories, annee)) anneesAdultes.push(annee);
+	for (const genre of genres) {
+		for (const pratique of pratiques) {
+			const trouvee = resoudreCategorie(categories, {
+				birthYear: annee,
+				gender: genre,
+				practice: pratique,
+			});
+			if (trouvee) table[`${annee}|${genre}|${pratique ?? ''}`] = trouvee.id;
+		}
+	}
+}
+
+/* Fiches sérialisées pour l'affichage côté client. On ne sérialise que ce qui
+   est affiché — pas la fiche entière, qui embarquerait des champs internes. */
+const fiches = Object.fromEntries(
+	categories.map((categorie) => [
+		categorie.id,
+		{
+			label: categorie.data.label,
+			creneaux: categorie.data.trainingSlots.map(formaterCreneau),
+			tarif: categorie.data.licenseFee !== null ? formaterTarif(categorie.data.licenseFee) : null,
+			essai: categorie.data.trialAvailable,
+			contact: categorie.data.contact,
+		},
+	]),
+);
+---
+
+<section class="finder" aria-labelledby="finder-titre">
+	<h2 id="finder-titre">Trouver ma catégorie</h2>
+
+	{apercuActif && (
+		<p class="avertissement" role="status">
+			<strong>Aperçu de développement.</strong> Les tranches d'âge et les tarifs
+			affichés ici sont des valeurs provisoires, en attente de validation par le
+			bureau. Ce bloc n'apparaît pas sur le site publié.
+		</p>
+	)}
+
+	<form id="finder-form" novalidate>
+		<div class="champ">
+			<label for="annee">Année de naissance</label>
+			<input
+				type="number"
+				id="annee"
+				name="annee"
+				inputmode="numeric"
+				min={anneeMin}
+				max={anneeMax}
+				placeholder="2014"
+				required
+				aria-describedby="annee-aide"
+			/>
+			<p id="annee-aide" class="aide">Quatre chiffres, par exemple 2014.</p>
+		</div>
+
+		<div class="champ">
+			<span id="genre-label" class="etiquette">Genre</span>
+			{/* role="radiogroup" + role="radio" plutôt que des <input type="radio"> :
+			    les boutons portent un état visuel riche que le contrôle natif ne sait
+			    pas styler de façon fiable. L'équivalence ARIA est donc obligatoire,
+			    navigation aux flèches comprise. */}
+			<div class="options" role="radiogroup" aria-labelledby="genre-label" data-groupe="genre">
+				<button type="button" role="radio" aria-checked="false" data-valeur="F" tabindex="0">
+					<span class="marque" aria-hidden="true"></span>Féminin
+				</button>
+				<button type="button" role="radio" aria-checked="false" data-valeur="M" tabindex="-1">
+					<span class="marque" aria-hidden="true"></span>Masculin
+				</button>
+			</div>
+		</div>
+
+		{/* Révélé seulement pour un profil adulte : poser la question à un enfant
+		    de 9 ans n'aurait pas de sens. */}
+		<div class="champ" id="champ-pratique" hidden>
+			<span id="pratique-label" class="etiquette">Type de pratique</span>
+			<div class="options" role="radiogroup" aria-labelledby="pratique-label" data-groupe="pratique">
+				<button type="button" role="radio" aria-checked="false" data-valeur="competition" tabindex="0">
+					<span class="marque" aria-hidden="true"></span>Compétition
+				</button>
+				<button type="button" role="radio" aria-checked="false" data-valeur="loisir" tabindex="-1">
+					<span class="marque" aria-hidden="true"></span>Loisir
+				</button>
+			</div>
+		</div>
+
+		<button type="submit" class="button">Voir ma catégorie</button>
+	</form>
+
+	{/* aria-live : le résultat apparaît sans changement de page, un lecteur
+	    d'écran ne le remarquerait pas autrement. */}
+	<div id="finder-resultat" class="resultat" role="region" aria-live="polite" aria-labelledby="finder-titre" hidden></div>
+
+	{/* Rendu une fois puis simplement montré ou caché : dupliquer son balisage
+	    dans le script aurait créé une seconde version du contact à maintenir. */}
+	<div id="finder-repli" class="resultat" hidden>
+		<p class="repli-titre">Nous ne pouvons pas conclure pour ce profil</p>
+		<GenericContact
+			intro="Dites-nous l'âge et le niveau, nous vous indiquons le créneau qui correspond."
+		/>
+	</div>
+</section>
+
+<script is:inline define:vars={{ table, fiches, anneesAdultes, anneeMin, anneeMax }}>
+	(() => {
+		const form = document.getElementById('finder-form');
+		if (!form) return;
+
+		const champPratique = document.getElementById('champ-pratique');
+		const zoneResultat = document.getElementById('finder-resultat');
+		const zoneRepli = document.getElementById('finder-repli');
+		const inputAnnee = document.getElementById('annee');
+		const adultes = new Set(anneesAdultes);
+		const choix = { genre: null, pratique: null };
+
+		/* Groupe de boutons radio : sélection, aria-checked, et tabindex mobile
+		   (« roving tabindex ») pour qu'un seul bouton du groupe soit tabulable. */
+		function brancherGroupe(groupe) {
+			const conteneur = document.querySelector(`[data-groupe="${groupe}"]`);
+			if (!conteneur) return;
+			const boutons = [...conteneur.querySelectorAll('[role="radio"]')];
+
+			const selectionner = (bouton) => {
+				effacerResultat();
+				boutons.forEach((b) => {
+					const actif = b === bouton;
+					b.setAttribute('aria-checked', String(actif));
+					b.tabIndex = actif ? 0 : -1;
+				});
+				choix[groupe] = bouton.dataset.valeur;
+			};
+
+			boutons.forEach((bouton, index) => {
+				bouton.addEventListener('click', () => selectionner(bouton));
+				bouton.addEventListener('keydown', (evenement) => {
+					const pas = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[evenement.key];
+					if (!pas) return;
+					evenement.preventDefault();
+					const suivant = boutons[(index + pas + boutons.length) % boutons.length];
+					selectionner(suivant);
+					suivant.focus();
+				});
+			});
+		}
+
+		brancherGroupe('genre');
+		brancherGroupe('pratique');
+
+		/* La question compétition/loisir n'apparaît que pour un profil adulte.
+		   Si elle disparaît, on oublie la réponse : la garder fausserait une
+		   résolution ultérieure pour un enfant. */
+		inputAnnee?.addEventListener('input', () => {
+			effacerResultat();
+			const annee = Number(inputAnnee.value);
+			const adulte = adultes.has(annee);
+			champPratique.hidden = !adulte;
+			if (!adulte) {
+				choix.pratique = null;
+				champPratique.querySelectorAll('[role="radio"]').forEach((b, i) => {
+					b.setAttribute('aria-checked', 'false');
+					b.tabIndex = i === 0 ? 0 : -1;
+				});
+			}
+		});
+
+		const echapper = (valeur) =>
+			String(valeur).replace(/[&<>"']/g, (c) =>
+				({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
+			);
+
+		/* Toute modification du profil invalide le résultat affiché. Sans ça, un
+		   visiteur qui corrige son année voit la réponse de la saisie précédente
+		   et peut la prendre pour la sienne — le pire cas possible ici. */
+		function effacerResultat() {
+			zoneResultat.hidden = true;
+			zoneResultat.innerHTML = '';
+			zoneRepli.hidden = true;
+		}
+
+		function afficherRepli(message) {
+			zoneResultat.hidden = true;
+			zoneRepli.hidden = false;
+			const titre = zoneRepli.querySelector('.repli-titre');
+			if (titre) titre.textContent = message ?? 'Nous ne pouvons pas conclure pour ce profil';
+		}
+
+		form.addEventListener('submit', (evenement) => {
+			evenement.preventDefault();
+			const annee = Number(inputAnnee.value);
+
+			if (!Number.isInteger(annee) || annee < anneeMin || annee > anneeMax) {
+				afficherRepli(`Indiquez une année de naissance entre ${anneeMin} et ${anneeMax}.`);
+				return;
+			}
+			if (!choix.genre) {
+				afficherRepli('Indiquez un genre pour que nous puissions vous orienter.');
+				return;
+			}
+
+			const identifiant = table[`${annee}|${choix.genre}|${choix.pratique ?? ''}`];
+			const fiche = identifiant ? fiches[identifiant] : null;
+
+			/* Disponibilité d'essai inconnue : on ne devine pas. Le contact générique
+			   vaut mieux qu'un « essai possible » qui se révélerait faux sur place. */
+			if (!fiche || fiche.essai === null) {
+				afficherRepli('Nous ne pouvons pas conclure pour ce profil');
+				return;
+			}
+
+			const lignes = [`<h3>${echapper(fiche.label)}</h3>`];
+			if (fiche.creneaux.length) {
+				lignes.push('<p class="sous">Créneaux d\'entraînement</p><ul class="creneaux">');
+				fiche.creneaux.forEach((c) => lignes.push(`<li>${echapper(c)}</li>`));
+				lignes.push('</ul>');
+			}
+			if (fiche.tarif) lignes.push(`<p><strong>Licence :</strong> ${echapper(fiche.tarif)}</p>`);
+			lignes.push(
+				`<p><strong>Séance d'essai :</strong> ${fiche.essai ? 'possible' : 'non proposée actuellement'}</p>`,
+			);
+			if (fiche.contact?.name) {
+				const coord = fiche.contact.email ?? fiche.contact.phone;
+				lignes.push(
+					`<p><strong>Référent :</strong> ${echapper(fiche.contact.name)}${coord ? ` — ${echapper(coord)}` : ''}</p>`,
+				);
+			}
+
+			zoneRepli.hidden = true;
+			zoneResultat.innerHTML = lignes.join('');
+			zoneResultat.hidden = false;
+
+			/* Le contact générique reste proposé même en cas de succès : la fiche
+			   répond au « quand », pas forcément au « et maintenant ». */
+			if (!fiche.contact?.name) {
+				zoneResultat.appendChild(zoneRepli.querySelector('.contact-generique').cloneNode(true));
+			}
+		});
+	})();
+</script>
+
+<style>
+	.finder {
+		margin-top: var(--space-6);
+		padding: var(--space-6);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		background-color: var(--color-surface);
+	}
+
+	.finder h2 {
+		margin: 0 0 var(--space-4);
+		font-family: var(--font-heading);
+		font-size: 1.25rem;
+	}
+
+	.avertissement {
+		margin: 0 0 var(--space-4);
+		padding: var(--space-3) var(--space-4);
+		border: 1px dashed var(--color-border);
+		border-radius: var(--radius-sm);
+		font-size: 0.875rem;
+		color: var(--color-text-muted);
+	}
+
+	.champ {
+		margin-bottom: var(--space-5);
+		text-align: left;
+	}
+
+	.champ label,
+	.etiquette {
+		display: block;
+		margin-bottom: var(--space-2);
+		font-weight: var(--weight-body-strong);
+		font-size: 0.875rem;
+	}
+
+	.champ input {
+		width: 100%;
+		max-width: 12rem;
+		padding: var(--space-3);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-sm);
+		font-family: var(--font-body);
+		font-size: 1rem;
+		background-color: var(--color-input-bg);
+		color: var(--color-text);
+	}
+
+	.aide {
+		margin: var(--space-2) 0 0;
+		font-size: 0.8125rem;
+		color: var(--color-text-muted);
+	}
+
+	.options {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-3);
+	}
+
+	.options [role='radio'] {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		min-height: 44px;
+		padding: var(--space-2) var(--space-4);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-full);
+		background-color: var(--color-input-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+		font-size: 0.9375rem;
+		cursor: pointer;
+	}
+
+	/* L'état sélectionné ne repose pas sur la couleur seule : la bordure épaissit,
+	   le texte passe en gras, et une pastille pleine apparaît. Lisible en
+	   monochrome comme en vision des couleurs atypique. */
+	.options [role='radio'][aria-checked='true'] {
+		border-color: var(--color-text);
+		box-shadow: inset 0 0 0 1px var(--color-text);
+		font-weight: var(--weight-body-strong);
+	}
+
+	.marque {
+		width: 12px;
+		height: 12px;
+		border: 1px solid var(--color-text-muted);
+		border-radius: var(--radius-full);
+	}
+
+	.options [role='radio'][aria-checked='true'] .marque {
+		border-color: var(--color-text);
+		background-color: var(--color-text);
+	}
+
+	.resultat {
+		margin-top: var(--space-5);
+		padding: var(--space-5);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		background-color: var(--color-input-bg);
+		text-align: left;
+	}
+
+	.resultat :global(h3) {
+		margin: 0 0 var(--space-3);
+		font-family: var(--font-heading);
+		font-size: 1.125rem;
+	}
+
+	.resultat :global(.sous) {
+		margin: var(--space-3) 0 var(--space-1);
+		font-size: 0.8125rem;
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-eyebrow);
+		color: var(--color-text-muted);
+	}
+
+	.resultat :global(.creneaux) {
+		margin: 0 0 var(--space-3);
+		padding-left: var(--space-5);
+	}
+
+	.repli-titre {
+		margin: 0 0 var(--space-3);
+		font-weight: var(--weight-body-strong);
+	}
+</style>
