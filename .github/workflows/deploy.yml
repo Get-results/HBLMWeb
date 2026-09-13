@@ -3,6 +3,19 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  # Rafraîchissement quotidien des matchs (AD-4). AD-5 impose UN SEUL workflow de
+  # build et publication : la tâche planifiée déclenche donc celui-ci plutôt qu'un
+  # second workflow qui republierait en parallèle.
+  #
+  # ⚠️ GitHub Actions n'a PAS de champ `timezone` sur `schedule` — contrairement à
+  # ce qu'indique AD-4, qui décrit une fonctionnalité inexistante ici. Le cron est
+  # donc en UTC. 03:00 UTC tombe à 04h ou 05h à Paris selon l'heure d'été : ce
+  # décalage d'une heure est sans conséquence pour une actualisation nocturne, et
+  # c'est un compromis assumé plutôt qu'une approximation cachée.
+  schedule:
+    - cron: '0 3 * * *'
+  # Pour forcer une actualisation sans attendre le cron.
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -16,6 +29,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Donne accès au secret MATCHES_API_BASE_URL, porté par l'environnement « api ».
+    # Sans cette ligne le secret est simplement absent, et la récupération échoue.
+    environment: api
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,6 +44,16 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      # Les matchs sont récupérés AVANT le build : la collection `matches` est
+      # produite ici, jamais commitée (AD-4 — remplacement intégral, donnée
+      # volatile). Si l'API est injoignable, l'étape échoue et le déploiement
+      # n'a pas lieu : le site déjà en ligne reste servi, ce qui vaut mieux
+      # qu'une page « aucun match » qui se lirait comme une information.
+      - name: Récupérer les matchs
+        run: npm run fetch:matches
+        env:
+          MATCHES_API_BASE_URL: ${{ secrets.MATCHES_API_BASE_URL }}
 
       # Les variables PUBLIC_* sont inlinées dans le HTML au build : ce sont des
       # valeurs publiques (clé de destination Web3Forms, identifiants Umami), pas

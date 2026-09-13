@@ -45,3 +45,8 @@ pnpm-debug.log*
 # Gabarit de travail rempli avec le bureau : contient des données personnelles
 # (noms, téléphone, adresse). Ne doit jamais partir dans un commit.
 MENTIONS-LEGALES-A-REMPLIR.md
+
+# Données de matchs : produites par scripts/fetch-matches.mjs avant chaque
+# build, remplacées intégralement à chaque fois (AD-4). Volatiles par nature,
+# elles n'ont rien à faire dans l'historique.
+src/content/matches/matches.json

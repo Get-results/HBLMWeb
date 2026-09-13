@@ -131,6 +131,14 @@ Journal des arbitrages, pour ne pas les rejouer dans six mois.
 
 ---
 
+- [ ] **Lien vers la fiche officielle FFHandball (story 3.3)** — l'API ne fournit **aucune
+  URL par match**. Le seul champ `url` existe sur `TrackedCategory`, pointe la *poule* et non
+  le match, et est retiré de la vue publique `/api/competitions/public`.
+  → Trois issues : l'exposer sur la route publique (le plus simple, c'est une URL FFHandball
+  déjà publique) ; faire que le build s'authentifie en JWT, ce qui suppose un compte de
+  service et des identifiants en secrets ; ou renoncer à la story.
+  → Décision reportée le 13/09/2026 : « on verra plus tard pour l'authentification ».
+
 ## 4. À trancher plus tard
 
 - **Activer le nom de domaine du club** ? Déclencheur : mise en production réelle.

@@ -97,14 +97,47 @@ Le dépôt Git constitue la source de vérité unique du contenu (AD-6). Il n'y 
 
 ## Pipeline de rafraîchissement des matchs (AD-4)
 
-La page des matchs affiche les rencontres passées et à venir sans aucun appel API depuis le navigateur des visiteurs :
+Les matchs viennent de l'API du club (`https://…/api/matches`, route **publique**, aucun
+en-tête requis). Ils ne sont **pas versionnés** : `scripts/fetch-matches.mjs` écrit
+`src/content/matches/matches.json` juste avant chaque build, et ce fichier est ignoré par git.
 
-1. **Déclenchement** : Un workflow GitHub Actions dédié (`.github/workflows/refresh-matches.yml`) s'exécute automatiquement selon un cron quotidien (~minuit heure de Paris : `timezone: Europe/Paris`) ou manuellement via `workflow_dispatch`.
-2. **Appel API sécurisé** : Le runner GitHub Actions appelle l'API distante du porteur du projet (données FFHandball) en utilisant un secret de dépôt GitHub.
-3. **Régénération intégrale** : Le pipeline remplace intégralement les fichiers de données de `src/content/matches/` (écrasement complet, source de vérité unique).
-4. **Déploiement** : Le workflow déclenche la reconstruction du site statique et sa publication sur GitHub Pages.
+| Quand | Quoi |
+|---|---|
+| Push sur `main` | Build + déploiement, matchs récupérés au passage |
+| Cron quotidien `0 3 * * *` (UTC) | Même workflow, donc mêmes données fraîches en ligne |
+| `workflow_dispatch` | Pour forcer une actualisation sans attendre le cron |
 
----
+**Récupérer les matchs en local :**
+
+```bash
+MATCHES_API_BASE_URL=https://votre-api npm run fetch:matches
+```
+
+Sans ce fichier, le site se construit quand même : la page Matchs affiche simplement un état
+vide. C'est ce qui permet aux vérifications de PR de tourner sans dépendre de l'API.
+
+**En cas d'API injoignable**, l'étape de récupération échoue et le déploiement n'a pas lieu :
+le site déjà en ligne reste servi. C'est délibéré — mieux vaut une page inchangée qu'une page
+« aucun match » qui se lirait comme une information.
+
+### Où vivent les secrets (AD-9)
+
+`MATCHES_API_BASE_URL` est un **secret de l'environnement GitHub « api »**. Le job de build
+déclare `environment: api` pour y accéder : sans cette ligne, le secret est simplement absent.
+
+Aucune clé n'est nécessaire pour lire les matchs. Le `X-API-KEY` de l'API est réservé au
+scraper en écriture et ne doit jamais entrer dans ce dépôt.
+
+### Rattacher une catégorie à ses poules
+
+Chaque fiche de `src/content/categories/` porte un tableau `poolIds`. Les identifiants
+disponibles se lisent sur `GET /api/competitions/public`. Un tableau vide signifie que la
+catégorie ne joue pas en championnat — c'est un état normal.
+
+Les noms d'équipe du club sont listés dans `src/lib/club.ts` : ce sont eux qui distinguent nos
+matchs de ceux des adversaires, et déterminent domicile ou extérieur. La FFHandball utilise
+plusieurs orthographes ; la liste est relevée sur les données réelles et exige une
+correspondance exacte.
 
 ## Secrets et configuration (AD-9)
 
