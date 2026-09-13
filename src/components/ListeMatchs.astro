@@ -73,17 +73,19 @@ const equipes = [...new Map(
 								{/* Le badge « Prochain match » est posé par le script sur la
 								    première carte visible : le calculer ici le figerait à
 								    l'heure du build, et le filtre le déplacerait de toute façon. */}
-								<p class="adversaire">{match.adversaire}</p>
-								<p class="meta">
+								{/* Notre équipe en tête : c'est elle le sujet de la carte. Sans
+								    elle, la page se lisait comme une colonne de noms de clubs
+								    adverses, alors qu'elle ne contient que nos rencontres. */}
+								<p class="notre-equipe">
 									<span class="lieu" data-domicile={String(match.domicile)}>
 										{match.domicile ? 'Domicile' : 'Extérieur'}
 									</span>
-									<span class="date">{formaterDateMatch(match.dateHeure) ?? 'Date à préciser'}</span>
+									{match.categorieLabel ?? 'HBLM'}
 								</p>
-								{(match.categorieLabel || match.competition) && (
+								<p class="adversaire"><span class="contre">contre</span> {match.adversaire}</p>
+								<p class="meta">{formaterDateMatch(match.dateHeure) ?? 'Date à préciser'}</p>
+								{match.competition && (
 									<p class="contexte">
-										{match.categorieLabel}
-										{match.categorieLabel && match.competition && ' · '}
 										{match.competition}
 										{match.journee && `, journée ${match.journee}`}
 									</p>
@@ -103,13 +105,14 @@ const equipes = [...new Map(
 					const joue = match.scoreClub !== null && match.scoreAdversaire !== null;
 					return (
 						<li class="match" data-equipe={match.categorieId ?? ''} data-debut={match.dateHeure ?? ''}>
-							<p class="adversaire">{match.adversaire}</p>
-							<p class="meta">
+							<p class="notre-equipe">
 								<span class="lieu" data-domicile={String(match.domicile)}>
 									{match.domicile ? 'Domicile' : 'Extérieur'}
 								</span>
-								<span class="date">{formaterDateMatch(match.dateHeure) ?? 'Date à préciser'}</span>
+								{match.categorieLabel ?? 'HBLM'}
 							</p>
+							<p class="adversaire"><span class="contre">contre</span> {match.adversaire}</p>
+							<p class="meta">{formaterDateMatch(match.dateHeure) ?? 'Date à préciser'}</p>
 							{joue ? (
 								<p class="score">
 									<span class="score-valeur">{match.scoreClub} – {match.scoreAdversaire}</span>
@@ -127,10 +130,8 @@ const equipes = [...new Map(
 								   partout le rendait invisible à force d'être répété. */
 								<p class="en-attente">Résultat pas encore connu</p>
 							)}
-							{(match.categorieLabel || match.competition) && (
+							{match.competition && (
 								<p class="contexte">
-									{match.categorieLabel}
-									{match.categorieLabel && match.competition && ' · '}
 									{match.competition}
 									{match.journee && `, journée ${match.journee}`}
 								</p>
@@ -308,8 +309,21 @@ const equipes = [...new Map(
 		color: var(--color-text-muted);
 	}
 
-	/* L'adversaire est ce que le visiteur cherche : il passe en premier et domine
-	   la carte. La date, auparavant en capitales espacées, redevient secondaire. */
+	/* Notre équipe d'abord : elle dit de qui parle la carte. L'adversaire reste
+	   l'élément le plus visible — c'est ce qui distingue deux matchs de la même
+	   équipe — mais il est introduit par « contre », sans quoi la page se lisait
+	   comme une liste de clubs adverses. */
+	.notre-equipe {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-2);
+		margin: 0 0 var(--space-1);
+		font-size: 0.875rem;
+		font-weight: var(--weight-body-strong);
+		color: var(--color-text-muted);
+	}
+
 	.adversaire {
 		margin: 0 0 var(--space-2);
 		font-family: var(--font-heading);
@@ -317,11 +331,14 @@ const equipes = [...new Map(
 		font-size: 1.125rem;
 	}
 
+	.contre {
+		font-family: var(--font-body);
+		font-weight: 400;
+		font-size: 0.9375rem;
+		color: var(--color-text-muted);
+	}
+
 	.meta {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: baseline;
-		gap: var(--space-2) var(--space-3);
 		margin: 0;
 		font-size: 0.9375rem;
 		color: var(--color-text-muted);
