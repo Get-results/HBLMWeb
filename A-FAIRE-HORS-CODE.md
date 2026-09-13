@@ -79,15 +79,16 @@ inventé ici finirait publié comme une information officielle.
   catégorie suffit (`trialAvailable` dans `src/content/categories/*.yaml`).
 - [ ] **Référent par catégorie** — nom + mail ou téléphone publiable, avec l'accord de la
   personne (site et dépôt publics). Sans référent, le contact générique s'affiche.
-- [ ] **Le Handfit** — figure au document des tarifs (150 €) mais sur **aucun** visuel de
-  planning. Fiche créée (`handfit.yaml`) et non publiée, faute de créneaux.
-  → Questions : quels créneaux (jour, horaire, gymnase) ? quel public (âge minimum, mixte) ?
-- [ ] **Les garçons nés en 2009, 2010 et 2011** n'ont aucune catégorie. Le document des
-  tarifs prévoit bien ces années (220 €), mais les visuels de planning ne montrent qu'un
-  « -18 ANS F » — pas de -18 masculins. Un garçon de 15 ans qui utilise « Trouver ma
-  catégorie » n'obtient donc aucune réponse, seulement le contact du club.
-  → Questions : existe-t-il une équipe -18 masculins cette saison ? Sinon, ces joueurs
-  rejoignent-ils les séniors, ou un autre club ?
+- [ ] **Le Handfit — public visé** — tarif (150 €) et créneau (samedi 11h30-12h30, gymnase
+  Arnassan, transmis le 13/09/2026) sont connus. **Il manque une seule chose** : à partir de
+  quel âge, et mixte ou non. Sans borne d'année de naissance, la fiche ne peut pas être
+  confirmée ni proposée par « Trouver ma catégorie ».
+  → Une réponse du type « adultes, à partir de 16 ans, mixte » suffit à la publier.
+- [x] **Les garçons nés en 2009, 2010 et 2011** — le bureau a confirmé le 13/09/2026 qu'il
+  **n'existe pas d'équipe -18 masculins** cette saison. Le comportement actuel est donc le
+  bon : « Trouver ma catégorie » affiche le contact du club plutôt qu'une catégorie
+  inadaptée. Ce n'est pas un trou dans les données, c'est la réalité du club — à revoir si
+  une équipe se crée.
 - [ ] **Stages** : dates, horaires, tarifs — `src/pages/stages.astro:24-26`.
 - [ ] **Confirmer le chiffre « 351 licenciés en 2025 »** affiché sur la page Le club
   (`src/pages/le-club.astro:20-22`). Il vient du brief projet, relevé sur l'ancien site

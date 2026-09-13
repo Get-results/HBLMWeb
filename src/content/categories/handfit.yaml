@@ -1,15 +1,13 @@
 # Catégorie du club — collection `categories` (schéma : src/content.config.ts).
 #
-# Le Handfit figure au document « TARIFS SAISON 2026-2027 » (150 €) mais
-# n'apparaît sur AUCUN des quatre visuels de planning transmis par le club.
-# Impossible donc de renseigner ses créneaux, ni de savoir à quelles années de
-# naissance il s'adresse.
+# Tarif : document « TARIFS SAISON 2026-2027 » (150 €).
+# Créneau : transmis par le bureau le 13/09/2026 — il n'apparaît sur aucun des
+# quatre visuels de planning, d'où sa saisie séparée.
 #
-# dataStatus: a-confirmer -> cette fiche n'est pas publiée, et sans borne
-# d'année elle ne peut résoudre aucun profil. Elle existe pour que le tarif ne
-# se perde pas, et pour que la question soit posée au bureau :
-#   - créneaux du Handfit (jour, horaire, gymnase) ?
-#   - public visé (âge minimum ? mixte ?) ?
+# dataStatus: a-confirmer -> cette fiche n'est PAS publiée. Il manque le public
+# visé : sans borne d'année de naissance, « Trouver ma catégorie » ne peut pas
+# la proposer, et le schéma refuse de la confirmer.
+#   → Question au bureau : à partir de quel âge, et mixte ou non ?
 # Voir A-FAIRE-HORS-CODE.md.
 
 label: "Handfit"
@@ -24,7 +22,11 @@ birthYearTo: null
 
 season: "2026-2027"
 
-trainingSlots: []
+trainingSlots:
+  - day: samedi
+    startTime: "11:30"
+    endTime: "12:30"
+    venue: "Gymnase Arnassan (Lunel)"
 
 licenseFee: 150
 trialAvailable: null

@@ -7,6 +7,10 @@
 #   • birthYearFrom / birthYearTo et licenseFee — document « TARIFS SAISON
 #     2026-2027 » du 13/09/2026.
 #
+# À NOTER : il n'existe pas d'équipe -18 masculins cette saison (confirmé par le
+# bureau le 13/09/2026). Les garçons nés en 2009-2011 ne résolvent donc aucune
+# catégorie et reçoivent le contact du club — c'est voulu, pas un oubli.
+#
 # EN ATTENTE :
 #   • trialAvailable — le bureau n'a pas confirmé catégorie par catégorie.
 #     `null` : le parcours affiche « à confirmer » et le contact du club, plutôt
