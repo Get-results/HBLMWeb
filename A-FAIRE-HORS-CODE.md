@@ -71,30 +71,23 @@ inventé ici finirait publié comme une information officielle.
 
 ### Non bloquant, mais visible comme « trou » dans la page
 
-- [ ] **Données des catégories** — la collection `src/content/categories/` existe (Story 2.1)
-  avec 8 fiches créées, toutes vides et marquées `dataStatus: a-confirmer`. Rien ne s'affiche
-  sur le site tant qu'une fiche n'est pas passée à `confirme`. Pour chaque catégorie :
-  - bornes d'**années de naissance** (sans elles, « Trouver ma catégorie » renverra toujours
-    vers le contact générique — c'est le cœur de la Story 2.3)
-  - **quelles catégories sont scindées** féminines / masculins (`mixte` est une valeur d'attente)
-  - **tarif de licence**
-  - **créneaux** : jour, heure de début, heure de fin, gymnase
-  - **essai possible ou non** (« on ne sait pas encore » est une réponse valide)
-  - **référent** : nom + mail ou téléphone, *avec l'accord de la personne* — le site et le
-    dépôt sont publics
-  - la **saison de référence** (ex. 2026-2027)
-  → Procédure : remplir le YAML, puis passer `dataStatus` à `confirme`. Le build refuse une
-  fiche `confirme` incomplète, donc une erreur de saisie bloque avant publication.
-  → **Les fiches contiennent désormais des valeurs provisoires** pour rendre le parcours
-  « Trouver ma catégorie » testable. Elles ne sont visibles qu'en `npm run dev`, jamais sur
-  le site publié. Chaque fichier dit en en-tête ce qui est réel et ce qui ne l'est pas :
-  - `trainingSlots` — **réels**, repris des visuels du club
-  - `birthYearFrom` / `birthYearTo` — **provisoires**, tranches d'âge usuelles à confirmer
-  - `licenseFee` — **provisoire**, valeur d'exemple
-  - `trialAvailable` — **provisoire** (`true` partout sauf `seniors-loisirs`)
-  - `contact` — non renseigné, le parcours affiche alors le contact générique
-  → Les 12 fiches suivent la structure réelle du planning (catégories scindées
-  féminines/masculins). Si le bureau confirme une autre répartition, renommer les fichiers.
+- [x] **Données des catégories** — tarifs et tranches d'années de naissance transmis par
+  le bureau le 13/09/2026 (document « TARIFS SAISON 2026-2027 »), créneaux repris des
+  visuels du club. Les 12 fiches sont publiées.
+- [ ] **Disponibilité d'essai par catégorie** — le seul champ encore vide. Le parcours
+  affiche « à confirmer avec le club » et propose le contact. Une réponse oui/non par
+  catégorie suffit (`trialAvailable` dans `src/content/categories/*.yaml`).
+- [ ] **Référent par catégorie** — nom + mail ou téléphone publiable, avec l'accord de la
+  personne (site et dépôt publics). Sans référent, le contact générique s'affiche.
+- [ ] **Le Handfit** — figure au document des tarifs (150 €) mais sur **aucun** visuel de
+  planning. Fiche créée (`handfit.yaml`) et non publiée, faute de créneaux.
+  → Questions : quels créneaux (jour, horaire, gymnase) ? quel public (âge minimum, mixte) ?
+- [ ] **Les garçons nés en 2009, 2010 et 2011** n'ont aucune catégorie. Le document des
+  tarifs prévoit bien ces années (220 €), mais les visuels de planning ne montrent qu'un
+  « -18 ANS F » — pas de -18 masculins. Un garçon de 15 ans qui utilise « Trouver ma
+  catégorie » n'obtient donc aucune réponse, seulement le contact du club.
+  → Questions : existe-t-il une équipe -18 masculins cette saison ? Sinon, ces joueurs
+  rejoignent-ils les séniors, ou un autre club ?
 - [ ] **Stages** : dates, horaires, tarifs — `src/pages/stages.astro:24-26`.
 - [ ] **Confirmer le chiffre « 351 licenciés en 2025 »** affiché sur la page Le club
   (`src/pages/le-club.astro:20-22`). Il vient du brief projet, relevé sur l'ancien site

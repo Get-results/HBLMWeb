@@ -77,9 +77,9 @@ const fiches = Object.fromEntries(
 
 	{apercuActif && (
 		<p class="avertissement" role="status">
-			<strong>Aperçu de développement.</strong> Les tranches d'âge et les tarifs
-			affichés ici sont des valeurs provisoires, en attente de validation par le
-			bureau. Ce bloc n'apparaît pas sur le site publié.
+			<strong>Aperçu de développement.</strong> Cette vue inclut les fiches non
+			encore validées par le bureau, en plus de celles publiées. Ce bloc et les
+			fiches non validées n'apparaissent pas sur le site publié.
 		</p>
 	)}
 
@@ -246,9 +246,13 @@ const fiches = Object.fromEntries(
 			const identifiant = table[`${annee}|${choix.genre}|${choix.pratique ?? ''}`];
 			const fiche = identifiant ? fiches[identifiant] : null;
 
-			/* Disponibilité d'essai inconnue : on ne devine pas. Le contact générique
-			   vaut mieux qu'un « essai possible » qui se révélerait faux sur place. */
-			if (!fiche || fiche.essai === null) {
+			/* Seul un profil non résolu bascule entièrement sur le contact générique.
+			   Une disponibilité d'essai inconnue ne justifie plus de masquer la fiche :
+			   depuis que les créneaux et les tarifs sont officiels, cacher le tout
+			   priverait le visiteur d'informations vraies pour une seule donnée
+			   manquante. On affiche la fiche, on dit « à confirmer » pour l'essai, et
+			   on joint le contact du club. */
+			if (!fiche) {
 				afficherRepli('Nous ne pouvons pas conclure pour ce profil');
 				return;
 			}
@@ -260,9 +264,13 @@ const fiches = Object.fromEntries(
 				lignes.push('</ul>');
 			}
 			if (fiche.tarif) lignes.push(`<p><strong>Licence :</strong> ${echapper(fiche.tarif)}</p>`);
-			lignes.push(
-				`<p><strong>Séance d'essai :</strong> ${fiche.essai ? 'possible' : 'non proposée actuellement'}</p>`,
-			);
+			const libelleEssai =
+				fiche.essai === null
+					? 'à confirmer avec le club'
+					: fiche.essai
+						? 'possible'
+						: 'non proposée actuellement';
+			lignes.push(`<p><strong>Séance d'essai :</strong> ${libelleEssai}</p>`);
 			if (fiche.contact?.name) {
 				const coord = fiche.contact.email ?? fiche.contact.phone;
 				lignes.push(
@@ -275,8 +283,9 @@ const fiches = Object.fromEntries(
 			zoneResultat.hidden = false;
 
 			/* Le contact générique reste proposé même en cas de succès : la fiche
-			   répond au « quand », pas forcément au « et maintenant ». */
-			if (!fiche.contact?.name) {
+			   répond au « quand », pas forcément au « et maintenant » — et il devient
+			   indispensable quand la disponibilité d'essai n'est pas connue. */
+			if (!fiche.contact?.name || fiche.essai === null) {
 				zoneResultat.appendChild(zoneRepli.querySelector('.contact-generique').cloneNode(true));
 			}
 		});

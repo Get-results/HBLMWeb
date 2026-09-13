@@ -1,0 +1,31 @@
+# Catégorie du club — collection `categories` (schéma : src/content.config.ts).
+#
+# Le Handfit figure au document « TARIFS SAISON 2026-2027 » (150 €) mais
+# n'apparaît sur AUCUN des quatre visuels de planning transmis par le club.
+# Impossible donc de renseigner ses créneaux, ni de savoir à quelles années de
+# naissance il s'adresse.
+#
+# dataStatus: a-confirmer -> cette fiche n'est pas publiée, et sans borne
+# d'année elle ne peut résoudre aucun profil. Elle existe pour que le tarif ne
+# se perde pas, et pour que la question soit posée au bureau :
+#   - créneaux du Handfit (jour, horaire, gymnase) ?
+#   - public visé (âge minimum ? mixte ?) ?
+# Voir A-FAIRE-HORS-CODE.md.
+
+label: "Handfit"
+order: 90
+dataStatus: a-confirmer
+
+gender: mixte
+practice: loisir
+
+birthYearFrom: null
+birthYearTo: null
+
+season: "2026-2027"
+
+trainingSlots: []
+
+licenseFee: 150
+trialAvailable: null
+contact: null

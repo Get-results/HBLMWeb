@@ -2,24 +2,20 @@
 # Le nom de ce fichier est l'identifiant stable de la catégorie : c'est lui que
 # `matches.teamId` référencera (AD-3). Le renommer casse cette référence.
 #
-# ⚠️  dataStatus: a-confirmer -> RIEN de ce fichier n'est publié sur le site.
-#     En `npm run dev`, un aperçu est affiché avec un bandeau d'avertissement,
-#     pour pouvoir tester le parcours « Trouver ma catégorie ».
+# DONNÉES OFFICIELLES, transmises par le bureau :
+#   • trainingSlots — visuels « Planning d'entraînement », saison 2026-2027.
+#   • birthYearFrom / birthYearTo et licenseFee — document « TARIFS SAISON
+#     2026-2027 » du 13/09/2026.
 #
-# ÉTAT DES DONNÉES CI-DESSOUS :
-#   • trainingSlots — RÉELS, repris des visuels du club (saison 2026-2027).
-#   • birthYearFrom / birthYearTo — PROVISOIRES : tranches d'âge usuelles, à
-#     faire confirmer par le bureau. Ce sont elles qui résolvent le profil.
-#   • licenseFee — PROVISOIRE, valeur d'exemple. À remplacer.
-#   • trialAvailable — PROVISOIRE (true). À confirmer catégorie par catégorie.
-#   • contact — non renseigné : le parcours affiche alors le contact générique.
-#
-# POUR PUBLIER : remplacer les valeurs provisoires par les vraies, puis passer
-# dataStatus à `confirme`. Le build refuse une fiche confirmée incomplète.
+# EN ATTENTE :
+#   • trialAvailable — le bureau n'a pas confirmé catégorie par catégorie.
+#     `null` : le parcours affiche « à confirmer » et le contact du club, plutôt
+#     qu'un « essai possible » qui se révélerait faux sur place.
+#   • contact — pas de référent désigné ; le contact générique prend le relais.
 
 label: "-11 ans garçons"
 order: 31
-dataStatus: a-confirmer
+dataStatus: confirme
 
 gender: M
 practice: null
@@ -39,6 +35,6 @@ trainingSlots:
     endTime: "19:00"
     venue: "Gymnase Arnassan (Lunel)"
 
-licenseFee: 130
-trialAvailable: true
+licenseFee: 190
+trialAvailable: null
 contact: null
