@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ContactForm from '../components/ContactForm.astro';
 import CategoriesInfos from '../components/CategoriesInfos.astro';
+import TrouverMaCategorie from '../components/TrouverMaCategorie.astro';
 
 const baseUrl = import.meta.env.BASE_URL;
 const essaiUrl = baseUrl.endsWith('/') ? `${baseUrl}essai` : `${baseUrl}/essai`;
@@ -30,6 +31,12 @@ const essaiUrl = baseUrl.endsWith('/') ? `${baseUrl}essai` : `${baseUrl}/essai`;
         </ul>
       </div>
 
+      {/* Second point d'entrée du parcours (Story 2.4) : exactement le même
+          composant que sur « Faire un essai », donc la même résolution et la
+          même fiche en sortie. Le monter ici plutôt que d'y renvoyer évite au
+          visiteur un aller-retour pour une question qu'il se pose déjà. */}
+      <TrouverMaCategorie />
+
       {/* Les tarifs viennent de la collection `categories` (Story 2.1) et non
           d'un texte saisi ici : c'est la même source que « Trouver ma catégorie »,
           donc les deux ne peuvent pas diverger. Tant qu'aucune fiche n'est
@@ -37,10 +44,12 @@ const essaiUrl = baseUrl.endsWith('/') ? `${baseUrl}essai` : `${baseUrl}/essai`;
           préparation » — jamais un tarif inventé. */}
       <CategoriesInfos mode="tarifs" />
 
+      {/* Renvoi vers « Faire un essai » et non vers l'outil, qui est désormais
+          juste au-dessus : y envoyer le visiteur le ferait tourner en rond. */}
       <div class="card cta-card">
-        <h2>Envie d'essayer ?</h2>
-        <p>Venez tester le handball ! Nous proposons des séances d'essai gratuites avant toute inscription définitive.</p>
-        <a href={essaiUrl} class="button">Trouver ma catégorie et faire un essai</a>
+        <h2>Envie d'essayer avant de vous inscrire ?</h2>
+        <p>Le club propose des séances d'essai gratuites. Elles sont présentées sur la page dédiée.</p>
+        <a href={essaiUrl} class="button">En savoir plus sur les séances d'essai</a>
       </div>
 
       <ContactForm />
