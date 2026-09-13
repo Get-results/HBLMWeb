@@ -30,8 +30,33 @@ const passes = matchs.filter((m) => estPasse(m, maintenant)).reverse();
 
 const groupesAVenir = grouperParMois(aVenir);
 
+/* Le filtre porte sur la POULE, pas sur la catégorie : « Lunel
+   Marsillargues-Lansargues » désigne trois équipes distinctes — -18F 1ère
+   division, -18F 2e division et -15F 2e division. Filtrer par catégorie les
+   mélangeait, et le nom d'équipe ne permettait pas de les distinguer.
+
+   Le libellé ne mentionne la division QUE si la catégorie compte plusieurs
+   équipes : inutile d'alourdir « -11 ans garçons », qui n'en a qu'une. */
+const parCategorie = new Map<string, number>();
+for (const m of matchs) {
+	if (m.categorieId) parCategorie.set(m.categorieId, (parCategorie.get(m.categorieId) ?? 0) + 1);
+}
+const poulesParCategorie = new Map<string, Set<string>>();
+for (const m of matchs) {
+	if (!m.categorieId) continue;
+	if (!poulesParCategorie.has(m.categorieId)) poulesParCategorie.set(m.categorieId, new Set());
+	poulesParCategorie.get(m.categorieId)!.add(m.poolId);
+}
+
 const equipes = [...new Map(
-	matchs.filter((m) => m.categorieId).map((m) => [m.categorieId!, m.categorieLabel!]),
+	matchs
+		.filter((m) => m.categorieId)
+		.map((m) => {
+			const plusieurs = (poulesParCategorie.get(m.categorieId!)?.size ?? 1) > 1;
+			const libelle =
+				plusieurs && m.division ? `${m.categorieLabel} · ${m.division}` : m.categorieLabel!;
+			return [m.poolId, libelle] as const;
+		}),
 ).entries()].sort((a, b) => a[1].localeCompare(b[1], 'fr'));
 ---
 
@@ -58,8 +83,8 @@ const equipes = [...new Map(
 					<button type="button" role="radio" aria-checked="true" data-valeur="" tabindex="0">
 						Toutes
 					</button>
-					{equipes.map(([id, label]) => (
-						<button type="button" role="radio" aria-checked="false" data-valeur={id} tabindex="-1">
+					{equipes.map(([poolId, label]) => (
+						<button type="button" role="radio" aria-checked="false" data-valeur={poolId} tabindex="-1">
 							{label}
 						</button>
 					))}
@@ -83,7 +108,7 @@ const equipes = [...new Map(
 					<h3 class="mois-titre">{groupe.libelle}</h3>
 					<ul class="matchs">
 						{groupe.matchs.map((match) => (
-							<li class="match" data-equipe={match.categorieId ?? ''} data-debut={match.dateHeure ?? ''}>
+							<li class="match" data-equipe={match.poolId} data-debut={match.dateHeure ?? ''}>
 								{/* Le badge « Prochain match » est posé par le script sur la
 								    première carte visible : le calculer ici le figerait à
 								    l'heure du build, et le filtre le déplacerait de toute façon. */}
@@ -102,7 +127,7 @@ const equipes = [...new Map(
 				{passes.map((match) => {
 					const joue = match.scoreClub !== null && match.scoreAdversaire !== null;
 					return (
-						<li class="match" data-equipe={match.categorieId ?? ''} data-debut={match.dateHeure ?? ''}>
+						<li class="match" data-equipe={match.poolId} data-debut={match.dateHeure ?? ''}>
 							<Carte match={match} joue={joue} />
 							{!joue && (
 								/* Story 3.4 — réservé aux matchs DÉJÀ joués. Pour un match à
@@ -312,6 +337,14 @@ const equipes = [...new Map(
 		background-color: var(--color-surface);
 	}
 
+	/* Indispensable depuis que .match a un `display` explicite : une règle
+	   `display` l'emporte sur l'attribut `hidden`, dont l'effet n'est qu'un
+	   `display: none` par défaut du navigateur. Sans cette ligne, le filtre
+	   marquait les cartes comme masquées sans qu'aucune ne disparaisse. */
+	.match[hidden] {
+		display: none;
+	}
+
 	.match > :global(.badge),
 	.match > .en-attente {
 		grid-column: 1 / -1;
@@ -345,6 +378,13 @@ const equipes = [...new Map(
 		font-weight: var(--weight-body-strong);
 		text-transform: uppercase;
 		letter-spacing: var(--tracking-eyebrow);
+	}
+
+	/* Même piège que .match : `display: inline-block` annulerait l'attribut
+	   `hidden`. Le badge est masqué au rendu et révélé par le script — sans
+	   cette règle il apparaîtrait avant, puis sauterait dans sa carte. */
+	.badge[hidden] {
+		display: none;
 	}
 
 	.en-attente {

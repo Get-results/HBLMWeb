@@ -17,6 +17,11 @@ export interface MatchDuClub {
 	domicile: boolean;
 	dateHeure: string | null;
 	competition: string | null;
+	/* Division seule, extraite de `competition` : « 1ere Division » plutôt que
+	   « -18 Ans F 1ere Division ». C'est le SEUL discriminant entre deux équipes
+	   du club qui portent le même nom — « Lunel Marsillargues-Lansargues »
+	   en désigne trois. */
+	division: string | null;
 	journee: string | null;
 	poolId: string;
 	/** `id` de la fiche de catégorie, ou null si la poule n'est rattachée à aucune. */
@@ -41,6 +46,14 @@ async function tableDesPoules(): Promise<Map<string, { id: string; label: string
 	return table;
 }
 
+/* « -18 Ans F 1ere Division » → « 1ere Division ». On retire le préfixe de
+   catégorie, qui est déjà porté ailleurs. Si la forme ne correspond pas, on
+   garde la chaîne entière : mieux vaut un libellé long que rien. */
+function extraireDivision(phase: string | null): string | null {
+	if (!phase) return null;
+	return phase.replace(/^[+-]\d+\s+(?:Ans\s+)?[FM]\s+/i, '').trim() || phase;
+}
+
 /** Les matchs du club, du plus proche au plus lointain.
 
     `/api/matches` renvoie TOUS les matchs des poules suivies, adversaires
@@ -63,6 +76,7 @@ export async function getMatchsDuClub(): Promise<MatchDuClub[]> {
 				domicile,
 				dateHeure: m.matchDate,
 				competition: m.officialPhaseName,
+				division: extraireDivision(m.officialPhaseName),
 				journee: m.round,
 				poolId: m.poolId,
 				categorieId: categorie?.id ?? null,
@@ -72,9 +86,22 @@ export async function getMatchsDuClub(): Promise<MatchDuClub[]> {
 			} satisfies MatchDuClub;
 		});
 
+	/* L'API a livré deux fois la même rencontre — même poule, même journée, même
+	   horaire, même adversaire — sous deux orthographes du nom du club. On ne
+	   peut pas afficher deux fois un match au visiteur, donc on ne garde que la
+	   première occurrence. Ce n'est PAS une correction de fond : l'anomalie est
+	   côté source et doit y être traitée (voir A-FAIRE-HORS-CODE.md). */
+	const vus = new Set<string>();
+	const uniques = matchs.filter((m) => {
+		const cle = `${m.poolId}|${m.journee}|${m.dateHeure}|${m.adversaire}`;
+		if (vus.has(cle)) return false;
+		vus.add(cle);
+		return true;
+	});
+
 	/* Les matchs sans date en dernier : on ne peut pas les situer, les intercaler
 	   au hasard donnerait une chronologie fausse. */
-	return matchs.sort((a, b) => {
+	return uniques.sort((a, b) => {
 		if (a.dateHeure === null) return b.dateHeure === null ? a.id - b.id : 1;
 		if (b.dateHeure === null) return -1;
 		return a.dateHeure.localeCompare(b.dateHeure) || a.id - b.id;

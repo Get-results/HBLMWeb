@@ -49,6 +49,15 @@ const date = blocDate(match.dateHeure);
 		<span class="lieu" data-domicile={String(match.domicile)}>
 			{match.domicile ? 'Domicile' : 'Extérieur'}
 		</span>
+		{/* La division distingue deux équipes du club qui portent le même nom.
+		    Elle avait été retirée avec la ligne « compétition » — c'était retirer
+		    le seul discriminant. Elle revient ici, sans créer de ligne. */}
+		{match.division && (
+			<>
+				<span class="separateur" aria-hidden="true">·</span>
+				<span>{match.division}</span>
+			</>
+		)}
 	</p>
 
 	{joue ? (

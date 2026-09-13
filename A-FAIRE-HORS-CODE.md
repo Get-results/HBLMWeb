@@ -152,6 +152,16 @@ Journal des arbitrages, pour ne pas les rejouer dans six mois.
   **pas** être contourné par une règle WAF. Seul Super Bot Fight Mode (offre Pro) accepte
   des exceptions par chemin.
 
+- [ ] **Doublon dans les données de matchs (côté API)** — `/api/matches` renvoie deux fois la
+  même rencontre dans la poule 193544 : `SOMMIERES HBC` contre le club, le 19/09 à 14h30,
+  journée 1, sous les identifiants **1069** et **1094**. Les deux ne diffèrent que par
+  l'orthographe du nom du club : « LUNEL MARSILLARGUES-LANSARGUES » et la même chose suivie
+  de « (-18F) ».
+  → Le site n'en affiche qu'un, mais c'est un pansement : la déduplication est faite à
+  l'affichage, l'anomalie reste dans la source. À corriger côté scraper ou côté API, sans
+  quoi elle se reproduira à chaque catégorie où la FFHandball renomme une équipe en cours
+  de saison.
+
 ## 4. À trancher plus tard
 
 - **Activer le nom de domaine du club** ? Déclencheur : mise en production réelle.
