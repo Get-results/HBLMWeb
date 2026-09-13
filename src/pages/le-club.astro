@@ -29,6 +29,39 @@ const conseilAdministration = [
 
 const saison = '2026-2027';
 
+/* Adresses transmises par le bureau le 13/09/2026. Les dénominations suivent
+   celles du document du club — la page écrivait « Collège de Lansargues » et
+   « Gymnase Pierre de Coubertin » là où le club dit « Gymnase du collège » et
+   « Halle des sports Pierre de Coubertin ». Le planning utilise déjà la
+   dénomination du club : garder deux noms pour une même salle selon la page
+   était le vrai défaut. */
+const gymnases = [
+	{
+		nom: 'Gymnase Arnassan',
+		rue: 'Avenue Louis Médard',
+		codePostal: '34400',
+		ville: 'Lunel',
+	},
+	{
+		nom: 'Gymnase Spinosi',
+		rue: 'Chemin des Calinières',
+		codePostal: '34590',
+		ville: 'Marsillargues',
+	},
+	{
+		nom: 'Gymnase du collège',
+		rue: '3 rue du Mondial 98',
+		codePostal: '34130',
+		ville: 'Lansargues',
+	},
+	{
+		nom: 'Halle des sports Pierre de Coubertin',
+		rue: '133-193 rue du Dardalhon',
+		codePostal: '34400',
+		ville: 'Lunel-Viel',
+	},
+];
+
 /* Les photos des membres existent côté club mais n'ont pas encore été
    transmises. En attendant, l'avatar affiche les initiales : c'est déterministe,
    ça ne demande aucun fichier, et surtout ça ne se fait pas passer pour un
@@ -105,30 +138,19 @@ const initiales = (nom: string) =>
 			<h2>Nos gymnases</h2>
 			<p>Nos entraînements et matchs se déroulent sur 4 installations :</p>
 			<div class="gyms-grid">
-				<article class="gym-card">
-					<div class="gym-info">
-						<h3>Gymnase Arnassan</h3>
-						<p class="gym-location">Lunel</p>
-					</div>
-				</article>
-				<article class="gym-card">
-					<div class="gym-info">
-						<h3>Gymnase Spinosi</h3>
-						<p class="gym-location">Marsillargues</p>
-					</div>
-				</article>
-				<article class="gym-card">
-					<div class="gym-info">
-						<h3>Collège de Lansargues</h3>
-						<p class="gym-location">Lansargues</p>
-					</div>
-				</article>
-				<article class="gym-card">
-					<div class="gym-info">
-						<h3>Gymnase Pierre de Coubertin</h3>
-						<p class="gym-location">Lunel-Viel</p>
-					</div>
-				</article>
+				{gymnases.map((gymnase) => (
+					<article class="gym-card">
+						<div class="gym-info">
+							<h3>{gymnase.nom}</h3>
+							{/* <address> plutôt qu'un <p> : c'est une adresse postale, et le
+							    balisage le dit. L'italique par défaut est neutralisé en CSS. */}
+							<address class="gym-location">
+								{gymnase.rue}<br />
+								{gymnase.codePostal} {gymnase.ville}
+							</address>
+						</div>
+					</article>
+				))}
 			</div>
 		</section>
 	</div>
@@ -329,6 +351,10 @@ const initiales = (nom: string) =>
 		color: var(--color-text-muted);
 		font-size: 0.875rem;
 		margin: 0;
+		/* <address> est en italique par défaut dans les navigateurs — inadapté
+		   ici, la balise est choisie pour son sens, pas pour son rendu. */
+		font-style: normal;
+		line-height: 1.45;
 	}
 
 	@media (min-width: 640px) {
