@@ -10,10 +10,7 @@
 # `loisir`, et non un sous-cas du loisir : le club le tarife séparément et lui
 # donne son propre créneau. Il apparaît comme un troisième choix dans
 # « Trouver ma catégorie », posé aux seuls profils adultes.
-#
-# À CONFIRMER : le genre `mixte` est déduit par analogie avec les séniors
-# loisirs, le bureau ne l'a pas précisé. À corriger si le Handfit s'adresse à
-# un public particulier.
+
 
 label: "Handfit"
 order: 90

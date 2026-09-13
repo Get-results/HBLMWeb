@@ -8,9 +8,9 @@
 #     2026-2027 » du 13/09/2026.
 #
 # EN ATTENTE :
-#   • trialAvailable — le bureau n'a pas confirmé catégorie par catégorie.
-#     `null` : le parcours affiche « à confirmer » et le contact du club, plutôt
-#     qu'un « essai possible » qui se révélerait faux sur place.
+#   • trialAvailable — laissé à `null` volontairement : la disponibilité d'une
+#     séance d'essai se voit directement avec le club. Le parcours renvoie donc
+#     vers lui. Ne le passer à true/false que si une catégorie a une règle fixe.
 #   • contact — pas de référent désigné ; le contact générique prend le relais.
 
 label: "Séniors garçons"

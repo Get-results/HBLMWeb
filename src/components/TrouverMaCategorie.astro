@@ -279,7 +279,7 @@ const fiches = Object.fromEntries(
 			if (fiche.tarif) lignes.push(`<p><strong>Licence :</strong> ${echapper(fiche.tarif)}</p>`);
 			const libelleEssai =
 				fiche.essai === null
-					? 'à confirmer avec le club'
+					? 'à voir directement avec le club'
 					: fiche.essai
 						? 'possible'
 						: 'non proposée actuellement';
