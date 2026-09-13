@@ -93,14 +93,10 @@ inventé ici finirait publié comme une information officielle.
 - [x] **Correspondance commune → gymnase** — confirmée par le bureau le 13/09/2026 :
   une commune désigne toujours la même salle. Lunel → Arnassan, Marsillargues → Spinosi,
   Lansargues → gymnase du collège. Les 27 créneaux du planning sont renseignés.
-- [ ] **Adresses des gymnases sur la page « Le club »** — transmises par le bureau le
-  13/09/2026, pas encore reportées : Arnassan, avenue Louis Médard, 34400 Lunel ·
-  Spinosi, chemin des Calinières, 34590 Marsillargues · gymnase du collège, 3 rue du
-  Mondial 98, 34130 Lansargues · halle des sports Pierre de Coubertin, 133-193 rue du
-  Dardalhon, 34400 Lunel-Viel.
-  → À noter : la page nomme « Gymnase Pierre de Coubertin » et « Collège de Lansargues »,
-  le club écrit « Halle des sports Pierre de Coubertin » et « Gymnase du collège ».
-  Harmoniser sur la dénomination du club.
+- [x] **Adresses des gymnases** — transmises par le bureau le 13/09/2026 et affichées sur
+  la page « Le club ». Dénominations harmonisées sur celles du club : « Gymnase du
+  collège » et « Halle des sports Pierre de Coubertin » remplacent « Collège de
+  Lansargues » et « Gymnase Pierre de Coubertin ».
 - [ ] **Photos des membres du bureau et du CA** — la page « Le club » affiche un avatar
   rond portant les initiales de chaque personne, en attendant les vraies photos. Le club
   en dispose (organigramme transmis le 12/09/2026) mais elles n'ont pas été récupérées.
