@@ -8,14 +8,23 @@ const contactUrl = baseUrl.endsWith('/') ? `${baseUrl}inscription#contact-form` 
    saison 2026-2027). Regroupés par catégorie et non par jour : un parent
    cherche « quand s'entraîne mon enfant », pas « qui joue le mardi ».
 
-   `gymnase: null` = seule la commune est connue. Les visuels du club n'indiquent
-   que « Lunel », « Marsillargues » ou « Lansargues », or le club dispose de
-   plusieurs installations dont deux à Lunel. Tant que la correspondance exacte
-   n'est pas transmise, on affiche « gymnase à préciser » — dire la commune sans
-   inventer la salle.
+   Les visuels n'indiquent que la commune. Le bureau a confirmé le 13/09/2026
+   qu'une commune désigne toujours la même salle : le club ne joue qu'à un
+   endroit par ville. D'où la table ci-dessous plutôt que 27 répétitions.
+
+   `gymnase` reste modifiable créneau par créneau : le jour où une catégorie
+   s'entraîne ailleurs — la halle Pierre de Coubertin à Lunel-Viel, par exemple,
+   qui n'apparaît dans aucun planning actuel — il suffit de le renseigner sur ce
+   créneau, la table servant de valeur par défaut.
 
    `groupe` reprend les mentions des visuels (G1&2, D1, Éq.1...) : ce sont des
    distinctions internes entre équipes d'une même catégorie. */
+const gymnaseParCommune: Record<string, string> = {
+  Lunel: 'Gymnase Arnassan',
+  Marsillargues: 'Gymnase Spinosi',
+  Lansargues: 'Gymnase du collège',
+};
+
 const filieres = [
   {
     titre: 'École de hand',
@@ -137,8 +146,14 @@ const filieres = [
 ];
 
 const saison = '2026-2027';
+
+/* Le créneau l'emporte sur la table ; si ni l'un ni l'autre ne renseigne la
+   salle, la page le dit au lieu de laisser un blanc. */
+const salleDe = (creneau: { gymnase: string | null; commune: string }) =>
+  creneau.gymnase ?? gymnaseParCommune[creneau.commune] ?? null;
+
 const gymnasesIncomplets = filieres.some((f) =>
-  f.categories.some((c) => c.creneaux.some((cr) => cr.gymnase === null)),
+  f.categories.some((c) => c.creneaux.some((cr) => salleDe(cr) === null)),
 );
 ---
 
@@ -175,7 +190,7 @@ const gymnasesIncomplets = filieres.some((f) =>
                     <span class="creneau-jour">{creneau.jour}</span>
                     <span class="creneau-heure">{creneau.debut}&nbsp;–&nbsp;{creneau.fin}</span>
                     <span class="creneau-lieu">
-                      {creneau.gymnase ?? 'gymnase à préciser'} · {creneau.commune}
+                      {salleDe(creneau) ?? 'gymnase à préciser'} · {creneau.commune}
                     </span>
                     {creneau.groupe && <span class="creneau-groupe">{creneau.groupe}</span>}
                   </li>

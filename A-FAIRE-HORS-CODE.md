@@ -90,8 +90,17 @@ inventé ici finirait publié comme une information officielle.
   (`src/pages/le-club.astro:20-22`). Il vient du brief projet, relevé sur l'ancien site
   WordPress — ce n'est donc pas une donnée inventée, mais il porte le millésime 2025 alors
   que la saison 2026-2027 commence. À actualiser ou à confirmer.
-- [ ] **Liste et adresses des gymnases** — 4 installations annoncées, à confirmer
-  (`src/pages/le-club.astro:47+`).
+- [x] **Correspondance commune → gymnase** — confirmée par le bureau le 13/09/2026 :
+  une commune désigne toujours la même salle. Lunel → Arnassan, Marsillargues → Spinosi,
+  Lansargues → gymnase du collège. Les 27 créneaux du planning sont renseignés.
+- [ ] **Adresses des gymnases sur la page « Le club »** — transmises par le bureau le
+  13/09/2026, pas encore reportées : Arnassan, avenue Louis Médard, 34400 Lunel ·
+  Spinosi, chemin des Calinières, 34590 Marsillargues · gymnase du collège, 3 rue du
+  Mondial 98, 34130 Lansargues · halle des sports Pierre de Coubertin, 133-193 rue du
+  Dardalhon, 34400 Lunel-Viel.
+  → À noter : la page nomme « Gymnase Pierre de Coubertin » et « Collège de Lansargues »,
+  le club écrit « Halle des sports Pierre de Coubertin » et « Gymnase du collège ».
+  Harmoniser sur la dénomination du club.
 - [ ] **Photos des membres du bureau et du CA** — la page « Le club » affiche un avatar
   rond portant les initiales de chaque personne, en attendant les vraies photos. Le club
   en dispose (organigramme transmis le 12/09/2026) mais elles n'ont pas été récupérées.
