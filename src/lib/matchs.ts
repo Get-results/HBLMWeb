@@ -134,3 +134,30 @@ export function grouperParMois(
 	}
 	return groupes;
 }
+
+const JOURS_COURTS = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'];
+const MOIS_COURTS = [
+	'janv', 'févr', 'mars', 'avr', 'mai', 'juin',
+	'juil', 'août', 'sept', 'oct', 'nov', 'déc',
+];
+
+/** Découpe la date pour le bloc calendrier de la carte : « sam / 19 / sept ».
+    Renvoie `null` sans date — la carte affiche alors un bloc neutre plutôt
+    qu'une date inventée. */
+export function blocDate(
+	valeur: string | null,
+): { jour: string; numero: string; mois: string; heure: string } | null {
+	if (!valeur) return null;
+	const m = valeur.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+	if (!m) return null;
+	const [, annee, mois, jour, heures, minutes] = m;
+	/* Midi en UTC pour déduire le jour de la semaine : à minuit, un décalage de
+	   fuseau ferait basculer d'un jour. */
+	const index = new Date(`${annee}-${mois}-${jour}T12:00:00Z`).getUTCDay();
+	return {
+		jour: JOURS_COURTS[index],
+		numero: String(Number(jour)),
+		mois: MOIS_COURTS[Number(mois) - 1],
+		heure: `${heures}h${minutes}`,
+	};
+}
