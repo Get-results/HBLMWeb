@@ -30,12 +30,49 @@ if (!base) {
    panne : mieux vaut interrompre et laisser en ligne le dernier build réussi. */
 async function recuperer(chemin) {
 	const url = `${base}${chemin}`;
-	const reponse = await fetch(url, {
-		headers: { Accept: 'application/json' },
-		signal: AbortSignal.timeout(20_000),
-	});
+	let reponse;
+	try {
+		reponse = await fetch(url, {
+			headers: {
+				Accept: 'application/json',
+				/* Un User-Agent identifiable : l'API sait qui l'appelle, et une règle
+				   de pare-feu peut cibler ce client plutôt que d'ouvrir tout le trafic
+				   automatisé. Sans en-tête, Node s'annonce comme « undici ». */
+				'User-Agent': 'HBLMWeb-build/1.0 (+https://github.com/Get-results/HBLMWeb)',
+			},
+			signal: AbortSignal.timeout(20_000),
+		});
+	} catch (erreur) {
+		/* Cas vécu au premier déploiement : l'URL pointait un nom de service interne
+		   à l'hébergeur. Un runner GitHub n'est pas sur ce réseau et ne peut pas le
+		   résoudre. Le message brut (« EAI_AGAIN ») n'aide personne — on dit ce
+		   qu'il faut vérifier. */
+		const cause = erreur?.cause?.code;
+		if (cause === 'EAI_AGAIN' || cause === 'ENOTFOUND') {
+			throw new Error(
+				`Nom d'hôte introuvable : « ${erreur.cause.hostname} ». ` +
+					"MATCHES_API_BASE_URL doit être un domaine PUBLIC : ce build tourne sur " +
+					"un runner GitHub, pas sur le réseau interne de l'hébergeur.",
+			);
+		}
+		throw erreur;
+	}
 	if (!reponse.ok) {
-		throw new Error(`${chemin} → HTTP ${reponse.status} ${reponse.statusText}`);
+		/* Le corps de la réponse dit souvent qui refuse et pourquoi — un pare-feu
+		   intermédiaire renvoie une page HTML, l'API renvoie un JSON d'erreur. Sans
+		   cet extrait, un 403 ne distingue pas les deux. */
+		const extrait = (await reponse.text().catch(() => '')).replace(/\s+/g, ' ').slice(0, 200);
+		const parefeu = reponse.headers.get('server');
+		throw new Error(
+			`${chemin} → HTTP ${reponse.status} ${reponse.statusText}` +
+				(parefeu ? ` (servi par « ${parefeu} »)` : '') +
+				(extrait ? `\n  Réponse : ${extrait}` : '') +
+				(reponse.status === 403
+					? "\n  Un 403 sur une route publique vient généralement d'un pare-feu " +
+						"devant l'API, pas de l'API : les runners GitHub ont des IP de " +
+						'datacenter, souvent bloquées par défaut.'
+					: ''),
+		);
 	}
 	return reponse.json();
 }
