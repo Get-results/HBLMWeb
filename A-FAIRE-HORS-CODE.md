@@ -92,6 +92,12 @@ inventé ici finirait publié comme une information officielle.
   que la saison 2026-2027 commence. À actualiser ou à confirmer.
 - [ ] **Liste et adresses des gymnases** — 4 installations annoncées, à confirmer
   (`src/pages/le-club.astro:47+`).
+- [ ] **Photos des membres du bureau et du CA** — la page « Le club » affiche un avatar
+  rond portant les initiales de chaque personne, en attendant les vraies photos. Le club
+  en dispose (organigramme transmis le 12/09/2026) mais elles n'ont pas été récupérées.
+  → `src/pages/le-club.astro` : quand les photos arrivent, remplacer le contenu du
+  `.avatar` par une `<img>`, le cercle et sa bordure restent identiques.
+  → Prévoir l'accord de chaque personne : le site et le dépôt sont publics.
 - [ ] **Liens des réseaux sociaux** du club (Instagram, Facebook) — plusieurs pages y
   renvoient en texte sans lien cliquable (`matchs.astro`, `vie-du-club.astro`).
 - [ ] **Logo officiel et photos** libres de droit — `asset_placeholder/` contient des visuels
