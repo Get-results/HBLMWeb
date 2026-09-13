@@ -28,6 +28,20 @@ const conseilAdministration = [
 ];
 
 const saison = '2026-2027';
+
+/* Les photos des membres existent côté club mais n'ont pas encore été
+   transmises. En attendant, l'avatar affiche les initiales : c'est déterministe,
+   ça ne demande aucun fichier, et surtout ça ne se fait pas passer pour un
+   portrait — un visage générique laisserait croire à une vraie photo.
+   Quand les photos arriveront, remplacer le contenu du .avatar par une <img>
+   et garder le cercle tel quel. Voir A-FAIRE-HORS-CODE.md. */
+const initiales = (nom: string) =>
+	nom
+		.split(/[\s-]+/)
+		.filter(Boolean)
+		.slice(0, 2)
+		.map((mot) => mot[0].toUpperCase())
+		.join('');
 ---
 
 <BaseLayout title="Le club - HBLM">
@@ -62,8 +76,13 @@ const saison = '2026-2027';
 			<ul class="membres">
 				{bureau.map((membre) => (
 					<li>
-						<span class="role">{membre.role}</span>
-						<span class="name">{membre.nom}</span>
+						{/* aria-hidden : les initiales ne font que répéter le nom qui suit,
+						    les annoncer lettre par lettre serait du bruit au lecteur d'écran. */}
+						<span class="avatar" aria-hidden="true">{initiales(membre.nom)}</span>
+						<span class="infos">
+							<span class="role">{membre.role}</span>
+							<span class="name">{membre.nom}</span>
+						</span>
 					</li>
 				))}
 			</ul>
@@ -72,8 +91,11 @@ const saison = '2026-2027';
 			<ul class="membres">
 				{conseilAdministration.map((nom) => (
 					<li>
-						<span class="role">Membre du CA</span>
-						<span class="name">{nom}</span>
+						<span class="avatar" aria-hidden="true">{initiales(nom)}</span>
+						<span class="infos">
+							<span class="role">Membre du CA</span>
+							<span class="name">{nom}</span>
+						</span>
 					</li>
 				))}
 			</ul>
@@ -210,6 +232,37 @@ const saison = '2026-2027';
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-md);
 		padding: var(--space-4);
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: var(--space-4);
+	}
+
+	/* Emplacement de la photo du membre. Tant qu'elle n'est pas fournie, il porte
+	   les initiales. Le cercle et sa bordure restent identiques une fois l'<img>
+	   en place : seul le contenu change. */
+	.avatar {
+		flex: none;
+		width: 48px;
+		height: 48px;
+		border-radius: var(--radius-full);
+		border: 1px solid var(--color-border);
+		background-color: var(--color-input-bg);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-family: var(--font-heading);
+		font-weight: var(--weight-heading);
+		font-size: 0.875rem;
+		letter-spacing: 0.04em;
+		color: var(--color-text-muted);
+		overflow: hidden;
+	}
+
+	/* min-width: 0 — sans ça, un nom long refuserait de se couper et déborderait
+	   de la carte au lieu de passer à la ligne. */
+	.infos {
+		min-width: 0;
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-1);
