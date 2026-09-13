@@ -1,7 +1,14 @@
 # Vérification des pull requests.
 # Le workflow de déploiement ne tourne qu'après un merge sur main : sans ce
 # check, une PR qui casse le build ne se découvre qu'une fois fusionnée.
-# `npm run build` enchaîne astro build puis check:paths (garde-fou AD-5).
+# `npm run build` enchaîne astro build puis `npm run check` : préfixe de base
+# (AD-5), liens internes morts, régressions d'accessibilité.
+#
+# Les garde-fous sont volontairement branchés DANS le job `build` et non dans un
+# job à part : `build` est le seul check exigé par la protection de branche, donc
+# un job séparé ne bloquerait rien jusqu'à ce que quelqu'un le déclare requis à
+# la main — exactement le genre d'oubli qui a laissé passer les défauts que ces
+# contrôles existent pour attraper.
 name: CI
 
 on:

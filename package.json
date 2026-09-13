@@ -8,10 +8,13 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build && npm run check:paths",
+    "build": "astro build && npm run check",
     "preview": "astro preview",
     "astro": "astro",
-    "check:paths": "node scripts/check-base-paths.mjs"
+    "check": "npm run check:paths && npm run check:links && npm run check:a11y",
+    "check:paths": "node scripts/check-base-paths.mjs",
+    "check:links": "node scripts/check-links.mjs",
+    "check:a11y": "node scripts/check-a11y.mjs"
   },
   "dependencies": {
     "@fontsource/poppins": "^5.3.0",
