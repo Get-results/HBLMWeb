@@ -1,5 +1,33 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+
+/* Composition transmise par le bureau le 12/09/2026 pour la saison 2026-2027,
+   reprise de l'organigramme publié par le club.
+
+   Ces personnes sont nommées publiquement : toute demande de retrait ou de
+   correction passe par le bureau, et se répercute ici. Ne pas compléter cette
+   liste depuis une autre source que le bureau lui-même. */
+const bureau = [
+	{ role: 'Présidente', nom: 'Blandine Rey' },
+	{ role: 'Vice-Président', nom: 'Abde Bouchajra' },
+	{ role: 'Trésorière', nom: 'Mathilde Lasalde' },
+	{ role: 'Secrétaire', nom: 'Cyril Livernois' },
+];
+
+/* Les autres membres du conseil d'administration n'ont pas de fonction
+   nominative : sept cartes portant toutes « Membre du CA » seraient du bruit.
+   Une liste simple suffit et reste lisible. */
+const conseilAdministration = [
+	'Violaine Lagarrigue',
+	'Clément Pollano',
+	'Margot Galtier',
+	'Julie Vernhes',
+	'Errine Guillermin',
+	'Mallory Mourreau',
+	'Enzo Simoens',
+];
+
+const saison = '2026-2027';
 ---
 
 <BaseLayout title="Le club - HBLM">
@@ -25,21 +53,26 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 		</section>
 
 		<section class="club-section">
-			<h2>Le bureau</h2>
-			<p>L'équipe dirigeante qui fait vivre le club au quotidien :</p>
+			<h2>Le bureau et le conseil d'administration</h2>
+			<p>
+				Les bénévoles qui font vivre le club au quotidien, pour la saison {saison}.
+			</p>
+
+			<h3 class="sous-titre">Le bureau</h3>
 			<ul class="bureau-list">
-				<li>
-					<span class="role">Président·e</span>
-					<span class="name">[Nom à compléter]</span>
-				</li>
-				<li>
-					<span class="role">Secrétaire</span>
-					<span class="name">[Nom à compléter]</span>
-				</li>
-				<li>
-					<span class="role">Trésorier·ère</span>
-					<span class="name">[Nom à compléter]</span>
-				</li>
+				{bureau.map((membre) => (
+					<li>
+						<span class="role">{membre.role}</span>
+						<span class="name">{membre.nom}</span>
+					</li>
+				))}
+			</ul>
+
+			<h3 class="sous-titre">Les autres membres du conseil d'administration</h3>
+			<ul class="ca-list">
+				{conseilAdministration.map((nom) => (
+					<li>{nom}</li>
+				))}
 			</ul>
 		</section>
 
@@ -142,7 +175,36 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 		color: var(--color-text-muted);
 	}
 
-	/* Bureau */
+	/* Bureau & CA */
+	.sous-titre {
+		font-family: var(--font-heading);
+		font-weight: var(--weight-heading);
+		font-size: 1rem;
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-eyebrow);
+		color: var(--color-text-muted);
+		margin: var(--space-6) 0 var(--space-4);
+	}
+
+	/* Les membres sans fonction nominative : une liste de noms, pas des cartes.
+	   Sept cartes identiques portant « Membre du CA » n'apporteraient rien. */
+	.ca-list {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2) var(--space-3);
+	}
+
+	.ca-list li {
+		padding: var(--space-2) var(--space-4);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-full);
+		background-color: var(--color-surface);
+		font-size: 0.9375rem;
+	}
+
 	.bureau-list {
 		list-style: none;
 		padding: 0;
