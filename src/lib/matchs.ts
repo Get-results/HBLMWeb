@@ -98,3 +98,39 @@ export function formaterDateMatch(valeur: string | null): string | null {
 	const jourSemaine = JOURS[new Date(`${annee}-${mois}-${jour}T12:00:00Z`).getUTCDay()];
 	return `${jourSemaine} ${Number(jour)} ${MOIS[Number(mois) - 1]}, ${heures}h${minutes}`;
 }
+
+/** Un match est passé si son coup d'envoi est antérieur à `maintenant`.
+    Sans date, on ne peut pas trancher : on le traite comme à venir plutôt que
+    de l'enterrer dans les résultats, où personne ne le chercherait. */
+export function estPasse(match: MatchDuClub, maintenant: Date): boolean {
+	if (!match.dateHeure) return false;
+	return new Date(`${match.dateHeure}`).getTime() < maintenant.getTime();
+}
+
+/** Clé de regroupement mensuel, « 2026-09 ». */
+export function cleMois(valeur: string | null): string {
+	return valeur?.slice(0, 7) ?? 'sans-date';
+}
+
+/** « Septembre 2026 ». L'année est incluse : une saison chevauche deux années,
+    et « Septembre » seul deviendrait ambigu dès la deuxième. */
+export function libelleMois(cle: string): string {
+	if (cle === 'sans-date') return 'Date à préciser';
+	const [annee, mois] = cle.split('-');
+	const nom = MOIS[Number(mois) - 1];
+	return `${nom.charAt(0).toUpperCase()}${nom.slice(1)} ${annee}`;
+}
+
+/** Groupe une liste déjà triée en blocs mensuels, dans l'ordre reçu. */
+export function grouperParMois(
+	matchs: MatchDuClub[],
+): { cle: string; libelle: string; matchs: MatchDuClub[] }[] {
+	const groupes: { cle: string; libelle: string; matchs: MatchDuClub[] }[] = [];
+	for (const match of matchs) {
+		const cle = cleMois(match.dateHeure);
+		const dernier = groupes.at(-1);
+		if (dernier?.cle === cle) dernier.matchs.push(match);
+		else groupes.push({ cle, libelle: libelleMois(cle), matchs: [match] });
+	}
+	return groupes;
+}

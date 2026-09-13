@@ -1,30 +1,42 @@
 ---
-/* Page Matchs — stories 3.2, 3.4 et 3.5 (AD-10).
+/* Page Matchs — stories 3.2, 3.4, 3.5 (AD-10).
 
-   Seconde île du site, et la seule logique cliente ici est le filtre : la liste
-   entière est rendue au build, le filtre ne fait que masquer des lignes. Sans
-   JavaScript, tous les matchs restent visibles — le filtre disparaît, pas le
-   contenu.
+   Deux sections, parce que la page répond à deux questions distinctes : « quand
+   joue mon équipe » et « quel a été le résultat ». Une liste plate obligeait à
+   parcourir les vingt-quatre matchs pour l'une comme pour l'autre.
 
-   Aucun appel réseau au clic (AD-10) et aucun appel à l'API depuis le navigateur
-   (AD-9) : les données viennent de la collection produite au build. */
-import { getMatchsDuClub, formaterDateMatch } from '../lib/matchs';
+   À venir : du plus proche au plus lointain, groupé par mois.
+   Résultats : du plus récent au plus ancien, sans regroupement — c'est ce qui
+   permet au script de déplacer un match sans avoir à fabriquer un en-tête.
+
+   La séparation est calculée au build, puis RÉAJUSTÉE à l'affichage. Sans ce
+   réajustement, un match joué le samedi resterait annoncé « à venir » jusqu'au
+   rebuild de 3h — soit toute la journée du match, quand la page est le plus
+   consultée. Sans JavaScript, le découpage du build reste affiché : il est juste
+   au pire d'une journée, et la date est visible sur chaque carte.
+
+   Aucun appel réseau côté client (AD-9, AD-10) : tout est rendu au build. */
+import { getMatchsDuClub, formaterDateMatch, estPasse, grouperParMois } from '../lib/matchs';
 import GenericContact from './GenericContact.astro';
 
 const matchs = await getMatchsDuClub();
+const maintenant = new Date();
 
-/* Équipes proposées au filtre : uniquement celles qui ont au moins un match.
-   Lister une catégorie sans match donnerait un filtre qui vide la page. */
+const aVenir = matchs.filter((m) => !estPasse(m, maintenant));
+/* Les résultats du plus récent au plus ancien : on cherche le dernier score,
+   pas celui d'il y a trois mois. */
+const passes = matchs.filter((m) => estPasse(m, maintenant)).reverse();
+
+const groupesAVenir = grouperParMois(aVenir);
+
 const equipes = [...new Map(
-	matchs
-		.filter((m) => m.categorieId)
-		.map((m) => [m.categorieId!, m.categorieLabel!]),
+	matchs.filter((m) => m.categorieId).map((m) => [m.categorieId!, m.categorieLabel!]),
 ).entries()].sort((a, b) => a[1].localeCompare(b[1], 'fr'));
 ---
 
 {matchs.length === 0 ? (
-	<div class="vide">
-		<p class="vide-titre">Aucun match à afficher pour le moment</p>
+	<div class="encart">
+		<p class="encart-titre">Aucun match à afficher pour le moment</p>
 		<p>
 			Le calendrier est repris automatiquement des données officielles de la
 			FFHandball. Il se remplira dès que les rencontres de la saison seront
@@ -36,94 +48,174 @@ const equipes = [...new Map(
 	<>
 		{equipes.length > 1 && (
 			<div class="filtre">
-				{/* Un <select> natif plutôt qu'un groupe de boutons : il est accessible
-				    au clavier et aux lecteurs d'écran sans qu'on réimplémente quoi que
-				    ce soit, et il tient la longueur quand le nombre d'équipes grandit. */}
+				{/* Un <select> natif : accessible au clavier et aux lecteurs d'écran
+				    sans rien réimplémenter, et il tient la longueur quand le nombre
+				    d'équipes grandit. */}
 				<label for="filtre-equipe">Filtrer par équipe</label>
 				<select id="filtre-equipe">
 					<option value="">Toutes les équipes</option>
 					{equipes.map(([id, label]) => <option value={id}>{label}</option>)}
 				</select>
-				{/* Le compte change sans rechargement : un lecteur d'écran ne le
-				    remarquerait pas sans aria-live. */}
-				<p class="compte" aria-live="polite" data-total={matchs.length}>
+				<p class="compte" aria-live="polite">
 					{matchs.length} match{matchs.length > 1 ? 's' : ''}
 				</p>
 			</div>
 		)}
 
-		<ul class="matchs">
-			{matchs.map((match) => {
-				const date = formaterDateMatch(match.dateHeure);
-				const joue = match.scoreClub !== null && match.scoreAdversaire !== null;
-				return (
-					<li class="match" data-equipe={match.categorieId ?? ''}>
-						<div class="entete">
-							<span class="date">{date ?? 'Date à préciser'}</span>
-							{match.categorieLabel && <span class="equipe">{match.categorieLabel}</span>}
-						</div>
+		<section class="section" id="section-a-venir">
+			<h2>À venir</h2>
+			{groupesAVenir.map((groupe) => (
+				<div class="mois" data-mois={groupe.cle}>
+					<h3 class="mois-titre">{groupe.libelle}</h3>
+					<ul class="matchs">
+						{groupe.matchs.map((match) => (
+							<li class="match" data-equipe={match.categorieId ?? ''} data-debut={match.dateHeure ?? ''}>
+								{/* Le badge « Prochain match » est posé par le script sur la
+								    première carte visible : le calculer ici le figerait à
+								    l'heure du build, et le filtre le déplacerait de toute façon. */}
+								<p class="adversaire">{match.adversaire}</p>
+								<p class="meta">
+									<span class="lieu" data-domicile={String(match.domicile)}>
+										{match.domicile ? 'Domicile' : 'Extérieur'}
+									</span>
+									<span class="date">{formaterDateMatch(match.dateHeure) ?? 'Date à préciser'}</span>
+								</p>
+								{(match.categorieLabel || match.competition) && (
+									<p class="contexte">
+										{match.categorieLabel}
+										{match.categorieLabel && match.competition && ' · '}
+										{match.competition}
+										{match.journee && `, journée ${match.journee}`}
+									</p>
+								)}
+							</li>
+						))}
+					</ul>
+				</div>
+			))}
+			<p class="vide" hidden={aVenir.length > 0}>Aucun match à venir pour cette sélection.</p>
+		</section>
 
-						<p class="rencontre">
-							<span class="lieu" data-domicile={String(match.domicile)}>
-								{match.domicile ? 'Domicile' : 'Extérieur'}
-							</span>
-							<span class="contre">contre</span>
-							<strong class="adversaire">{match.adversaire}</strong>
-						</p>
-
-						{joue ? (
-							<p class="score">
-								<span class="score-valeur">{match.scoreClub} – {match.scoreAdversaire}</span>
-								<span class="score-issue">
-									{match.scoreClub! > match.scoreAdversaire!
-										? 'Victoire'
-										: match.scoreClub! < match.scoreAdversaire!
-											? 'Défaite'
-											: 'Match nul'}
+		<section class="section" id="section-resultats">
+			<h2>Résultats</h2>
+			<ul class="matchs" id="liste-resultats">
+				{passes.map((match) => {
+					const joue = match.scoreClub !== null && match.scoreAdversaire !== null;
+					return (
+						<li class="match" data-equipe={match.categorieId ?? ''} data-debut={match.dateHeure ?? ''}>
+							<p class="adversaire">{match.adversaire}</p>
+							<p class="meta">
+								<span class="lieu" data-domicile={String(match.domicile)}>
+									{match.domicile ? 'Domicile' : 'Extérieur'}
 								</span>
+								<span class="date">{formaterDateMatch(match.dateHeure) ?? 'Date à préciser'}</span>
 							</p>
-						) : (
-							/* Story 3.4 : jamais une case vide ni une erreur. En début de
-							   saison, c'est l'état de presque tous les matchs. */
-							<p class="score en-attente">Résultat pas encore connu</p>
-						)}
-
-						{match.competition && (
-							<p class="competition">
-								{match.competition}{match.journee && ` · journée ${match.journee}`}
-							</p>
-						)}
-					</li>
-				);
-			})}
-		</ul>
-
-		<p class="aucun-resultat" hidden>
-			Aucun match pour cette équipe.
-		</p>
+							{joue ? (
+								<p class="score">
+									<span class="score-valeur">{match.scoreClub} – {match.scoreAdversaire}</span>
+									<span class="score-issue">
+										{match.scoreClub! > match.scoreAdversaire!
+											? 'Victoire'
+											: match.scoreClub! < match.scoreAdversaire!
+												? 'Défaite'
+												: 'Match nul'}
+									</span>
+								</p>
+							) : (
+								/* Story 3.4 — réservé aux matchs DÉJÀ joués. Pour un match à
+								   venir, l'absence de score n'est pas une information : l'afficher
+								   partout le rendait invisible à force d'être répété. */
+								<p class="en-attente">Résultat pas encore connu</p>
+							)}
+							{(match.categorieLabel || match.competition) && (
+								<p class="contexte">
+									{match.categorieLabel}
+									{match.categorieLabel && match.competition && ' · '}
+									{match.competition}
+									{match.journee && `, journée ${match.journee}`}
+								</p>
+							)}
+						</li>
+					);
+				})}
+			</ul>
+			<p class="vide" hidden={passes.length > 0}>Aucun résultat pour cette sélection.</p>
+		</section>
 	</>
 )}
 
 <script is:inline>
 	(() => {
+		const sectionAVenir = document.getElementById('section-a-venir');
+		const listeResultats = document.getElementById('liste-resultats');
+		if (!sectionAVenir || !listeResultats) return;
+
 		const select = document.getElementById('filtre-equipe');
-		if (!select) return;
-
-		const lignes = [...document.querySelectorAll('.match')];
 		const compte = document.querySelector('.compte');
-		const vide = document.querySelector('.aucun-resultat');
 
-		select.addEventListener('change', () => {
-			const choix = select.value;
+		/* 1. Rattraper le décalage entre l'heure du build et maintenant. Un match
+		      dont le coup d'envoi est passé rejoint les résultats, en tête puisque
+		      la section va du plus récent au plus ancien. */
+		const maintenant = Date.now();
+		sectionAVenir.querySelectorAll('.match[data-debut]').forEach((carte) => {
+			const debut = carte.dataset.debut;
+			if (!debut || new Date(debut).getTime() >= maintenant) return;
+			carte.querySelector('.badge')?.remove();
+			/* La carte passe côté résultats sans score : c'est exactement le cas que
+			   « Résultat pas encore connu » décrit — match joué, score non publié. */
+			if (!carte.querySelector('.score, .en-attente')) {
+				const attente = document.createElement('p');
+				attente.className = 'en-attente';
+				attente.textContent = 'Résultat pas encore connu';
+				carte.querySelector('.meta')?.after(attente);
+			}
+			listeResultats.prepend(carte);
+		});
+
+		const cartes = [...document.querySelectorAll('.match')];
+
+		function rafraichir() {
+			const choix = select ? select.value : '';
 			let visibles = 0;
-			lignes.forEach((ligne) => {
-				const garde = !choix || ligne.dataset.equipe === choix;
-				ligne.hidden = !garde;
+
+			cartes.forEach((carte) => {
+				const garde = !choix || carte.dataset.equipe === choix;
+				carte.hidden = !garde;
 				if (garde) visibles += 1;
 			});
+
+			/* Un groupe mensuel dont toutes les cartes sont masquées ne doit pas
+			   laisser son titre orphelin. */
+			document.querySelectorAll('.mois').forEach((groupe) => {
+				groupe.hidden = ![...groupe.querySelectorAll('.match')].some((c) => !c.hidden);
+			});
+
+			document.querySelectorAll('.section').forEach((section) => {
+				const reste = [...section.querySelectorAll('.match')].some((c) => !c.hidden);
+				const vide = section.querySelector('.vide');
+				if (vide) vide.hidden = reste;
+			});
+
+			/* 2. Le badge « Prochain match » va sur la première carte VISIBLE de la
+			      section À venir : il suit donc le filtre au lieu d'être figé. */
+			document.querySelectorAll('.badge').forEach((b) => b.remove());
+			const prochain = sectionAVenir.querySelector('.match:not([hidden])');
+			if (prochain) {
+				const badge = document.createElement('p');
+				badge.className = 'badge';
+				badge.textContent = 'Prochain match';
+				prochain.prepend(badge);
+				prochain.classList.add('est-prochain');
+			}
+			document
+				.querySelectorAll('.est-prochain')
+				.forEach((c) => c !== prochain && c.classList.remove('est-prochain'));
+
 			if (compte) compte.textContent = `${visibles} match${visibles > 1 ? 's' : ''}`;
-			if (vide) vide.hidden = visibles > 0;
-		});
+		}
+
+		select?.addEventListener('change', rafraichir);
+		rafraichir();
 	})();
 </script>
 
@@ -133,7 +225,7 @@ const equipes = [...new Map(
 		flex-wrap: wrap;
 		align-items: center;
 		gap: var(--space-2) var(--space-4);
-		margin-bottom: var(--space-6);
+		margin-bottom: var(--space-8);
 	}
 
 	.filtre label {
@@ -158,12 +250,39 @@ const equipes = [...new Map(
 		color: var(--color-text-muted);
 	}
 
+	.section {
+		margin-bottom: var(--space-8);
+	}
+
+	.section h2 {
+		font-family: var(--font-heading);
+		font-weight: 900;
+		font-size: 1.375rem;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		margin: 0 0 var(--space-4);
+	}
+
+	.mois-titre {
+		font-family: var(--font-body);
+		font-weight: var(--weight-body-strong);
+		font-size: 0.8125rem;
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-eyebrow);
+		color: var(--color-text-muted);
+		margin: var(--space-6) 0 var(--space-3);
+	}
+
+	.mois:first-of-type .mois-titre {
+		margin-top: 0;
+	}
+
 	.matchs {
 		list-style: none;
 		margin: 0;
 		padding: 0;
 		display: grid;
-		gap: var(--space-4);
+		gap: var(--space-3);
 	}
 
 	.match {
@@ -173,45 +292,51 @@ const equipes = [...new Map(
 		background-color: var(--color-surface);
 	}
 
-	.entete {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: var(--space-2);
-		margin-bottom: var(--space-2);
+	/* Le prochain match se distingue par une bordure renforcée et un libellé
+	   explicite, pas par la couleur seule. */
+	.match.est-prochain {
+		border-color: var(--color-text);
+		box-shadow: inset 0 0 0 1px var(--color-text);
 	}
 
-	.date {
-		font-size: 0.8125rem;
-		text-transform: uppercase;
-		letter-spacing: var(--tracking-eyebrow);
-		color: var(--color-text-muted);
-	}
-
-	.equipe {
-		font-size: 0.8125rem;
-		font-weight: var(--weight-body-strong);
-		color: var(--color-text-muted);
-	}
-
-	.rencontre {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: baseline;
-		gap: var(--space-2);
+	.badge {
 		margin: 0 0 var(--space-2);
-	}
-
-	/* Domicile et extérieur se distinguent par le texte lui-même et par le
-	   remplissage de la pastille, pas seulement par la couleur. */
-	.lieu {
-		padding: 2px var(--space-3);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-full);
 		font-size: 0.75rem;
+		font-weight: var(--weight-body-strong);
 		text-transform: uppercase;
 		letter-spacing: var(--tracking-eyebrow);
+		color: var(--color-text-muted);
+	}
+
+	/* L'adversaire est ce que le visiteur cherche : il passe en premier et domine
+	   la carte. La date, auparavant en capitales espacées, redevient secondaire. */
+	.adversaire {
+		margin: 0 0 var(--space-2);
+		font-family: var(--font-heading);
+		font-weight: var(--weight-heading);
+		font-size: 1.125rem;
+	}
+
+	.meta {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: var(--space-2) var(--space-3);
+		margin: 0;
+		font-size: 0.9375rem;
+		color: var(--color-text-muted);
+	}
+
+	/* Domicile et extérieur se lisent au texte autant qu'au remplissage : la
+	   couleur seule ne porte pas l'information. */
+	.lieu {
+		padding: 1px var(--space-2);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-sm);
+		font-size: 0.6875rem;
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-eyebrow);
+		color: var(--color-text);
 	}
 
 	.lieu[data-domicile='true'] {
@@ -220,20 +345,11 @@ const equipes = [...new Map(
 		color: var(--color-bg);
 	}
 
-	.contre {
-		color: var(--color-text-muted);
-	}
-
-	.adversaire {
-		font-family: var(--font-heading);
-		font-size: 1.0625rem;
-	}
-
 	.score {
-		margin: 0;
 		display: flex;
 		align-items: baseline;
 		gap: var(--space-3);
+		margin: var(--space-2) 0 0;
 	}
 
 	.score-valeur {
@@ -249,27 +365,30 @@ const equipes = [...new Map(
 	}
 
 	.en-attente {
+		margin: var(--space-2) 0 0;
 		font-size: 0.9375rem;
 		color: var(--color-text-muted);
 	}
 
-	.competition {
+	.contexte {
 		margin: var(--space-2) 0 0;
 		font-size: 0.8125rem;
 		color: var(--color-text-muted);
 	}
 
-	.aucun-resultat,
-	.vide {
-		margin-top: var(--space-6);
-		padding: var(--space-6);
+	.vide,
+	.encart {
+		margin: 0;
+		padding: var(--space-4) var(--space-6);
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-md);
 		background-color: var(--color-input-bg);
+		color: var(--color-text-muted);
 	}
 
-	.vide-titre {
+	.encart-titre {
 		margin: 0 0 var(--space-2);
 		font-weight: var(--weight-body-strong);
+		color: var(--color-text);
 	}
 </style>
