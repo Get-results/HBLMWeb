@@ -74,17 +74,15 @@ inventé ici finirait publié comme une information officielle.
 - [x] **Données des catégories** — tarifs et tranches d'années de naissance transmis par
   le bureau le 13/09/2026 (document « TARIFS SAISON 2026-2027 »), créneaux repris des
   visuels du club. Les 12 fiches sont publiées.
-- [ ] **Disponibilité d'essai par catégorie** — le seul champ encore vide. Le parcours
-  affiche « à confirmer avec le club » et propose le contact. Une réponse oui/non par
-  catégorie suffit (`trialAvailable` dans `src/content/categories/*.yaml`).
+- [x] **Disponibilité d'essai** — tranché le 13/09/2026 : elle se voit directement avec le
+  club. Le champ `trialAvailable` reste donc à `null`, le parcours affiche « à voir
+  directement avec le club » et donne le contact. Ce n'est pas une donnée en attente.
 - [ ] **Référent par catégorie** — nom + mail ou téléphone publiable, avec l'accord de la
   personne (site et dépôt publics). Sans référent, le contact générique s'affiche.
 - [x] **Le Handfit** — tarif 150 €, samedi 11h30-12h30 au gymnase Arnassan, réservé aux
   adultes (même borne que les séniors loisirs). Publié, et proposé comme troisième choix
   dans « Trouver ma catégorie » à côté de Compétition et Loisir.
-- [ ] **Genre du Handfit** — `mixte` est déduit par analogie avec les séniors loisirs, le
-  bureau ne l'a pas précisé. À confirmer, ou à corriger si le Handfit s'adresse à un public
-  particulier (`gender` dans `src/content/categories/handfit.yaml`).
+- [x] **Genre du Handfit** — confirmé mixte par le bureau le 13/09/2026.
 - [x] **Les garçons nés en 2009, 2010 et 2011** — le bureau a confirmé le 13/09/2026 qu'il
   **n'existe pas d'équipe -18 masculins** cette saison. Le comportement actuel est donc le
   bon : « Trouver ma catégorie » affiche le contact du club plutôt qu'une catégorie

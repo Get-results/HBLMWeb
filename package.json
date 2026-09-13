@@ -11,7 +11,8 @@
     "build": "astro build && npm run check",
     "preview": "astro preview",
     "astro": "astro",
-    "check": "npm run check:paths && npm run check:links && npm run check:a11y",
+    "check": "npm run check:tokens && npm run check:paths && npm run check:links && npm run check:a11y",
+    "check:tokens": "node scripts/check-tokens.mjs",
     "check:paths": "node scripts/check-base-paths.mjs",
     "check:links": "node scripts/check-links.mjs",
     "check:a11y": "node scripts/check-a11y.mjs"
