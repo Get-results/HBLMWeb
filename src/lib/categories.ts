@@ -75,7 +75,7 @@ export async function getCategoriesResolvables(): Promise<Categorie[]> {
    dans le projet, c'est la garantie qu'ils divergeront.
    -------------------------------------------------------------------------- */
 export type Genre = 'F' | 'M';
-export type Pratique = 'competition' | 'loisir';
+export type Pratique = 'competition' | 'loisir' | 'handfit';
 
 export interface Profil {
 	birthYear: number;

@@ -1,0 +1,38 @@
+# Catégorie du club — collection `categories` (schéma : src/content.config.ts).
+#
+# Tarif : document « TARIFS SAISON 2026-2027 » (150 €).
+# Créneau : transmis par le bureau le 13/09/2026 — il n'apparaît sur aucun des
+# quatre visuels de planning, d'où sa saisie séparée.
+#
+# Public : adultes, même borne que les séniors loisirs (bureau, 13/09/2026).
+#
+# `practice: handfit` est une troisième voie à côté de `competition` et
+# `loisir`, et non un sous-cas du loisir : le club le tarife séparément et lui
+# donne son propre créneau. Il apparaît comme un troisième choix dans
+# « Trouver ma catégorie », posé aux seuls profils adultes.
+#
+# À CONFIRMER : le genre `mixte` est déduit par analogie avec les séniors
+# loisirs, le bureau ne l'a pas précisé. À corriger si le Handfit s'adresse à
+# un public particulier.
+
+label: "Handfit"
+order: 90
+dataStatus: confirme
+
+gender: mixte
+practice: handfit
+
+birthYearFrom: null
+birthYearTo: 2008
+
+season: "2026-2027"
+
+trainingSlots:
+  - day: samedi
+    startTime: "11:30"
+    endTime: "12:30"
+    venue: "Gymnase Arnassan (Lunel)"
+
+licenseFee: 150
+trialAvailable: null
+contact: null
