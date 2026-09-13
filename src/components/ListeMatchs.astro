@@ -48,19 +48,32 @@ const equipes = [...new Map(
 	<>
 		{equipes.length > 1 && (
 			<div class="filtre">
-				{/* Un <select> natif : accessible au clavier et aux lecteurs d'écran
-				    sans rien réimplémenter, et il tient la longueur quand le nombre
-				    d'équipes grandit. */}
-				<label for="filtre-equipe">Filtrer par équipe</label>
-				<select id="filtre-equipe">
-					<option value="">Toutes les équipes</option>
-					{equipes.map(([id, label]) => <option value={id}>{label}</option>)}
-				</select>
+				<span id="filtre-label" class="filtre-titre">Filtrer par équipe</span>
+				{/* role="radiogroup" et navigation aux flèches, comme l'île « Trouver ma
+				    catégorie » (AD-10 : même discipline qu'AD-7). Des boutons plutôt
+				    qu'une liste déroulante : les équipes sont toutes visibles d'un coup
+				    d'œil, sans ouvrir un menu. */}
+				<div class="options" role="radiogroup" aria-labelledby="filtre-label">
+					<button type="button" role="radio" aria-checked="true" data-valeur="" tabindex="0">
+						Toutes
+					</button>
+					{equipes.map(([id, label]) => (
+						<button type="button" role="radio" aria-checked="false" data-valeur={id} tabindex="-1">
+							{label}
+						</button>
+					))}
+				</div>
 				<p class="compte" aria-live="polite">
 					{matchs.length} match{matchs.length > 1 ? 's' : ''}
 				</p>
 			</div>
 		)}
+
+		{/* Rendu ici plutôt que fabriqué en JavaScript : un élément créé par script
+		    n'a pas l'attribut de portée qu'Astro ajoute au build, et les styles du
+		    composant ne s'y appliqueraient pas. Le script le DÉPLACE dans la carte
+		    concernée — un seul exemplaire, jamais dupliqué. */}
+		<p class="badge" id="badge-prochain" hidden>Prochain match</p>
 
 		<section class="section" id="section-a-venir">
 			<h2>À venir</h2>
@@ -80,7 +93,11 @@ const equipes = [...new Map(
 									<span class="lieu" data-domicile={String(match.domicile)}>
 										{match.domicile ? 'Domicile' : 'Extérieur'}
 									</span>
-									{match.categorieLabel ?? 'HBLM'}
+									{/* Le nom d'équipe tel que la FFHandball l'écrit, et non le
+									    libellé de catégorie : plusieurs équipes du club sont des
+									    ententes — « Lunel Marsillargues-Lansargues » — que « -15 ans
+									    filles » effacerait. */}
+									{match.equipeClub}
 								</p>
 								<p class="adversaire"><span class="contre">contre</span> {match.adversaire}</p>
 								<p class="meta">{formaterDateMatch(match.dateHeure) ?? 'Date à préciser'}</p>
@@ -109,7 +126,7 @@ const equipes = [...new Map(
 								<span class="lieu" data-domicile={String(match.domicile)}>
 									{match.domicile ? 'Domicile' : 'Extérieur'}
 								</span>
-								{match.categorieLabel ?? 'HBLM'}
+								{match.equipeClub}
 							</p>
 							<p class="adversaire"><span class="contre">contre</span> {match.adversaire}</p>
 							<p class="meta">{formaterDateMatch(match.dateHeure) ?? 'Date à préciser'}</p>
@@ -151,8 +168,11 @@ const equipes = [...new Map(
 		const listeResultats = document.getElementById('liste-resultats');
 		if (!sectionAVenir || !listeResultats) return;
 
-		const select = document.getElementById('filtre-equipe');
+		const groupe = document.querySelector('[role="radiogroup"]');
+		const boutons = groupe ? [...groupe.querySelectorAll('[role="radio"]')] : [];
 		const compte = document.querySelector('.compte');
+		const badge = document.getElementById('badge-prochain');
+		let choix = '';
 
 		/* 1. Rattraper le décalage entre l'heure du build et maintenant. Un match
 		      dont le coup d'envoi est passé rejoint les résultats, en tête puisque
@@ -161,8 +181,7 @@ const equipes = [...new Map(
 		sectionAVenir.querySelectorAll('.match[data-debut]').forEach((carte) => {
 			const debut = carte.dataset.debut;
 			if (!debut || new Date(debut).getTime() >= maintenant) return;
-			carte.querySelector('.badge')?.remove();
-			/* La carte passe côté résultats sans score : c'est exactement le cas que
+/* La carte passe côté résultats sans score : c'est exactement le cas que
 			   « Résultat pas encore connu » décrit — match joué, score non publié. */
 			if (!carte.querySelector('.score, .en-attente')) {
 				const attente = document.createElement('p');
@@ -176,7 +195,6 @@ const equipes = [...new Map(
 		const cartes = [...document.querySelectorAll('.match')];
 
 		function rafraichir() {
-			const choix = select ? select.value : '';
 			let visibles = 0;
 
 			cartes.forEach((carte) => {
@@ -199,50 +217,86 @@ const equipes = [...new Map(
 
 			/* 2. Le badge « Prochain match » va sur la première carte VISIBLE de la
 			      section À venir : il suit donc le filtre au lieu d'être figé. */
-			document.querySelectorAll('.badge').forEach((b) => b.remove());
 			const prochain = sectionAVenir.querySelector('.match:not([hidden])');
-			if (prochain) {
-				const badge = document.createElement('p');
-				badge.className = 'badge';
-				badge.textContent = 'Prochain match';
-				prochain.prepend(badge);
-				prochain.classList.add('est-prochain');
-			}
 			document
 				.querySelectorAll('.est-prochain')
 				.forEach((c) => c !== prochain && c.classList.remove('est-prochain'));
+			if (prochain) {
+				prochain.classList.add('est-prochain');
+				prochain.prepend(badge);
+				badge.hidden = false;
+			} else {
+				badge.hidden = true;
+			}
 
 			if (compte) compte.textContent = `${visibles} match${visibles > 1 ? 's' : ''}`;
 		}
 
-		select?.addEventListener('change', rafraichir);
+		/* Sélection, aria-checked et tabindex mobile : un seul bouton du groupe est
+		   tabulable, les flèches circulent entre eux. Même contrat que l'île
+		   « Trouver ma catégorie ». */
+		function selectionner(bouton) {
+			boutons.forEach((b) => {
+				const actif = b === bouton;
+				b.setAttribute('aria-checked', String(actif));
+				b.tabIndex = actif ? 0 : -1;
+			});
+			choix = bouton.dataset.valeur;
+			rafraichir();
+		}
+
+		boutons.forEach((bouton, index) => {
+			bouton.addEventListener('click', () => selectionner(bouton));
+			bouton.addEventListener('keydown', (evenement) => {
+				const pas = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[evenement.key];
+				if (!pas) return;
+				evenement.preventDefault();
+				const suivant = boutons[(index + pas + boutons.length) % boutons.length];
+				selectionner(suivant);
+				suivant.focus();
+			});
+		});
+
 		rafraichir();
 	})();
 </script>
 
 <style>
 	.filtre {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: var(--space-2) var(--space-4);
 		margin-bottom: var(--space-8);
 	}
 
-	.filtre label {
+	.filtre-titre {
+		display: block;
+		margin-bottom: var(--space-3);
 		font-weight: var(--weight-body-strong);
 		font-size: 0.875rem;
 	}
 
-	.filtre select {
+	.options {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+	}
+
+	.options [role='radio'] {
 		min-height: 44px;
-		padding: var(--space-2) var(--space-3);
+		padding: var(--space-2) var(--space-4);
 		border: 1px solid var(--color-border);
-		border-radius: var(--radius-sm);
+		border-radius: var(--radius-full);
 		background-color: var(--color-input-bg);
 		color: var(--color-text);
 		font-family: var(--font-body);
-		font-size: 1rem;
+		font-size: 0.9375rem;
+		cursor: pointer;
+	}
+
+	/* L'état sélectionné ne repose pas sur la couleur seule : bordure renforcée
+	   et texte en gras, comme les options de « Trouver ma catégorie ». */
+	.options [role='radio'][aria-checked='true'] {
+		border-color: var(--color-text);
+		box-shadow: inset 0 0 0 1px var(--color-text);
+		font-weight: var(--weight-body-strong);
 	}
 
 	.compte {
@@ -293,20 +347,28 @@ const equipes = [...new Map(
 		background-color: var(--color-surface);
 	}
 
-	/* Le prochain match se distingue par une bordure renforcée et un libellé
-	   explicite, pas par la couleur seule. */
+	/* Le prochain match se distingue par la couleur d'accent du club, mais pas
+	   SEULEMENT par elle : le badge « Prochain match » porte l'information en
+	   toutes lettres, lisible en monochrome comme en vision atypique. */
 	.match.est-prochain {
-		border-color: var(--color-text);
-		box-shadow: inset 0 0 0 1px var(--color-text);
+		border-color: var(--color-accent);
+		box-shadow: inset 0 0 0 1px var(--color-accent);
 	}
 
+	/* Texte sur l'accent : --color-on-accent, valeur fixe. L'accent ne bascule pas
+	   entre les thèmes, un texte qui suivrait le thème deviendrait illisible en
+	   sombre (DESIGN.md). */
 	.badge {
-		margin: 0 0 var(--space-2);
+		display: inline-block;
+		margin: 0 0 var(--space-3);
+		padding: 2px var(--space-3);
+		border-radius: var(--radius-full);
+		background-color: var(--color-accent);
+		color: var(--color-on-accent);
 		font-size: 0.75rem;
 		font-weight: var(--weight-body-strong);
 		text-transform: uppercase;
 		letter-spacing: var(--tracking-eyebrow);
-		color: var(--color-text-muted);
 	}
 
 	/* Notre équipe d'abord : elle dit de qui parle la carte. L'adversaire reste
