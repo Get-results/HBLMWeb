@@ -140,18 +140,13 @@ const fiches = Object.fromEntries(
 	    d'écran ne le remarquerait pas autrement. */}
 	<div id="finder-resultat" class="resultat" role="region" aria-live="polite" aria-labelledby="finder-titre" hidden></div>
 
-	{/* Contacts joints à un résultat TROUVÉ. Ils ont leur propre intro : celle du
-	    bloc de repli demande l'âge et le niveau, ce qui n'a aucun sens une fois la
-	    catégorie affichée — le visiteur vient de les saisir. Deux variantes plutôt
-	    qu'un texte réécrit en JavaScript : la formulation reste dans le template,
-	    au même endroit que les autres. */}
-	<div id="finder-contact-essai" hidden>
-		<GenericContact
-			intro="La séance d'essai reste à confirmer avec le club — écrivez-nous, nous vous répondrons directement."
-		/>
-	</div>
-	<div id="finder-contact-question" hidden>
-		<GenericContact intro="Une question sur cette catégorie ? Écrivez-nous." />
+	{/* Contact joint à un résultat TROUVÉ. Volontairement minimal : la fiche
+	    au-dessus dit déjà ce qu'il y a à dire — le créneau, le tarif, et le cas
+	    échéant que l'essai reste à confirmer. Un encadré qui répéterait ces
+	    phrases ferait doublon. Ici, seule l'adresse apporte quelque chose, donc
+	    on se limite à elle, sans bordure pour éviter une boîte dans une boîte. */}
+	<div id="finder-contact-suite" hidden>
+		<GenericContact intro="Une question ? Écrivez-nous." discret />
 	</div>
 
 	{/* Rendu une fois puis simplement montré ou caché : dupliquer son balisage
@@ -170,8 +165,7 @@ const fiches = Object.fromEntries(
 		if (!form) return;
 
 		const champPratique = document.getElementById('champ-pratique');
-		const contactEssai = document.getElementById('finder-contact-essai');
-		const contactQuestion = document.getElementById('finder-contact-question');
+		const contactSuite = document.getElementById('finder-contact-suite');
 		const zoneResultat = document.getElementById('finder-resultat');
 		const zoneRepli = document.getElementById('finder-repli');
 		const inputAnnee = document.getElementById('annee');
@@ -301,13 +295,11 @@ const fiches = Object.fromEntries(
 			zoneResultat.innerHTML = lignes.join('');
 			zoneResultat.hidden = false;
 
-			/* Le contact reste proposé même en cas de succès : la fiche répond au
-			   « quand », pas forcément au « et maintenant » — et il devient
-			   indispensable quand la disponibilité d'essai n'est pas connue. On joint
-			   la variante qui correspond, pas celle du repli. */
+			/* Sans référent de catégorie, ou tant que la disponibilité d'essai n'est
+			   pas connue, le visiteur a besoin de savoir à qui s'adresser. On joint
+			   donc le contact du club — sans reformuler ce que la fiche vient de dire. */
 			if (!fiche.contact?.name || fiche.essai === null) {
-				const source = fiche.essai === null ? contactEssai : contactQuestion;
-				zoneResultat.appendChild(source.querySelector('.contact-generique').cloneNode(true));
+				zoneResultat.appendChild(contactSuite.querySelector('.contact-generique').cloneNode(true));
 			}
 		});
 	})();
