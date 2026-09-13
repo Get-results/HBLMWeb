@@ -140,6 +140,20 @@ const fiches = Object.fromEntries(
 	    d'écran ne le remarquerait pas autrement. */}
 	<div id="finder-resultat" class="resultat" role="region" aria-live="polite" aria-labelledby="finder-titre" hidden></div>
 
+	{/* Contacts joints à un résultat TROUVÉ. Ils ont leur propre intro : celle du
+	    bloc de repli demande l'âge et le niveau, ce qui n'a aucun sens une fois la
+	    catégorie affichée — le visiteur vient de les saisir. Deux variantes plutôt
+	    qu'un texte réécrit en JavaScript : la formulation reste dans le template,
+	    au même endroit que les autres. */}
+	<div id="finder-contact-essai" hidden>
+		<GenericContact
+			intro="La séance d'essai reste à confirmer avec le club — écrivez-nous, nous vous répondrons directement."
+		/>
+	</div>
+	<div id="finder-contact-question" hidden>
+		<GenericContact intro="Une question sur cette catégorie ? Écrivez-nous." />
+	</div>
+
 	{/* Rendu une fois puis simplement montré ou caché : dupliquer son balisage
 	    dans le script aurait créé une seconde version du contact à maintenir. */}
 	<div id="finder-repli" class="resultat" hidden>
@@ -156,6 +170,8 @@ const fiches = Object.fromEntries(
 		if (!form) return;
 
 		const champPratique = document.getElementById('champ-pratique');
+		const contactEssai = document.getElementById('finder-contact-essai');
+		const contactQuestion = document.getElementById('finder-contact-question');
 		const zoneResultat = document.getElementById('finder-resultat');
 		const zoneRepli = document.getElementById('finder-repli');
 		const inputAnnee = document.getElementById('annee');
@@ -285,11 +301,13 @@ const fiches = Object.fromEntries(
 			zoneResultat.innerHTML = lignes.join('');
 			zoneResultat.hidden = false;
 
-			/* Le contact générique reste proposé même en cas de succès : la fiche
-			   répond au « quand », pas forcément au « et maintenant » — et il devient
-			   indispensable quand la disponibilité d'essai n'est pas connue. */
+			/* Le contact reste proposé même en cas de succès : la fiche répond au
+			   « quand », pas forcément au « et maintenant » — et il devient
+			   indispensable quand la disponibilité d'essai n'est pas connue. On joint
+			   la variante qui correspond, pas celle du repli. */
 			if (!fiche.contact?.name || fiche.essai === null) {
-				zoneResultat.appendChild(zoneRepli.querySelector('.contact-generique').cloneNode(true));
+				const source = fiche.essai === null ? contactEssai : contactQuestion;
+				zoneResultat.appendChild(source.querySelector('.contact-generique').cloneNode(true));
 			}
 		});
 	})();
