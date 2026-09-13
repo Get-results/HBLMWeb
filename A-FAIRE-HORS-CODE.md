@@ -139,6 +139,19 @@ Journal des arbitrages, pour ne pas les rejouer dans six mois.
   service et des identifiants en secrets ; ou renoncer à la story.
   → Décision reportée le 13/09/2026 : « on verra plus tard pour l'authentification ».
 
+- [ ] **Bot Fight Mode désactivé sur `cedricsanchez.xyz`** — le 13/09/2026, pour débloquer le
+  pipeline : Cloudflare bloquait les runners GitHub, dont les IP sont des IP de datacenter.
+  La protection DDoS, elle, reste active — c'est un mécanisme distinct et non désactivable.
+  → Conséquence : robots d'indexation et scrapers passent désormais sur **toute la zone**,
+  pas seulement sur `/api/`.
+  → Durcissement possible si ça devient gênant : ajouter un en-tête secret partagé à la
+  requête du pipeline, créer une règle WAF qui n'autorise `/api/` qu'aux requêtes le
+  portant, et réactiver Bot Fight Mode. La valeur du secret se renseigne des deux côtés
+  (environnement GitHub `api` et règle Cloudflare) — le site n'a pas à la connaître.
+  → À noter pour qui reprendrait le sujet : le Bot Fight Mode de l'offre gratuite ne peut
+  **pas** être contourné par une règle WAF. Seul Super Bot Fight Mode (offre Pro) accepte
+  des exceptions par chemin.
+
 ## 4. À trancher plus tard
 
 - **Activer le nom de domaine du club** ? Déclencheur : mise en production réelle.
