@@ -31,6 +31,16 @@ pnpm-debug.log*
 /asset_placeholder/
 /assets/
 
+# Garde-fou : captures et images déposées à la racine. Elles n'y ont jamais leur
+# place — les documents source du club vivent dans /assets/, les visuels de
+# travail dans /asset_placeholder/. La règle existe parce que le cas s'est
+# produit : un `git add -A` a ramassé cinq captures qui traînaient ici, dont un
+# organigramme avec les visages et les noms du conseil d'administration.
+/*.png
+/*.jpg
+/*.jpeg
+/*.webp
+
 # Documentation de l'API des matchs, fournie par le porteur du projet.
 # NON VERSIONNÉE, et c'est délibéré : FRONTEND_INTEGRATION.md documente la route
 # d'authentification avec des identifiants par défaut en clair

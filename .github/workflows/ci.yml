@@ -15,6 +15,13 @@ on:
   pull_request:
     branches: [main]
 
+# Le jeton ne sert qu'au checkout : ce workflow lit le code, le construit, et
+# n'écrit nulle part. Sans ce bloc il hérite des permissions par défaut du
+# dépôt, qui peuvent être bien plus larges — et une action tierce compromise
+# en disposerait. `deploy.yml` déclare déjà les siennes.
+permissions:
+  contents: read
+
 jobs:
   build:
     name: build
