@@ -6,9 +6,12 @@
  * Mobile : menu hamburger qui affiche la liste de liens en overlay.
  * Desktop (≥640px) : liens horizontaux dans la barre.
  *
- * Le ThemeToggle reste indépendant (fixé en z-index: 100), le header
- * ne le contient pas pour garder les deux composants découplés.
+ * Le ThemeToggle vit dans la barre, à côté du hamburger. Posé auparavant en
+ * `position: fixed` par-dessus la page, il flottait au-dessus du contenu et
+ * chevauchait le header au défilement.
  */
+import ThemeToggle from './ThemeToggle.astro';
+
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
@@ -17,24 +20,30 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		<span class="logo-text">HBLM</span><span class="logo-dot">.</span>
 	</a>
 
-	<button
-		id="nav-toggle"
-		class="nav-toggle"
-		type="button"
-		aria-label="Ouvrir le menu"
-		aria-expanded="false"
-		aria-controls="nav-menu"
-	>
-		<svg class="icon-menu" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-			<line x1="3" y1="6" x2="21" y2="6" />
-			<line x1="3" y1="12" x2="21" y2="12" />
-			<line x1="3" y1="18" x2="21" y2="18" />
-		</svg>
-		<svg class="icon-close" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-			<line x1="18" y1="6" x2="6" y2="18" />
-			<line x1="6" y1="6" x2="18" y2="18" />
-		</svg>
-	</button>
+	{/* Les deux commandes de la barre. L'ordre du DOM suit l'ordre visuel :
+	    réglage d'affichage, puis ouverture du menu. */}
+	<div class="header-actions">
+		<ThemeToggle />
+
+		<button
+			id="nav-toggle"
+			class="nav-toggle"
+			type="button"
+			aria-label="Ouvrir le menu"
+			aria-expanded="false"
+			aria-controls="nav-menu"
+		>
+			<svg class="icon-menu" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+				<line x1="3" y1="6" x2="21" y2="6" />
+				<line x1="3" y1="12" x2="21" y2="12" />
+				<line x1="3" y1="18" x2="21" y2="18" />
+			</svg>
+			<svg class="icon-close" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+				<line x1="18" y1="6" x2="6" y2="18" />
+				<line x1="6" y1="6" x2="18" y2="18" />
+			</svg>
+		</button>
+	</div>
 
 	<nav id="nav-menu" class="nav-menu" aria-label="Navigation principale">
 		<ul class="nav-list">
@@ -73,6 +82,13 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 	.logo-dot {
 		color: var(--color-accent);
+	}
+
+	/* Groupe de commandes, aligné à droite de la barre */
+	.header-actions {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
 	}
 
 	/* Hamburger — visible uniquement sur mobile */
@@ -146,11 +162,20 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			display: none;
 		}
 
+		/* Les liens rejoignent la barre et poussent le groupe de commandes tout
+		   à droite. `order` remet le groupe après la nav : dans le DOM il la
+		   précède, pour que le hamburger vienne avant les liens qu'il ouvre. */
 		.nav-menu {
 			display: block;
 			position: static;
 			background: none;
 			padding: 0;
+			margin-left: auto;
+		}
+
+		.header-actions {
+			order: 1;
+			margin-left: var(--space-6);
 		}
 
 		.nav-list {
