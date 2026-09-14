@@ -177,7 +177,7 @@ Journal des arbitrages, pour ne pas les rejouer dans six mois.
 | 14/09/2026 | Le **tarif d'un stage peut rester inconnu sans empêcher sa publication**, contrairement au tarif de licence | HelloAsso masque la billetterie des événements terminés : le tarif d'août 2026 est réellement introuvable. L'exiger aurait conduit à en approcher un, c'est-à-dire à l'inventer. La fiche préfère n'afficher aucun prix, et le reste de ses informations est vrai. |
 | 14/09/2026 | Les **quatre cartes d'actualité inventées de l'accueil sont retirées** ; l'accueil lit désormais la même source que « Vie du club » | Elles étaient écrites en dur et ne relataient aucun fait vérifié — dont un « 351 licenciés, un record ! » — sur un site publiquement accessible. Une source unique pour les deux pages rend par ailleurs impossible qu'elles racontent deux choses différentes. |
 | 14/09/2026 | Les **chiffres du club passent derrière un drapeau de confirmation** ; le nombre de gymnases est **déduit de la liste** | L'effectif portait un millésime périmé et un superlatif que rien n'étaye : mieux vaut n'afficher aucun chiffre qu'un chiffre de 2025 présenté comme courant. Le « 4 gymnases » était un littéral qu'aucune liste ne garantissait — ajouter une salle laissait le texte mentir sans que rien ne le signale. |
-| 14/09/2026 | **Pas de demande de purge à GitHub Support** pour le commit orphelin `0d68fd2` | La purge serait la seule action qui retirerait vraiment l'objet, mais elle suppose d'ouvrir un ticket et d'attendre, pour un contenu dont rien n'est exploitable : identifiants de développement local, jeton d'exemple fabriqué, affiches déjà publiées par le club. Le seul point qui compte vraiment — la capture des visages du conseil d'administration — se traite en prévenant les personnes concernées, pas en discutant avec un support. |
+| 14/09/2026 | **Pas de demande de purge à GitHub Support** pour le commit orphelin du 14/09 (section 4) | La purge serait la seule action qui retirerait vraiment l'objet, mais elle suppose d'ouvrir un ticket et d'attendre, pour un contenu dont rien n'est techniquement exploitable. Le seul point qui compte se traite en prévenant les personnes concernées, pas en discutant avec un support. |
 | 14/09/2026 | **Galeries photo ajournées**, droit à l'image mis de côté | Publier des photos, notamment de mineurs, sans autorisation écrite engage l'association. Les articles, eux, ne dépendent pas des photos : l'epic 4 avance sans sa partie galerie. |
 | 11/09/2026 | **Web3Forms** pour le formulaire de contact, plutôt qu'un backend maison | Site statique : aucune clé ne peut être gardée secrète côté client. Un Cloudflare Worker imposerait domaine + SPF/DKIM + anti-spam à maintenir, pour ~15 messages/an attendus. |
 | 11/09/2026 | **Pas de nom de domaine** pour l'instant, on reste sur `github.io` | Aller au plus simple tant que le site n'est pas en production. Le club en possède un, activable plus tard. |
@@ -239,25 +239,22 @@ Rien ici n'attend le bureau, mais rien ne se règle non plus d'un simple commit.
   → Le pire scénario actuel est du spam dans la boîte du club : désagréable, visible
   immédiatement, sans danger.
 
-- [ ] **Un commit orphelin reste public sur GitHub** — le commit
-  `0d68fd205764d468b39cd29be99db2be891380bd` (14/09/2026) a été poussé sur
-  `origin/feat/epic-4-vie-du-club`, puis remplacé par un force-push. Il n'est plus
-  atteignable depuis aucune branche et la copie locale est propre, mais GitHub conserve
-  l'objet et le sert à qui connaît son SHA.
-  → Il embarque les quatre fichiers `docs/` (voir section 1) et cinq captures d'écran.
-  Le point sensible n'est **pas** les identifiants `admin/admin` — ce sont ceux du
-  développement local — mais `image.png` : **l'organigramme du conseil d'administration,
-  13 noms, fonctions et photos de visage**, alors que le site n'affiche que des initiales
-  faute d'accord sur le droit à l'image. La publication contredit donc frontalement une
-  décision du bureau, et c'est le seul enjeu réel du dossier.
+- [ ] **Prévenir le bureau d'une exposition de contenu** — le 14/09/2026, un `git add`
+  trop large a fait entrer dans un commit poussé des fichiers de travail qui traînaient à
+  la racine du dépôt, dont un document interne concernant les membres du conseil
+  d'administration. Le commit a été remplacé par un force-push, mais GitHub conserve les
+  objets de ce type et l'exposition reste en cours.
+  → **Ce fichier ne décrit pas le contenu concerné ni la manière d'y accéder : il est
+  lui-même versionné dans un dépôt public.** Le détail — référence exacte, inventaire,
+  analyse d'exploitabilité — est dans le rapport d'audit du 14/09/2026, conservé **hors
+  dépôt**. À ranger dans un endroit durable, le rapport d'origine étant temporaire.
   → **Décision du 14/09/2026 : pas de demande de purge à GitHub Support** (motif en
   section 3). Ce n'est donc pas une action en attente, c'est un état assumé.
-  → Reste à faire : **prévenir le bureau** que cette capture a été publiquement accessible,
-  et depuis quand. C'est une obligation de transparence, pas un incident à déclarer — ce
-  sont des adultes en fonction associative, aucun mineur n'y figure.
-  → Garde-fou déjà posé : le `.gitignore` refuse maintenant toute image déposée à la
-  racine du dépôt. Le commit ne vient pas d'un défaut de conception mais d'un `git add`
-  trop large sur des fichiers de travail qui traînaient là.
+  → Reste à faire : **prévenir les personnes concernées**, en disant que l'exposition est
+  en cours et non close, puisque la purge est écartée. Obligation de transparence, pas
+  incident à déclarer : ce sont des adultes en fonction associative, aucun mineur.
+  → Garde-fou déjà posé : le `.gitignore` refuse désormais toute image déposée à la racine
+  du dépôt. L'origine est une manipulation trop large, pas un défaut de conception.
 
 ---
 
