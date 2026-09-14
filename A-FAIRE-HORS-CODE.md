@@ -168,6 +168,20 @@ Journal des arbitrages, pour ne pas les rejouer dans six mois.
   quoi elle se reproduira à chaque catégorie où la FFHandball renomme une équipe en cours
   de saison.
 
+- [ ] **Protection anti-spam du formulaire de contact** — à activer si du spam arrive, pas
+  avant. État actuel : seul le honeypot `botcheck` protège, et il n'arrête que les robots
+  qui remplissent une vraie page. La clé Web3Forms étant publique par conception — elle est
+  dans le HTML — n'importe qui peut poster directement sur leur API sans passer par le site,
+  et contourner le piège.
+  → **hCaptcha** est la seule protection réellement efficace sur l'offre gratuite, et
+  Web3Forms l'intègre sans configuration (clé de site partagée fournie).
+  → La **restriction par domaine** répondrait exactement au problème, mais elle est payante.
+  → Coût d'hCaptcha à ne pas oublier : un script tiers sur un site conçu sans JavaScript
+  client, une friction pour le visiteur, et une **obligation RGPD** — il faudra compléter
+  les mentions légales, car un tiers reçoit alors des données du visiteur.
+  → Le pire scénario actuel est du spam dans la boîte du club : désagréable, visible
+  immédiatement, sans danger.
+
 ## 4. À trancher plus tard
 
 - **Activer le nom de domaine du club** ? Déclencheur : mise en production réelle.
