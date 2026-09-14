@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCategoriesPubliees, formaterAnneesNaissance } from '../lib/categories';
 
 const baseUrl = import.meta.env.BASE_URL;
 const contactUrl = baseUrl.endsWith('/') ? `${baseUrl}inscription#contact-form` : `${baseUrl}/inscription#contact-form`;
@@ -31,11 +32,13 @@ const filieres = [
     categories: [
       {
         nom: '-7 ans et Baby-hand',
+        id: 'baby-hand',
         code: 'U7',
         creneaux: [{ jour: 'Samedi', debut: '9h00', fin: '10h00', commune: 'Lunel', gymnase: null, groupe: null }],
       },
       {
         nom: '-9 ans mixte',
+        id: 'ecole-de-hand',
         code: 'U9',
         creneaux: [
           { jour: 'Mercredi', debut: '16h00', fin: '17h30', commune: 'Marsillargues', gymnase: null, groupe: null },
@@ -49,6 +52,7 @@ const filieres = [
     categories: [
       {
         nom: '-11 ans filles',
+        id: 'moins-de-11-feminines',
         code: 'U11',
         creneaux: [
           { jour: 'Mardi', debut: '17h30', fin: '19h00', commune: 'Lunel', gymnase: null, groupe: null },
@@ -57,6 +61,7 @@ const filieres = [
       },
       {
         nom: '-13 ans filles',
+        id: 'moins-de-13-feminines',
         code: 'U13',
         creneaux: [
           { jour: 'Lundi', debut: '17h30', fin: '19h00', commune: 'Lunel', gymnase: null, groupe: 'D1' },
@@ -66,6 +71,7 @@ const filieres = [
       },
       {
         nom: '-15 ans filles',
+        id: 'moins-de-15-feminines',
         code: 'U15',
         creneaux: [
           { jour: 'Mercredi', debut: '17h30', fin: '19h00', commune: 'Lunel', gymnase: null, groupe: 'Div. 1' },
@@ -74,6 +80,7 @@ const filieres = [
       },
       {
         nom: '-18 ans filles',
+        id: 'moins-de-18-feminines',
         code: 'U18',
         creneaux: [
           { jour: 'Mercredi', debut: '19h00', fin: '20h30', commune: 'Marsillargues', gymnase: null, groupe: 'Équipe 1' },
@@ -88,6 +95,7 @@ const filieres = [
     categories: [
       {
         nom: '-11 ans garçons',
+        id: 'moins-de-11-masculins',
         code: 'U11',
         creneaux: [
           { jour: 'Lundi', debut: '18h00', fin: '19h30', commune: 'Marsillargues', gymnase: null, groupe: null },
@@ -96,6 +104,7 @@ const filieres = [
       },
       {
         nom: '-13 ans garçons',
+        id: 'moins-de-13-masculins',
         code: 'U13',
         creneaux: [
           { jour: 'Mercredi', debut: '17h30', fin: '19h00', commune: 'Marsillargues', gymnase: null, groupe: 'G1 & G2' },
@@ -104,6 +113,7 @@ const filieres = [
       },
       {
         nom: '-15 ans garçons',
+        id: 'moins-de-15-masculins',
         code: 'U15',
         creneaux: [
           { jour: 'Lundi', debut: '19h00', fin: '20h30', commune: 'Lunel', gymnase: null, groupe: 'G1 & G2' },
@@ -119,6 +129,7 @@ const filieres = [
     categories: [
       {
         nom: 'Séniors filles',
+        id: 'seniors-filles',
         code: 'SF',
         creneaux: [
           { jour: 'Mercredi', debut: '20h30', fin: '22h30', commune: 'Marsillargues', gymnase: null, groupe: null },
@@ -127,6 +138,7 @@ const filieres = [
       },
       {
         nom: 'Séniors garçons',
+        id: 'seniors-garcons',
         code: 'SG',
         creneaux: [
           { jour: 'Mardi', debut: '20h30', fin: '22h30', commune: 'Lunel', gymnase: null, groupe: null },
@@ -135,6 +147,7 @@ const filieres = [
       },
       {
         nom: 'Séniors loisirs',
+        id: 'seniors-loisirs',
         code: 'SL',
         creneaux: [
           { jour: 'Lundi', debut: '20h30', fin: '22h30', commune: 'Lunel', gymnase: null, groupe: null },
@@ -146,6 +159,34 @@ const filieres = [
 ];
 
 const saison = '2026-2027';
+
+/* Années de naissance — la question que se pose réellement un parent devant
+   cette page : « lequel de ces créneaux est celui de mon enfant ? ». La donnée
+   vient du document « TARIFS SAISON 2026-2027 » du bureau et existe déjà dans la
+   collection `categories`, où le parcours d'inscription la lit. On la relit ici
+   au lieu de la recopier : deux copies d'une même donnée officielle finissent
+   toujours par diverger, et c'est la version fausse qu'un parent lira.
+
+   Le lien se fait par `id` — le nom du fichier de la fiche — et non par le
+   libellé affiché : « -7 ans et Baby-hand » ici, « -7 ans et baby-hand » dans la
+   collection, et un rapprochement par texte se casserait sur cette majuscule
+   sans rien dire. `getCategoriesPubliees` garantit au passage que seules les
+   fiches confirmées par le bureau sont lues. */
+const fiches = new Map((await getCategoriesPubliees()).map((fiche) => [fiche.id, fiche.data]));
+
+/* Un `id` qui ne résout pas casse le build plutôt que d'effacer silencieusement
+   la ligne d'années : une catégorie renommée doit se voir tout de suite, pas
+   être découverte en ligne par un parent qui ne trouve plus son repère. */
+const anneesDe = (id: string): string | null => {
+  const fiche = fiches.get(id);
+  if (!fiche) {
+    throw new Error(
+      `Planning : la catégorie « ${id} » n'a pas de fiche confirmée dans src/content/categories/.\n` +
+        `Fiches disponibles : ${[...fiches.keys()].join(', ')}.`,
+    );
+  }
+  return formaterAnneesNaissance(fiche);
+};
 
 /* Le créneau l'emporte sur la table ; si ni l'un ni l'autre ne renseigne la
    salle, la page le dit au lieu de laisser un blanc. */
@@ -184,6 +225,9 @@ const gymnasesIncomplets = filieres.some((f) =>
                 <span class="categorie-code">{categorie.code}</span>
                 {categorie.nom}
               </h3>
+              {anneesDe(categorie.id) && (
+                <p class="categorie-annees">{anneesDe(categorie.id)}</p>
+              )}
               <ul class="creneaux">
                 {categorie.creneaux.map((creneau) => (
                   <li class="creneau">
@@ -298,6 +342,21 @@ const gymnasesIncomplets = filieres.some((f) =>
     font-weight: 800;
     font-size: 18px;
     margin: 0 0 14px;
+  }
+
+  /* Années de naissance : un repère, pas un titre. Elles sont en retrait sous le
+     nom de la catégorie, sans capitales ni interlettrage — on les lit une fois
+     pour se situer, puis l'œil va aux horaires, qui sont l'objet de la page. */
+  .categorie-annees {
+    margin: 0 0 var(--space-3);
+    font-size: var(--size-eyebrow);
+    color: var(--color-text-muted);
+  }
+
+  /* Le nom se rapproche de ses années quand il en a : les deux forment un bloc,
+     et l'écart utile est celui qui les sépare des créneaux. */
+  .categorie-nom:has(+ .categorie-annees) {
+    margin-bottom: var(--space-1);
   }
 
   .categorie-code {
