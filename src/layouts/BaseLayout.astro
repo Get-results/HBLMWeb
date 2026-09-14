@@ -5,7 +5,6 @@ import '@fontsource/work-sans/400.css';
 import '@fontsource/work-sans/600.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import ThemeToggle from '../components/ThemeToggle.astro';
 import '../styles/tokens.css';
 import '../styles/global.css';
 
@@ -56,11 +55,8 @@ const umamiId = import.meta.env.PUBLIC_UMAMI_ID;
 		    qu'il n'a pas le focus. Permet de sauter la navigation, répétée sur
 		    chaque page, pour atteindre directement le contenu (WCAG 2.4.1). */}
 		<a href="#contenu" class="skip-link">Aller au contenu</a>
+		{/* Le Header porte la bascule de thème : elle fait partie de la barre. */}
 		<Header />
-		{/* Après le Header dans le DOM : le bouton est en position fixed, donc sa
-		    place ici ne change rien visuellement, mais l'ordre de tabulation
-		    devient naturel (navigation d'abord, réglage d'affichage ensuite). */}
-		<ThemeToggle />
 		{/* tabindex="-1" : sans lui, certains navigateurs font défiler jusqu'à
 		    l'ancre sans y déplacer le focus clavier — le lien d'évitement ne
 		    servirait alors à rien. */}
