@@ -10,8 +10,26 @@
    `getCategoriesPubliees()`, qui ne rend que les fiches validées par le bureau.
    Tant qu'il n'y en a aucune, on affiche un état « en cours de préparation »
    explicite plutôt qu'un tableau de valeurs inventées — le site est en ligne, et
-   un horaire faux fait se déplacer un parent pour rien. */
-import { getCategoriesPubliees, formaterCreneau, formaterTarif } from '../lib/categories';
+   un horaire faux fait se déplacer un parent pour rien.
+
+   Mise en page — reprise des idiomes déjà éprouvés ailleurs sur le site :
+   la carte par catégorie et l'alignement jour / horaire / gymnase viennent de
+   `planning.astro` ; le bloc à gauche qui sert de point d'accroche au regard
+   vient de `CarteMatch.astro`, où c'est la date.
+
+   Ce qui a changé et pourquoi. La version précédente empilait les douze
+   catégories dans une seule `<dl>` : douze titres et trente lignes grises de
+   poids voisin, sans repère. Surtout, sur une section intitulée « Tarifs par
+   catégorie », le tarif était la DERNIÈRE ligne de chaque bloc, en gris atténué
+   — l'information annoncée par le titre était la moins visible de la page. Elle
+   est désormais portée par un bloc dédié, lu avant le reste. */
+import {
+	getCategoriesPubliees,
+	formaterJour,
+	formaterHeures,
+	formaterTarif,
+	formaterAnneesNaissance,
+} from '../lib/categories';
 
 interface Props {
 	/* Change le titre et la phrase d'accroche, pas les données affichées :
@@ -49,7 +67,7 @@ const saisons = [...new Set(categories.map(({ data }) => data.season).filter(Boo
 	) : (
 		<div class="card">
 			<h2>{titre}</h2>
-			<p>
+			<p class="accroche">
 				{accroche}
 				{saisons.length === 1 && <> Informations de la saison {saisons[0]}.</>}
 			</p>
@@ -57,79 +75,171 @@ const saisons = [...new Set(categories.map(({ data }) => data.season).filter(Boo
 			{/* `id={categorie-<id>}` : ancre stable vers une catégorie précise, qui ne
 			    dépend pas du libellé — celui-ci peut changer d'une saison à l'autre. */}
 			<ul class="categories">
-				{categories.map(({ id, data }) => (
-					<li class="categorie" id={`categorie-${id}`}>
-						<h3>{data.label}</h3>
+				{categories.map(({ id, data }) => {
+					const annees = formaterAnneesNaissance(data);
+					return (
+						<li class="categorie" id={`categorie-${id}`}>
+							<div class="entete">
+								<div class="identite">
+									<h3>{data.label}</h3>
+									{/* L'année de naissance répond à la question que le visiteur se
+									    pose devant la liste — « laquelle est celle de mon enfant ? ».
+									    Elle est en données depuis la Story 2.1 mais n'était affichée
+									    nulle part hors du parcours « Trouver ma catégorie ». */}
+									{annees && <p class="annees">{annees}</p>}
+								</div>
 
-						<dl>
-							<dt>Créneaux</dt>
-							<dd>
-								<ul class="creneaux">
-									{data.trainingSlots.map((creneau) => (
-										<li>{formaterCreneau(creneau)}</li>
-									))}
-								</ul>
-							</dd>
+								{/* Le tarif en bloc, à la manière du bloc date de `CarteMatch` :
+								    un point d'accroche de position fixe, que le regard trouve sans
+								    lire, quelle que soit la longueur du libellé de catégorie.
+								    Non-null assumé : le schéma refuse au build une fiche confirmée
+								    sans tarif. */}
+								<p class="tarif">
+									<span class="tarif-montant">{formaterTarif(data.licenseFee!)}</span>
+									<span class="tarif-legende">licence</span>
+								</p>
+							</div>
 
-							<dt>Licence</dt>
-							{/* Non-null assumé : le schéma refuse au build une fiche confirmée sans tarif. */}
-							<dd>{formaterTarif(data.licenseFee!)}</dd>
+							<dl>
+								<dt>Créneaux</dt>
+								<dd>
+									{/* Jour, horaire et gymnase en colonnes plutôt qu'en une seule
+									    chaîne (`formaterCreneau`) : alignés, trois créneaux se
+									    comparent d'un coup d'œil. La colonne des heures est en
+									    chiffres tabulaires pour que les deux-points s'alignent. */}
+									<ul class="creneaux">
+										{data.trainingSlots.map((creneau) => (
+											<li class="creneau">
+												<span class="creneau-jour">{formaterJour(creneau)}</span>
+												<span class="creneau-heure">{formaterHeures(creneau)}</span>
+												<span class="creneau-lieu">{creneau.venue}</span>
+											</li>
+										))}
+									</ul>
+								</dd>
 
-							{/* `trialAvailable: null` (non renseigné) n'affiche pas de ligne « essai » :
-							    un « indisponible » par défaut serait un renseignement faux (FR-3). */}
-							{data.trialAvailable !== null && (
-								<>
-									<dt>Séance d'essai</dt>
-									<dd>{data.trialAvailable ? 'Possible' : 'Pas de créneau d’essai actuellement'}</dd>
-								</>
-							)}
+								{/* `trialAvailable: null` (non renseigné) n'affiche pas de ligne « essai » :
+								    un « indisponible » par défaut serait un renseignement faux (FR-3). */}
+								{data.trialAvailable !== null && (
+									<>
+										<dt>Séance d'essai</dt>
+										<dd>{data.trialAvailable ? 'Possible' : 'Pas de créneau d’essai actuellement'}</dd>
+									</>
+								)}
 
-							{data.contact && (
-								<>
-									<dt>Référent</dt>
-									<dd>
-										{data.contact.name}
-										{data.contact.email && (
-											<>
-												{' — '}
-												<a href={`mailto:${data.contact.email}`}>
-													Écrire à {data.contact.name}
-												</a>
-											</>
-										)}
-										{data.contact.phone && <> — {data.contact.phone}</>}
-									</dd>
-								</>
-							)}
-						</dl>
-					</li>
-				))}
+								{data.contact && (
+									<>
+										<dt>Référent</dt>
+										<dd>
+											{data.contact.name}
+											{data.contact.email && (
+												<>
+													{' — '}
+													<a href={`mailto:${data.contact.email}`}>
+														Écrire à {data.contact.name}
+													</a>
+												</>
+											)}
+											{data.contact.phone && <> — {data.contact.phone}</>}
+										</dd>
+									</>
+								)}
+							</dl>
+						</li>
+					);
+				})}
 			</ul>
 		</div>
 	)
 }
 
 <style>
+	.accroche {
+		color: var(--color-text-muted);
+	}
+
+	/* Une carte par catégorie plutôt qu'un filet de séparation : chaque fiche
+	   devient un objet distinct, et la grille peut en poser deux de front dès que
+	   la largeur le permet — douze blocs en colonne unique faisaient une page
+	   qu'on faisait défiler sans la lire. */
 	.categories {
 		list-style: none;
 		margin: 0;
 		padding: 0;
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-6);
+		display: grid;
+		gap: var(--space-3);
 	}
 
-	.categorie + .categorie {
-		padding-top: var(--space-6);
-		border-top: 1px solid var(--color-border);
+	/* Conteneur de requête, et non des `@media` : ce qui décide de la mise en
+	   page interne d'une fiche est la largeur de LA CARTE, pas celle de la
+	   fenêtre. Dès que la grille passe à deux colonnes, une carte de 1300px de
+	   fenêtre n'en fait plus que 360 — des points de rupture sur la fenêtre y
+	   imposaient des colonnes qui ne rentraient pas, et chaque créneau se
+	   cassait sur trois lignes. */
+	.categorie {
+		container-type: inline-size;
+		padding: var(--space-4) var(--space-6) var(--space-6);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		background-color: var(--color-surface);
+	}
+
+	.entete {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: var(--space-4);
+		margin-bottom: var(--space-4);
+		padding-bottom: var(--space-3);
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.identite {
+		min-width: 0;
 	}
 
 	.categorie h3 {
 		font-family: var(--font-heading);
 		font-weight: var(--weight-heading);
 		font-size: 1.125rem;
-		margin-bottom: var(--space-3);
+		margin: 0;
 		color: var(--color-text);
+	}
+
+	.annees {
+		margin: var(--space-1) 0 0;
+		font-size: 0.875rem;
+		color: var(--color-text-muted);
+		font-variant-numeric: tabular-nums;
+	}
+
+	/* Le tarif : deux lignes courtes, alignées à droite, à la manière du bloc
+	   date d'une carte de match. Le montant porte la graisse des titres — c'est
+	   l'information que la section annonce. */
+	.tarif {
+		flex: none;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		gap: var(--space-1);
+		margin: 0;
+		text-align: right;
+	}
+
+	.tarif-montant {
+		font-family: var(--font-heading);
+		font-weight: var(--weight-heading);
+		font-size: 1.5rem;
+		line-height: 1.1;
+		color: var(--color-text);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.tarif-legende {
+		font-size: 0.6875rem;
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-eyebrow);
+		color: var(--color-text-muted);
 	}
 
 	dl {
@@ -149,17 +259,85 @@ const saisons = [...new Set(categories.map(({ data }) => data.season).filter(Boo
 		color: var(--color-text-muted);
 	}
 
+	dd:last-of-type {
+		margin-bottom: 0;
+	}
+
 	.creneaux {
 		list-style: none;
 		margin: 0;
 		padding: 0;
+		display: grid;
+		gap: var(--space-2);
 	}
 
-	/* Deux colonnes dès qu'il y a la place — mobile-first, on élargit. */
-	@media (min-width: 480px) {
+	/* Carte étroite : le jour et l'horaire tiennent la première ligne — c'est le
+	   couple qu'on compare d'un créneau à l'autre — et le gymnase passe dessous
+	   plutôt que de casser l'alignement. */
+	.creneau {
+		display: grid;
+		/* Colonne de jour de largeur FIXE, et non `auto` : chaque créneau étant sa
+		   propre grille, une colonne dimensionnée sur son contenu se calerait sur
+		   « Mercredi » dans un créneau et sur « Samedi » dans le suivant — les
+		   horaires ne s'aligneraient plus d'une ligne à l'autre, ce qui est
+		   précisément ce qu'on vient les chercher ici. */
+		grid-template-columns: 5.5em 1fr;
+		align-items: baseline;
+		gap: var(--space-1) var(--space-3);
+	}
+
+	.creneau-jour {
+		font-weight: var(--weight-body-strong);
+		color: var(--color-text);
+	}
+
+	.creneau-heure {
+		font-variant-numeric: tabular-nums;
+		color: var(--color-text);
+	}
+
+	.creneau-lieu {
+		grid-column: 1 / -1;
+		color: var(--color-text-muted);
+	}
+
+	/* Mobile-first : on élargit quand la CARTE en a la place. 30rem est la
+	   largeur à partir de laquelle le gymnase tient sur la ligne du créneau
+	   sans la faire déborder. */
+	@container (min-width: 30rem) {
+		.creneau {
+			display: flex;
+			flex-wrap: wrap;
+		}
+
+		.creneau-jour {
+			min-width: 5.5em;
+		}
+
+		.creneau-heure {
+			min-width: 8.5em;
+		}
+
+		.creneau-lieu {
+			grid-column: auto;
+		}
+	}
+
+	/* Le libellé « Créneaux » ne passe à gauche que si la carte reste lisible
+	   une fois cette colonne prélevée. */
+	@container (min-width: 34rem) {
 		dl {
 			grid-template-columns: minmax(7rem, auto) 1fr;
 			column-gap: var(--space-4);
+		}
+	}
+
+	/* Au-delà de 900px, deux fiches de front : la colonne unique laissait la
+	   moitié droite de l'écran vide sur douze cartes. */
+	@media (min-width: 900px) {
+		.categories {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: var(--space-card-gap);
 		}
 	}
 </style>

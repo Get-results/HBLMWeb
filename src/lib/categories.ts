@@ -29,6 +29,44 @@ export function formaterCreneau(creneau: Categorie['data']['trainingSlots'][numb
 	return `${jour} ${heure(creneau.startTime)}–${heure(creneau.endTime)} — ${creneau.venue}`;
 }
 
+/** Jour du créneau, capitalisé pour l'affichage : « mardi » → « Mardi ». */
+export function formaterJour(creneau: Categorie['data']['trainingSlots'][number]): string {
+	return creneau.day.charAt(0).toUpperCase() + creneau.day.slice(1);
+}
+
+/** Plage horaire seule : « 17h30 – 19h00 ». Séparée du jour et du gymnase pour
+    que l'affichage puisse les aligner en colonnes — une chaîne unique
+    (`formaterCreneau`) ne se met pas en colonnes, et trois créneaux empilés
+    deviennent alors un pavé qu'on ne balaie plus. */
+export function formaterHeures(creneau: Categorie['data']['trainingSlots'][number]): string {
+	const heure = (valeur: string) => valeur.replace(':', 'h');
+	return `${heure(creneau.startTime)}\u2009–\u2009${heure(creneau.endTime)}`;
+}
+
+/** Bornes d'années de naissance en clair : « Né·e en 2016 ou 2017 ».
+
+    C'est la question que se pose réellement un parent devant une liste de
+    catégories — « laquelle est celle de mon enfant ? ». La donnée existe depuis
+    la Story 2.1 (document « TARIFS SAISON 2026-2027 » du bureau) mais n'était
+    affichée nulle part : il fallait passer par « Trouver ma catégorie » pour
+    l'obtenir, alors que la liste des tarifs est souvent le premier écran lu.
+
+    `null` quand aucune borne n'est renseignée — le schéma l'interdit sur une
+    fiche confirmée, mais ce composant n'a pas à en dépendre. */
+export function formaterAnneesNaissance(data: Categorie['data']): string | null {
+	const { birthYearFrom: debut, birthYearTo: fin } = data;
+
+	if (debut === null && fin === null) return null;
+	/* Borne haute seule : les catégories adultes, qui n'ont pas d'âge maximal.
+	   « ou avant » et non « ou après » — `birthYearTo` est l'année la plus
+	   RÉCENTE acceptée, donc les plus âgés sont en deçà. */
+	if (debut === null) return `Né·e en ${fin} ou avant`;
+	if (fin === null) return `Né·e en ${debut} ou après`;
+	if (debut === fin) return `Né·e en ${debut}`;
+	if (fin === debut + 1) return `Né·e en ${debut} ou ${fin}`;
+	return `Né·e entre ${debut} et ${fin}`;
+}
+
 /** Tarif formaté en euros. `null` n'a pas de rendu ici : une fiche publiée porte
     forcément un tarif (garanti par le schéma), et ailleurs on n'affiche rien. */
 export function formaterTarif(licenseFee: number): string {
