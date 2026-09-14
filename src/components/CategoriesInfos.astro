@@ -100,51 +100,60 @@ const saisons = [...new Set(categories.map(({ data }) => data.season).filter(Boo
 								</p>
 							</div>
 
-							<dl>
-								<dt>Créneaux</dt>
-								<dd>
-									{/* Jour, horaire et gymnase en colonnes plutôt qu'en une seule
-									    chaîne (`formaterCreneau`) : alignés, trois créneaux se
-									    comparent d'un coup d'œil. La colonne des heures est en
-									    chiffres tabulaires pour que les deux-points s'alignent. */}
-									<ul class="creneaux">
-										{data.trainingSlots.map((creneau) => (
-											<li class="creneau">
-												<span class="creneau-jour">{formaterJour(creneau)}</span>
-												<span class="creneau-heure">{formaterHeures(creneau)}</span>
-												<span class="creneau-lieu">{creneau.venue}</span>
-											</li>
-										))}
-									</ul>
-								</dd>
+							{/* Pas de libellé « Créneaux » au-dessus de cette liste : « Mardi
+							    17h30 – 19h00 — Gymnase Arnassan » ne peut être qu'un créneau, le
+							    mot ne fait que répéter ce que la ligne dit déjà. C'est aussi
+							    pourquoi la liste sort de la `<dl>` — un terme de définition qui
+							    n'apprend rien n'a pas à exister pour la forme, y compris pour une
+							    synthèse vocale qui le lirait sur chacune des douze fiches.
 
-								{/* `trialAvailable: null` (non renseigné) n'affiche pas de ligne « essai » :
-								    un « indisponible » par défaut serait un renseignement faux (FR-3). */}
-								{data.trialAvailable !== null && (
-									<>
-										<dt>Séance d'essai</dt>
-										<dd>{data.trialAvailable ? 'Possible' : 'Pas de créneau d’essai actuellement'}</dd>
-									</>
-								)}
+							    Jour, horaire et gymnase en colonnes plutôt qu'en une seule chaîne
+							    (`formaterCreneau`) : alignés, trois créneaux se comparent d'un
+							    coup d'œil. La colonne des heures est en chiffres tabulaires pour
+							    que les deux-points s'alignent. */}
+							<ul class="creneaux">
+								{data.trainingSlots.map((creneau) => (
+									<li class="creneau">
+										<span class="creneau-jour">{formaterJour(creneau)}</span>
+										<span class="creneau-heure">{formaterHeures(creneau)}</span>
+										<span class="creneau-lieu">{creneau.venue}</span>
+									</li>
+								))}
+							</ul>
 
-								{data.contact && (
-									<>
-										<dt>Référent</dt>
-										<dd>
-											{data.contact.name}
-											{data.contact.email && (
-												<>
-													{' — '}
-													<a href={`mailto:${data.contact.email}`}>
-														Écrire à {data.contact.name}
-													</a>
-												</>
-											)}
-											{data.contact.phone && <> — {data.contact.phone}</>}
-										</dd>
-									</>
-								)}
-							</dl>
+							{/* La `<dl>` ne subsiste que pour les informations dont le libellé
+							    apprend vraiment quelque chose, et elle disparaît quand aucune
+							    n'est renseignée — le cas de toutes les catégories aujourd'hui. */}
+							{(data.trialAvailable !== null || data.contact) && (
+								<dl>
+									{/* `trialAvailable: null` (non renseigné) n'affiche pas de ligne « essai » :
+									    un « indisponible » par défaut serait un renseignement faux (FR-3). */}
+									{data.trialAvailable !== null && (
+										<>
+											<dt>Séance d'essai</dt>
+											<dd>{data.trialAvailable ? 'Possible' : 'Pas de créneau d’essai actuellement'}</dd>
+										</>
+									)}
+
+									{data.contact && (
+										<>
+											<dt>Référent</dt>
+											<dd>
+												{data.contact.name}
+												{data.contact.email && (
+													<>
+														{' — '}
+														<a href={`mailto:${data.contact.email}`}>
+															Écrire à {data.contact.name}
+														</a>
+													</>
+												)}
+												{data.contact.phone && <> — {data.contact.phone}</>}
+											</dd>
+										</>
+									)}
+								</dl>
+							)}
 						</li>
 					);
 				})}
@@ -256,7 +265,9 @@ const saisons = [...new Set(categories.map(({ data }) => data.season).filter(Boo
 		display: grid;
 		grid-template-columns: 1fr;
 		gap: var(--space-1);
-		margin: 0;
+		/* Marge haute : la `<dl>` suit maintenant la liste des créneaux au lieu
+		   de la contenir. */
+		margin: var(--space-4) 0 0;
 	}
 
 	dt {
