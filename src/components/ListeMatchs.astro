@@ -108,7 +108,7 @@ const equipes = [...new Map(
 					<h3 class="mois-titre">{groupe.libelle}</h3>
 					<ul class="matchs">
 						{groupe.matchs.map((match) => (
-							<li class="match" data-equipe={match.poolId} data-debut={match.dateHeure ?? ''}>
+							<li class="match carte-match" data-equipe={match.poolId} data-debut={match.dateHeure ?? ''}>
 								{/* Le badge « Prochain match » est posé par le script sur la
 								    première carte visible : le calculer ici le figerait à
 								    l'heure du build, et le filtre le déplacerait de toute façon. */}
@@ -127,7 +127,7 @@ const equipes = [...new Map(
 				{passes.map((match) => {
 					const joue = match.scoreClub !== null && match.scoreAdversaire !== null;
 					return (
-						<li class="match" data-equipe={match.poolId} data-debut={match.dateHeure ?? ''}>
+						<li class="match carte-match" data-equipe={match.poolId} data-debut={match.dateHeure ?? ''}>
 							<Carte match={match} joue={joue} />
 							{!joue && (
 								/* Story 3.4 — réservé aux matchs DÉJÀ joués. Pour un match à
@@ -322,27 +322,6 @@ const equipes = [...new Map(
 		padding: 0;
 		display: grid;
 		gap: var(--space-3);
-	}
-
-	/* Deux colonnes : le bloc date sert de repère fixe, les détails occupent le
-	   reste. Le badge et l'état « résultat pas encore connu » traversent les deux. */
-	.match {
-		display: grid;
-		grid-template-columns: auto 1fr;
-		align-items: center;
-		gap: 0 var(--space-4);
-		padding: var(--space-4) var(--space-4);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-md);
-		background-color: var(--color-surface);
-	}
-
-	/* Indispensable depuis que .match a un `display` explicite : une règle
-	   `display` l'emporte sur l'attribut `hidden`, dont l'effet n'est qu'un
-	   `display: none` par défaut du navigateur. Sans cette ligne, le filtre
-	   marquait les cartes comme masquées sans qu'aucune ne disparaisse. */
-	.match[hidden] {
-		display: none;
 	}
 
 	.match > :global(.badge),

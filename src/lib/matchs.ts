@@ -203,13 +203,58 @@ export async function getMatchsProchainsJours(
 	jours = 7,
 	maintenant = new Date(),
 ): Promise<MatchDuClub[]> {
-	const debut = maintenant.getTime();
-	const fin = debut + jours * 24 * 60 * 60 * 1000;
+	const { debut, fin } = fenetreProchainsJours(maintenant, jours);
 	return (await getMatchsDuClub()).filter((m) => {
 		if (!m.dateHeure) return false;
-		const instant = new Date(m.dateHeure).getTime();
-		return instant >= debut && instant < fin;
+		/* Comparaison de chaînes ISO : leur ordre lexicographique EST l'ordre
+		   chronologique, et aucune des deux bornes ne passe par un `Date` — donc
+		   aucun fuseau ne s'invite. Même doctrine que `formaterDateMatch`. */
+		return m.dateHeure >= debut && m.dateHeure <= fin;
 	});
+}
+
+/* Fuseau du club. Les heures de l'API sont des heures de Paris écrites sans
+   décalage (« 2026-09-19T12:00:00 ») : les passer par `new Date()` leur
+   appliquerait le fuseau du serveur de build — UTC sur GitHub Actions — et
+   décalerait les bornes de deux heures l'été. */
+const FUSEAU_CLUB = 'Europe/Paris';
+
+/** L'instant donné, ramené à l'heure murale du club, au format de l'API.
+    `sv-SE` est la locale qui rend « 2026-09-14 21:05:00 », soit l'ISO à l'espace
+    près. */
+function heureClub(instant: Date): string {
+	const rendu = new Intl.DateTimeFormat('sv-SE', {
+		timeZone: FUSEAU_CLUB,
+		year: 'numeric',
+		month: '2-digit',
+		day: '2-digit',
+		hour: '2-digit',
+		minute: '2-digit',
+		second: '2-digit',
+		hour12: false,
+	}).format(instant);
+	return rendu.replace(' ', 'T');
+}
+
+/** Bornes de la fenêtre, en heures du club : de maintenant à la FIN du jour situé
+    `jours` plus loin.
+
+    La borne haute est la fin de journée et non l'instant exact à 7×24 h, parce
+    que le libellé affiché annonce ce jour-là. Avec une borne à 7×24 h — le site
+    étant construit vers 3 h du matin — le bandeau annonçait « du 14 au 21 » mais
+    s'arrêtait le 21 à 5 h : aucune rencontre du septième jour ne pouvait jamais
+    y figurer. Un parent qui cherche « samedi prochain » le samedi matin en
+    concluait qu'il n'y a pas de match. */
+export function fenetreProchainsJours(
+	maintenant = new Date(),
+	jours = 7,
+): { debut: string; fin: string } {
+	const debut = heureClub(maintenant);
+	/* Arithmétique de calendrier sur la date seule, en UTC : ajouter des jours à
+	   une date nue ne peut pas être perturbé par un changement d'heure. */
+	const finJour = new Date(`${debut.slice(0, 10)}T00:00:00Z`);
+	finJour.setUTCDate(finJour.getUTCDate() + jours);
+	return { debut, fin: `${finJour.toISOString().slice(0, 10)}T23:59:59` };
 }
 
 /** « du 14 au 21 septembre », « du 28 septembre au 5 octobre ».
@@ -218,9 +263,15 @@ export async function getMatchsProchainsJours(
     par jour (cron de deploy.yml). Si un build échoue, « cette semaine » devient
     faux en silence, alors qu'une période datée reste vérifiable d'un coup d'œil.
     Le mois de départ n'est répété que s'il diffère de celui d'arrivée. */
-export function libellePeriode(debut: Date, fin: Date): string {
-	const moisDebut = MOIS[debut.getMonth()];
-	const moisFin = MOIS[fin.getMonth()];
-	const borneDebut = moisDebut === moisFin ? `${debut.getDate()}` : `${debut.getDate()} ${moisDebut}`;
-	return `du ${borneDebut} au ${fin.getDate()} ${moisFin}`;
+export function libellePeriode(debut: string, fin: string): string {
+	/* Les deux bornes viennent de `fenetreProchainsJours`, donc déjà en heures du
+	   club. On les découpe plutôt que de les passer par un `Date`, pour la même
+	   raison qu'ailleurs dans ce fichier. */
+	const [, moisDebutNum, jourDebut] = debut.slice(0, 10).split('-');
+	const [, moisFinNum, jourFin] = fin.slice(0, 10).split('-');
+	const moisDebut = MOIS[Number(moisDebutNum) - 1];
+	const moisFin = MOIS[Number(moisFinNum) - 1];
+	const borneDebut =
+		moisDebut === moisFin ? `${Number(jourDebut)}` : `${Number(jourDebut)} ${moisDebut}`;
+	return `du ${borneDebut} au ${Number(jourFin)} ${moisFin}`;
 }

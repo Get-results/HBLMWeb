@@ -14,19 +14,21 @@
    Matchs (AD-9, AD-10). */
 import CtaLink from './CtaLink.astro';
 import Carte from './CarteMatch.astro';
-import { getMatchsProchainsJours, libellePeriode } from '../lib/matchs';
+import { getMatchsProchainsJours, libellePeriode, fenetreProchainsJours } from '../lib/matchs';
 
-/* Un week-end de championnat porte jusqu'à dix rencontres pour le club. Les
-   afficher toutes ferait de l'accueil une seconde page Matchs ; on en montre
-   quatre — deux lignes de deux sur écran large — et on annonce le reste
-   honnêtement plutôt que de le tronquer en silence. */
+/* Un week-end de championnat en porte plusieurs pour le club. Les afficher
+   toutes ferait de l'accueil une seconde page Matchs ; on en montre quatre —
+   deux lignes de deux sur écran large — et on annonce le reste honnêtement
+   plutôt que de le tronquer en silence. */
 const MAX_CARTES = 4;
 const FENETRE_JOURS = 7;
 
+/* Une seule fenêtre pour le filtre et pour le libellé : deux calculs séparés
+   finiraient par annoncer une période que la liste ne couvre pas. */
 const maintenant = new Date();
-const fin = new Date(maintenant.getTime() + FENETRE_JOURS * 24 * 60 * 60 * 1000);
+const fenetre = fenetreProchainsJours(maintenant, FENETRE_JOURS);
 const matchs = await getMatchsProchainsJours(FENETRE_JOURS, maintenant);
-const periode = libellePeriode(maintenant, fin);
+const periode = libellePeriode(fenetre.debut, fenetre.fin);
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
@@ -54,10 +56,13 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		    plafond après avoir écarté les matchs déjà joués, et fait alors remonter
 		    une carte de la réserve. Sans JavaScript, le visiteur voit les quatre
 		    premières et la ligne de reste — juste à une journée près. */}
-		<ul class="cartes" id="semaine-liste">
+		{/* `data-max` porte la limite jusqu'au script : déclarée deux fois, elle
+		    finirait par valoir 4 au build et autre chose après réajustement, sans
+		    que rien ne le signale. */}
+		<ul class="cartes" id="semaine-liste" data-max={MAX_CARTES}>
 			{matchs.map((match, index) => (
 				<li
-					class="match"
+					class="carte-match"
 					data-debut={match.dateHeure}
 					hidden={index >= MAX_CARTES}
 				>
@@ -99,7 +104,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		   semaine » jusqu'au lendemain 3h — soit tout le samedi après-midi, quand
 		   l'accueil est le plus consulté. Même motif que la page Matchs. */
 		const maintenant = Date.now();
-		const MAX_CARTES = 4;
+		/* Lue sur l'élément, jamais réécrite ici : le frontmatter est la seule
+		   source de cette limite. */
+		const MAX_CARTES = Number(liste.dataset.max) || 4;
 
 		const restants = [...liste.querySelectorAll('li[data-debut]')].filter((carte) => {
 			const debut = carte.dataset.debut;
@@ -200,24 +207,6 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	}
 
 	.cartes[hidden] {
-		display: none;
-	}
-
-	/* Même gabarit de carte que la page Matchs, fond compris. */
-	.match {
-		display: grid;
-		grid-template-columns: auto 1fr;
-		align-items: center;
-		gap: 0 var(--space-4);
-		padding: var(--space-4);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-md);
-		background-color: var(--color-surface);
-	}
-
-	/* Une règle `display` l'emporte sur l'attribut `hidden` : sans cette ligne,
-	   les cartes en réserve resteraient visibles. */
-	.match[hidden] {
 		display: none;
 	}
 
