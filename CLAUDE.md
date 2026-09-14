@@ -109,6 +109,13 @@ contrat-là qui décide de l'incrément.
 Une PR qui ne touche que la doc ou l'outillage prend quand même un **PATCH** : la règle est
 « une PR, un incrément », sans exception à arbitrer.
 
+`check:version` (`scripts/check-version-bump.mjs`) refuse en CI une PR dont la version n'a
+pas augmenté par rapport à la base. Il tourne dans le job `build` de `ci.yml`, **pas** dans
+`npm run build` : il a besoin de la branche de base, que le build local n'a pas forcément.
+Pour le lancer à la main : `git fetch origin main` puis `npm run check:version`. Il vérifie
+qu'on s'est posé la question de l'incrément, **pas** qu'on a choisi le bon ordre — ça, ça
+demande de savoir si une URL disparaît, et ça reste un jugement humain.
+
 **Avant la mise en ligne publique, on reste en `0.y.z`** : la spec réserve la majeure zéro au
 développement initial, où tout peut changer. Le passage à **`1.0.0` se fait à la mise en
 ligne publique du site**, et à ce moment-là seulement. Tant qu'on est en `0.y.z`, une rupture
