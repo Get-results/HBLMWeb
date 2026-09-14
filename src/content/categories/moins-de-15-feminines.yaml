@@ -35,10 +35,12 @@ trainingSlots:
     startTime: "17:30"
     endTime: "19:00"
     venue: "Gymnase Arnassan (Lunel)"
+    group: "Div. 1"
   - day: vendredi
     startTime: "19:00"
     endTime: "20:30"
     venue: "Gymnase du collège (Lansargues)"
+    group: "Div. 1 & 2"
 
 licenseFee: 210
 trialAvailable: null

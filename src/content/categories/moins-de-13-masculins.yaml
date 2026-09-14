@@ -34,10 +34,12 @@ trainingSlots:
     startTime: "17:30"
     endTime: "19:00"
     venue: "Gymnase Spinosi (Marsillargues)"
+    group: "G1 & G2"
   - day: vendredi
     startTime: "18:30"
     endTime: "20:00"
     venue: "Gymnase Spinosi (Marsillargues)"
+    group: "G1 & G2"
 
 licenseFee: 200
 trialAvailable: null

@@ -39,14 +39,17 @@ trainingSlots:
     startTime: "19:00"
     endTime: "20:30"
     venue: "Gymnase Spinosi (Marsillargues)"
+    group: "Équipe 1"
   - day: jeudi
     startTime: "19:00"
     endTime: "20:30"
     venue: "Gymnase Arnassan (Lunel)"
+    group: "Équipe 2"
   - day: vendredi
     startTime: "19:00"
     endTime: "20:30"
     venue: "Gymnase Arnassan (Lunel)"
+    group: "Équipe 1"
 
 licenseFee: 220
 trialAvailable: null
