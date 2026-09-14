@@ -1,0 +1,411 @@
+---
+/* Page Matchs — stories 3.2, 3.4, 3.5 (AD-10).
+
+   Deux sections, parce que la page répond à deux questions distinctes : « quand
+   joue mon équipe » et « quel a été le résultat ». Une liste plate obligeait à
+   parcourir les vingt-quatre matchs pour l'une comme pour l'autre.
+
+   À venir : du plus proche au plus lointain, groupé par mois.
+   Résultats : du plus récent au plus ancien, sans regroupement — c'est ce qui
+   permet au script de déplacer un match sans avoir à fabriquer un en-tête.
+
+   La séparation est calculée au build, puis RÉAJUSTÉE à l'affichage. Sans ce
+   réajustement, un match joué le samedi resterait annoncé « à venir » jusqu'au
+   rebuild de 3h — soit toute la journée du match, quand la page est le plus
+   consultée. Sans JavaScript, le découpage du build reste affiché : il est juste
+   au pire d'une journée, et la date est visible sur chaque carte.
+
+   Aucun appel réseau côté client (AD-9, AD-10) : tout est rendu au build. */
+import { getMatchsDuClub, blocDate, estPasse, grouperParMois } from '../lib/matchs';
+import GenericContact from './GenericContact.astro';
+import Carte from './CarteMatch.astro';
+
+const matchs = await getMatchsDuClub();
+const maintenant = new Date();
+
+const aVenir = matchs.filter((m) => !estPasse(m, maintenant));
+/* Les résultats du plus récent au plus ancien : on cherche le dernier score,
+   pas celui d'il y a trois mois. */
+const passes = matchs.filter((m) => estPasse(m, maintenant)).reverse();
+
+const groupesAVenir = grouperParMois(aVenir);
+
+/* Le filtre porte sur la POULE, pas sur la catégorie : « Lunel
+   Marsillargues-Lansargues » désigne trois équipes distinctes — -18F 1ère
+   division, -18F 2e division et -15F 2e division. Filtrer par catégorie les
+   mélangeait, et le nom d'équipe ne permettait pas de les distinguer.
+
+   Le libellé ne mentionne la division QUE si la catégorie compte plusieurs
+   équipes : inutile d'alourdir « -11 ans garçons », qui n'en a qu'une. */
+const parCategorie = new Map<string, number>();
+for (const m of matchs) {
+	if (m.categorieId) parCategorie.set(m.categorieId, (parCategorie.get(m.categorieId) ?? 0) + 1);
+}
+const poulesParCategorie = new Map<string, Set<string>>();
+for (const m of matchs) {
+	if (!m.categorieId) continue;
+	if (!poulesParCategorie.has(m.categorieId)) poulesParCategorie.set(m.categorieId, new Set());
+	poulesParCategorie.get(m.categorieId)!.add(m.poolId);
+}
+
+const equipes = [...new Map(
+	matchs
+		.filter((m) => m.categorieId)
+		.map((m) => {
+			const plusieurs = (poulesParCategorie.get(m.categorieId!)?.size ?? 1) > 1;
+			const libelle =
+				plusieurs && m.division ? `${m.categorieLabel} · ${m.division}` : m.categorieLabel!;
+			return [m.poolId, libelle] as const;
+		}),
+).entries()].sort((a, b) => a[1].localeCompare(b[1], 'fr'));
+---
+
+{matchs.length === 0 ? (
+	<div class="encart">
+		<p class="encart-titre">Aucun match à afficher pour le moment</p>
+		<p>
+			Le calendrier est repris automatiquement des données officielles de la
+			FFHandball. Il se remplira dès que les rencontres de la saison seront
+			publiées.
+		</p>
+		<GenericContact intro="Une question sur le calendrier ? Écrivez-nous." discret />
+	</div>
+) : (
+	<>
+		{equipes.length > 1 && (
+			<div class="filtre">
+				<span id="filtre-label" class="filtre-titre">Filtrer par équipe</span>
+				{/* role="radiogroup" et navigation aux flèches, comme l'île « Trouver ma
+				    catégorie » (AD-10 : même discipline qu'AD-7). Des boutons plutôt
+				    qu'une liste déroulante : les équipes sont toutes visibles d'un coup
+				    d'œil, sans ouvrir un menu. */}
+				<div class="options" role="radiogroup" aria-labelledby="filtre-label">
+					<button type="button" role="radio" aria-checked="true" data-valeur="" tabindex="0">
+						Toutes
+					</button>
+					{equipes.map(([poolId, label]) => (
+						<button type="button" role="radio" aria-checked="false" data-valeur={poolId} tabindex="-1">
+							{label}
+						</button>
+					))}
+				</div>
+				<p class="compte" aria-live="polite">
+					{matchs.length} match{matchs.length > 1 ? 's' : ''}
+				</p>
+			</div>
+		)}
+
+		{/* Rendu ici plutôt que fabriqué en JavaScript : un élément créé par script
+		    n'a pas l'attribut de portée qu'Astro ajoute au build, et les styles du
+		    composant ne s'y appliqueraient pas. Le script le DÉPLACE dans la carte
+		    concernée — un seul exemplaire, jamais dupliqué. */}
+		<p class="badge" id="badge-prochain" hidden>Prochain match</p>
+
+		<section class="section" id="section-a-venir">
+			<h2>À venir</h2>
+			{groupesAVenir.map((groupe) => (
+				<div class="groupe-mois" data-mois={groupe.cle}>
+					<h3 class="mois-titre">{groupe.libelle}</h3>
+					<ul class="matchs">
+						{groupe.matchs.map((match) => (
+							<li class="match" data-equipe={match.poolId} data-debut={match.dateHeure ?? ''}>
+								{/* Le badge « Prochain match » est posé par le script sur la
+								    première carte visible : le calculer ici le figerait à
+								    l'heure du build, et le filtre le déplacerait de toute façon. */}
+								<Carte match={match} />
+							</li>
+						))}
+					</ul>
+				</div>
+			))}
+			<p class="vide" hidden={aVenir.length > 0}>Aucun match à venir pour cette sélection.</p>
+		</section>
+
+		<section class="section" id="section-resultats">
+			<h2>Résultats</h2>
+			<ul class="matchs" id="liste-resultats">
+				{passes.map((match) => {
+					const joue = match.scoreClub !== null && match.scoreAdversaire !== null;
+					return (
+						<li class="match" data-equipe={match.poolId} data-debut={match.dateHeure ?? ''}>
+							<Carte match={match} joue={joue} />
+							{!joue && (
+								/* Story 3.4 — réservé aux matchs DÉJÀ joués. Pour un match à
+								   venir, l'absence de score n'est pas une information. */
+								<p class="en-attente">Résultat pas encore connu</p>
+							)}
+						</li>
+					);
+				})}
+			</ul>
+			<p class="vide" hidden={passes.length > 0}>Aucun résultat pour cette sélection.</p>
+		</section>
+	</>
+)}
+
+<script is:inline>
+	(() => {
+		const sectionAVenir = document.getElementById('section-a-venir');
+		const listeResultats = document.getElementById('liste-resultats');
+		if (!sectionAVenir || !listeResultats) return;
+
+		const groupe = document.querySelector('[role="radiogroup"]');
+		const boutons = groupe ? [...groupe.querySelectorAll('[role="radio"]')] : [];
+		const compte = document.querySelector('.compte');
+		const badge = document.getElementById('badge-prochain');
+		let choix = '';
+
+		/* 1. Rattraper le décalage entre l'heure du build et maintenant. Un match
+		      dont le coup d'envoi est passé rejoint les résultats, en tête puisque
+		      la section va du plus récent au plus ancien. */
+		const maintenant = Date.now();
+		sectionAVenir.querySelectorAll('.match[data-debut]').forEach((carte) => {
+			const debut = carte.dataset.debut;
+			if (!debut || new Date(debut).getTime() >= maintenant) return;
+/* La carte passe côté résultats sans score : c'est exactement le cas que
+			   « Résultat pas encore connu » décrit — match joué, score non publié. */
+			if (!carte.querySelector('.score, .en-attente')) {
+				const attente = document.createElement('p');
+				attente.className = 'en-attente';
+				attente.textContent = 'Résultat pas encore connu';
+				carte.querySelector('.meta')?.after(attente);
+			}
+			listeResultats.prepend(carte);
+		});
+
+		const cartes = [...document.querySelectorAll('.match')];
+
+		function rafraichir() {
+			let visibles = 0;
+
+			cartes.forEach((carte) => {
+				const garde = !choix || carte.dataset.equipe === choix;
+				carte.hidden = !garde;
+				if (garde) visibles += 1;
+			});
+
+			/* Un groupe mensuel dont toutes les cartes sont masquées ne doit pas
+			   laisser son titre orphelin. */
+			/* Sélecteur porté sur le conteneur de groupe. Il s'appelait « mois »,
+			   comme le <span> du bloc date : le script masquait donc le mois de
+			   chaque carte au premier rafraîchissement. */
+			document.querySelectorAll('.groupe-mois').forEach((groupe) => {
+				groupe.hidden = ![...groupe.querySelectorAll('.match')].some((c) => !c.hidden);
+			});
+
+			document.querySelectorAll('.section').forEach((section) => {
+				const reste = [...section.querySelectorAll('.match')].some((c) => !c.hidden);
+				const vide = section.querySelector('.vide');
+				if (vide) vide.hidden = reste;
+			});
+
+			/* 2. Le badge « Prochain match » va sur la première carte VISIBLE de la
+			      section À venir : il suit donc le filtre au lieu d'être figé. */
+			const prochain = sectionAVenir.querySelector('.match:not([hidden])');
+			document
+				.querySelectorAll('.est-prochain')
+				.forEach((c) => c !== prochain && c.classList.remove('est-prochain'));
+			if (prochain) {
+				prochain.classList.add('est-prochain');
+				prochain.prepend(badge);
+				badge.hidden = false;
+			} else {
+				badge.hidden = true;
+			}
+
+			if (compte) compte.textContent = `${visibles} match${visibles > 1 ? 's' : ''}`;
+		}
+
+		/* Sélection, aria-checked et tabindex mobile : un seul bouton du groupe est
+		   tabulable, les flèches circulent entre eux. Même contrat que l'île
+		   « Trouver ma catégorie ». */
+		function selectionner(bouton) {
+			boutons.forEach((b) => {
+				const actif = b === bouton;
+				b.setAttribute('aria-checked', String(actif));
+				b.tabIndex = actif ? 0 : -1;
+			});
+			choix = bouton.dataset.valeur;
+			rafraichir();
+		}
+
+		boutons.forEach((bouton, index) => {
+			bouton.addEventListener('click', () => selectionner(bouton));
+			bouton.addEventListener('keydown', (evenement) => {
+				const pas = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[evenement.key];
+				if (!pas) return;
+				evenement.preventDefault();
+				const suivant = boutons[(index + pas + boutons.length) % boutons.length];
+				selectionner(suivant);
+				suivant.focus();
+			});
+		});
+
+		rafraichir();
+	})();
+</script>
+
+<style>
+	.filtre {
+		margin-bottom: var(--space-8);
+	}
+
+	.filtre-titre {
+		display: block;
+		margin-bottom: var(--space-3);
+		font-weight: var(--weight-body-strong);
+		font-size: 0.875rem;
+	}
+
+	.options {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+	}
+
+	.options [role='radio'] {
+		min-height: 44px;
+		padding: var(--space-2) var(--space-4);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-full);
+		background-color: var(--color-input-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+		font-size: 0.9375rem;
+		cursor: pointer;
+	}
+
+	/* L'état sélectionné ne repose pas sur la couleur seule : bordure renforcée
+	   et texte en gras, comme les options de « Trouver ma catégorie ». */
+	.options [role='radio'][aria-checked='true'] {
+		border-color: var(--color-text);
+		box-shadow: inset 0 0 0 1px var(--color-text);
+		font-weight: var(--weight-body-strong);
+	}
+
+	.compte {
+		margin: 0;
+		font-size: 0.875rem;
+		color: var(--color-text-muted);
+	}
+
+	.section {
+		margin-bottom: var(--space-8);
+	}
+
+	.section h2 {
+		font-family: var(--font-heading);
+		font-weight: 900;
+		font-size: 1.375rem;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		margin: 0 0 var(--space-4);
+	}
+
+	.mois-titre {
+		font-family: var(--font-body);
+		font-weight: var(--weight-body-strong);
+		font-size: 0.8125rem;
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-eyebrow);
+		color: var(--color-text-muted);
+		margin: var(--space-6) 0 var(--space-3);
+	}
+
+	.groupe-mois:first-of-type .mois-titre {
+		margin-top: 0;
+	}
+
+	.matchs {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		gap: var(--space-3);
+	}
+
+	/* Deux colonnes : le bloc date sert de repère fixe, les détails occupent le
+	   reste. Le badge et l'état « résultat pas encore connu » traversent les deux. */
+	.match {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		align-items: center;
+		gap: 0 var(--space-4);
+		padding: var(--space-4) var(--space-4);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		background-color: var(--color-surface);
+	}
+
+	/* Indispensable depuis que .match a un `display` explicite : une règle
+	   `display` l'emporte sur l'attribut `hidden`, dont l'effet n'est qu'un
+	   `display: none` par défaut du navigateur. Sans cette ligne, le filtre
+	   marquait les cartes comme masquées sans qu'aucune ne disparaisse. */
+	.match[hidden] {
+		display: none;
+	}
+
+	.match > :global(.badge),
+	.match > .en-attente {
+		grid-column: 1 / -1;
+	}
+
+	/* Un élément de grille s'étire par défaut : sans cette ligne, le badge
+	   occupait toute la largeur de la carte en une barre jaune. */
+	.match > :global(.badge) {
+		justify-self: start;
+	}
+
+	/* Le prochain match se distingue par la couleur d'accent du club, mais pas
+	   SEULEMENT par elle : le badge « Prochain match » porte l'information en
+	   toutes lettres, lisible en monochrome comme en vision atypique. */
+	.match.est-prochain {
+		border-color: var(--color-accent);
+		box-shadow: inset 0 0 0 1px var(--color-accent);
+	}
+
+	/* Texte sur l'accent : --color-on-accent, valeur fixe. L'accent ne bascule pas
+	   entre les thèmes, un texte qui suivrait le thème deviendrait illisible en
+	   sombre (DESIGN.md). */
+	.badge {
+		display: inline-block;
+		margin: 0 0 var(--space-3);
+		padding: 2px var(--space-3);
+		border-radius: var(--radius-full);
+		background-color: var(--color-accent);
+		color: var(--color-on-accent);
+		font-size: 0.75rem;
+		font-weight: var(--weight-body-strong);
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-eyebrow);
+	}
+
+	/* Même piège que .match : `display: inline-block` annulerait l'attribut
+	   `hidden`. Le badge est masqué au rendu et révélé par le script — sans
+	   cette règle il apparaîtrait avant, puis sauterait dans sa carte. */
+	.badge[hidden] {
+		display: none;
+	}
+
+	.en-attente {
+		margin: var(--space-3) 0 0;
+		font-size: 0.9375rem;
+		color: var(--color-text-muted);
+	}
+
+	.vide,
+	.encart {
+		margin: 0;
+		padding: var(--space-4) var(--space-6);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		background-color: var(--color-input-bg);
+		color: var(--color-text-muted);
+	}
+
+	.encart-titre {
+		margin: 0 0 var(--space-2);
+		font-weight: var(--weight-body-strong);
+		color: var(--color-text);
+	}
+</style>

@@ -1,0 +1,173 @@
+---
+/* Contenu d'une carte de match — le même pour « À venir » et « Résultats ».
+
+   Volontairement pauvre en lignes. La version précédente en portait cinq, dont
+   quatre en gris de poids voisin : le regard n'avait aucun point d'accroche.
+   Deux informations ont été retirées parce qu'elles ne servaient personne :
+   la journée de championnat, et le nom de la compétition — qui répétait la
+   catégorie déjà lisible dans le nom d'équipe et déjà portée par le filtre.
+
+   Le bloc date remplace une ligne de texte par un repère qu'on balaie sans
+   lire. */
+import { blocDate, type MatchDuClub } from '../lib/matchs';
+
+interface Props {
+	match: MatchDuClub;
+	/** Vrai si le score est connu. Sans objet pour un match à venir. */
+	joue?: boolean;
+}
+
+const { match, joue = false } = Astro.props;
+const date = blocDate(match.dateHeure);
+---
+
+{/* <time> plutôt qu'un <div> : c'est une date, et machine-readable pour qui
+    l'exploiterait. Sans date connue, pas de balise <time> — on n'annonce pas un
+    instant qu'on ignore. */}
+{date ? (
+	<time class="bloc-date" datetime={match.dateHeure!}>
+		<span class="jour">{date.jour}</span>
+		<span class="numero">{date.numero}</span>
+		<span class="mois">{date.mois}</span>
+	</time>
+) : (
+	<div class="bloc-date bloc-date-vide" aria-hidden="true">
+		<span class="numero">?</span>
+	</div>
+)}
+
+<div class="details">
+	<p class="notre-equipe">{match.equipeClub}</p>
+	<p class="adversaire"><span class="contre">contre</span> {match.adversaire}</p>
+
+	<p class="meta">
+		{date ? date.heure : 'Date à préciser'}
+		<span class="separateur" aria-hidden="true">·</span>
+		{/* Domicile et extérieur se distinguent par le mot et par le poids, jamais
+		    par la couleur seule. La pastille d'avant ajoutait un objet graphique de
+		    plus sur une carte qui en avait déjà trop. */}
+		<span class="lieu" data-domicile={String(match.domicile)}>
+			{match.domicile ? 'Domicile' : 'Extérieur'}
+		</span>
+		{/* La division distingue deux équipes du club qui portent le même nom.
+		    Elle avait été retirée avec la ligne « compétition » — c'était retirer
+		    le seul discriminant. Elle revient ici, sans créer de ligne. */}
+		{match.division && (
+			<>
+				<span class="separateur" aria-hidden="true">·</span>
+				<span>{match.division}</span>
+			</>
+		)}
+	</p>
+
+	{joue ? (
+		<p class="score">
+			<span class="score-valeur">{match.scoreClub} – {match.scoreAdversaire}</span>
+			<span class="score-issue">
+				{match.scoreClub! > match.scoreAdversaire!
+					? 'Victoire'
+					: match.scoreClub! < match.scoreAdversaire!
+						? 'Défaite'
+						: 'Match nul'}
+			</span>
+		</p>
+	) : null}
+</div>
+
+<style>
+	/* Le bloc date : trois lignes courtes, alignées, qui se lisent d'un coup.
+	   Il donne à la carte un point d'entrée fixe, quelle que soit la longueur
+	   des noms d'équipe. */
+	.bloc-date {
+		flex: none;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		min-width: 60px;
+		padding: var(--space-2) var(--space-3);
+		border-right: 1px solid var(--color-border);
+		color: var(--color-text-muted);
+		line-height: 1.1;
+	}
+
+	.jour,
+	.mois {
+		font-size: 0.6875rem;
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-eyebrow);
+	}
+
+	.numero {
+		font-family: var(--font-heading);
+		font-weight: var(--weight-heading);
+		font-size: 1.5rem;
+		color: var(--color-text);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.bloc-date-vide .numero {
+		color: var(--color-text-muted);
+	}
+
+	.details {
+		min-width: 0;
+	}
+
+	.notre-equipe {
+		margin: 0 0 var(--space-1);
+		font-size: 0.8125rem;
+		font-weight: var(--weight-body-strong);
+		text-transform: uppercase;
+		letter-spacing: 0.02em;
+		color: var(--color-text-muted);
+	}
+
+	.adversaire {
+		margin: 0 0 var(--space-2);
+		font-family: var(--font-heading);
+		font-weight: var(--weight-heading);
+		font-size: 1.125rem;
+	}
+
+	.contre {
+		font-family: var(--font-body);
+		font-weight: 400;
+		font-size: 0.9375rem;
+		color: var(--color-text-muted);
+	}
+
+	.meta {
+		margin: 0;
+		font-size: 0.9375rem;
+		color: var(--color-text-muted);
+	}
+
+	.separateur {
+		margin: 0 var(--space-2);
+	}
+
+	.lieu[data-domicile='true'] {
+		font-weight: var(--weight-body-strong);
+		color: var(--color-text);
+	}
+
+	.score {
+		display: flex;
+		align-items: baseline;
+		gap: var(--space-3);
+		margin: var(--space-2) 0 0;
+	}
+
+	.score-valeur {
+		font-family: var(--font-heading);
+		font-weight: var(--weight-heading);
+		font-size: 1.25rem;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.score-issue {
+		font-size: 0.875rem;
+		color: var(--color-text-muted);
+	}
+</style>
