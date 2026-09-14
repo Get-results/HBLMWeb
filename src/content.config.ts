@@ -24,6 +24,13 @@ const trainingSlot = z.object({
 	   tant qu'il n'y a qu'une poignée d'installations (AD-3 : une collection naît
 	   d'un besoin réel, pas par anticipation). */
 	venue: z.string().min(1),
+	/* Distinction interne entre équipes d'une même catégorie, telle qu'elle figure
+	   sur les visuels du club : « G1 & G2 », « D1 », « Équipe 2 »… `null` est le
+	   cas courant — la plupart des catégories n'ont qu'un groupe, et inventer un
+	   libellé là où le club n'en met pas donnerait une fausse précision.
+	   Le champ existe pour que le planning n'ait plus à porter cette donnée à
+	   côté de la fiche : une information du bureau, un seul endroit. */
+	group: z.string().min(1).nullable().default(null),
 });
 
 /* Référent de la catégorie. Séparé du contact générique (AD-8) : celui-ci est une

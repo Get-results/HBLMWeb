@@ -1,160 +1,101 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import {
+  getCategoriesPubliees,
+  formaterAnneesNaissance,
+  formaterJour,
+  formaterHeures,
+} from '../lib/categories';
 
 const baseUrl = import.meta.env.BASE_URL;
 const contactUrl = baseUrl.endsWith('/') ? `${baseUrl}inscription#contact-form` : `${baseUrl}/inscription#contact-form`;
 
-/* Créneaux transmis par le bureau le 12/09/2026 (visuels officiels du club,
-   saison 2026-2027). Regroupés par catégorie et non par jour : un parent
-   cherche « quand s'entraîne mon enfant », pas « qui joue le mardi ».
+/* Une filière n'est qu'un ORDRE D'AFFICHAGE : quelles catégories, dans quel
+   ordre, sous quel intertitre. Aucune donnée du club ici — ni horaire, ni
+   gymnase, ni groupe. Tout cela vit dans les fiches de `src/content/categories/`,
+   d'où cette page les relit.
 
-   Les visuels n'indiquent que la commune. Le bureau a confirmé le 13/09/2026
-   qu'une commune désigne toujours la même salle : le club ne joue qu'à un
-   endroit par ville. D'où la table ci-dessous plutôt que 27 répétitions.
+   Motif : les 27 créneaux existaient en double, ici et dans les fiches, depuis
+   que la collection a été créée. Ils étaient identiques au moment de la
+   mutualisation — vérifié un par un — mais deux copies d'une donnée officielle
+   du bureau ne restent pas longtemps d'accord, et c'est la copie fausse qu'un
+   parent lirait avant de se déplacer.
 
-   `gymnase` reste modifiable créneau par créneau : le jour où une catégorie
-   s'entraîne ailleurs — la halle Pierre de Coubertin à Lunel-Viel, par exemple,
-   qui n'apparaît dans aucun planning actuel — il suffit de le renseigner sur ce
-   créneau, la table servant de valeur par défaut.
-
-   `groupe` reprend les mentions des visuels (G1&2, D1, Éq.1...) : ce sont des
-   distinctions internes entre équipes d'une même catégorie. */
-const gymnaseParCommune: Record<string, string> = {
-  Lunel: 'Gymnase Arnassan',
-  Marsillargues: 'Gymnase Spinosi',
-  Lansargues: 'Gymnase du collège',
-};
-
+   `code` (U7, U13, SF…) reste ici : c'est un repère visuel propre à cette page,
+   pas une donnée du club. */
 const filieres = [
   {
     titre: 'École de hand',
     categories: [
-      {
-        nom: '-7 ans et Baby-hand',
-        code: 'U7',
-        creneaux: [{ jour: 'Samedi', debut: '9h00', fin: '10h00', commune: 'Lunel', gymnase: null, groupe: null }],
-      },
-      {
-        nom: '-9 ans mixte',
-        code: 'U9',
-        creneaux: [
-          { jour: 'Mercredi', debut: '16h00', fin: '17h30', commune: 'Marsillargues', gymnase: null, groupe: null },
-          { jour: 'Samedi', debut: '10h00', fin: '11h30', commune: 'Lunel', gymnase: null, groupe: null },
-        ],
-      },
+      { id: 'baby-hand', code: 'U7' },
+      { id: 'ecole-de-hand', code: 'U9' },
     ],
   },
   {
     titre: 'Filière féminine',
     categories: [
-      {
-        nom: '-11 ans filles',
-        code: 'U11',
-        creneaux: [
-          { jour: 'Mardi', debut: '17h30', fin: '19h00', commune: 'Lunel', gymnase: null, groupe: null },
-          { jour: 'Jeudi', debut: '17h30', fin: '19h00', commune: 'Lansargues', gymnase: null, groupe: null },
-        ],
-      },
-      {
-        nom: '-13 ans filles',
-        code: 'U13',
-        creneaux: [
-          { jour: 'Lundi', debut: '17h30', fin: '19h00', commune: 'Lunel', gymnase: null, groupe: 'D1' },
-          { jour: 'Mercredi', debut: '18h30', fin: '20h00', commune: 'Lansargues', gymnase: null, groupe: 'D1 & D2' },
-          { jour: 'Jeudi', debut: '18h00', fin: '19h30', commune: 'Marsillargues', gymnase: null, groupe: 'D2' },
-        ],
-      },
-      {
-        nom: '-15 ans filles',
-        code: 'U15',
-        creneaux: [
-          { jour: 'Mercredi', debut: '17h30', fin: '19h00', commune: 'Lunel', gymnase: null, groupe: 'Div. 1' },
-          { jour: 'Vendredi', debut: '19h00', fin: '20h30', commune: 'Lansargues', gymnase: null, groupe: 'Div. 1 & 2' },
-        ],
-      },
-      {
-        nom: '-18 ans filles',
-        code: 'U18',
-        creneaux: [
-          { jour: 'Mercredi', debut: '19h00', fin: '20h30', commune: 'Marsillargues', gymnase: null, groupe: 'Équipe 1' },
-          { jour: 'Jeudi', debut: '19h00', fin: '20h30', commune: 'Lunel', gymnase: null, groupe: 'Équipe 2' },
-          { jour: 'Vendredi', debut: '19h00', fin: '20h30', commune: 'Lunel', gymnase: null, groupe: 'Équipe 1' },
-        ],
-      },
+      { id: 'moins-de-11-feminines', code: 'U11' },
+      { id: 'moins-de-13-feminines', code: 'U13' },
+      { id: 'moins-de-15-feminines', code: 'U15' },
+      { id: 'moins-de-18-feminines', code: 'U18' },
     ],
   },
   {
     titre: 'Filière masculine',
     categories: [
-      {
-        nom: '-11 ans garçons',
-        code: 'U11',
-        creneaux: [
-          { jour: 'Lundi', debut: '18h00', fin: '19h30', commune: 'Marsillargues', gymnase: null, groupe: null },
-          { jour: 'Vendredi', debut: '17h30', fin: '19h00', commune: 'Lunel', gymnase: null, groupe: null },
-        ],
-      },
-      {
-        nom: '-13 ans garçons',
-        code: 'U13',
-        creneaux: [
-          { jour: 'Mercredi', debut: '17h30', fin: '19h00', commune: 'Marsillargues', gymnase: null, groupe: 'G1 & G2' },
-          { jour: 'Vendredi', debut: '18h30', fin: '20h00', commune: 'Marsillargues', gymnase: null, groupe: 'G1 & G2' },
-        ],
-      },
-      {
-        nom: '-15 ans garçons',
-        code: 'U15',
-        creneaux: [
-          { jour: 'Lundi', debut: '19h00', fin: '20h30', commune: 'Lunel', gymnase: null, groupe: 'G1 & G2' },
-          { jour: 'Mardi', debut: '17h30', fin: '19h00', commune: 'Lunel', gymnase: null, groupe: null },
-          { jour: 'Mercredi', debut: '19h00', fin: '20h30', commune: 'Lunel', gymnase: null, groupe: 'G1' },
-          { jour: 'Jeudi', debut: '17h30', fin: '19h00', commune: 'Lunel', gymnase: null, groupe: 'G2' },
-        ],
-      },
+      { id: 'moins-de-11-masculins', code: 'U11' },
+      { id: 'moins-de-13-masculins', code: 'U13' },
+      { id: 'moins-de-15-masculins', code: 'U15' },
     ],
   },
   {
-    titre: 'Séniors',
+    titre: 'Séniors compétition',
     categories: [
-      {
-        nom: 'Séniors filles',
-        code: 'SF',
-        creneaux: [
-          { jour: 'Mercredi', debut: '20h30', fin: '22h30', commune: 'Marsillargues', gymnase: null, groupe: null },
-          { jour: 'Vendredi', debut: '20h30', fin: '22h30', commune: 'Lunel', gymnase: null, groupe: null },
-        ],
-      },
-      {
-        nom: 'Séniors garçons',
-        code: 'SG',
-        creneaux: [
-          { jour: 'Mardi', debut: '20h30', fin: '22h30', commune: 'Lunel', gymnase: null, groupe: null },
-          { jour: 'Jeudi', debut: '20h30', fin: '22h30', commune: 'Lunel', gymnase: null, groupe: null },
-        ],
-      },
-      {
-        nom: 'Séniors loisirs',
-        code: 'SL',
-        creneaux: [
-          { jour: 'Lundi', debut: '20h30', fin: '22h30', commune: 'Lunel', gymnase: null, groupe: null },
-          { jour: 'Mercredi', debut: '20h30', fin: '22h30', commune: 'Lunel', gymnase: null, groupe: null },
-        ],
-      },
+      { id: 'seniors-filles', code: 'SF' },
+      { id: 'seniors-garcons', code: 'SG' },
+    ],
+  },
+  {
+    titre: 'Séniors loisirs',
+    categories: [
+      { id: 'seniors-loisirs', code: 'SL' },
+      { id: 'handfit', code: 'HF' },
     ],
   },
 ];
 
 const saison = '2026-2027';
 
-/* Le créneau l'emporte sur la table ; si ni l'un ni l'autre ne renseigne la
-   salle, la page le dit au lieu de laisser un blanc. */
-const salleDe = (creneau: { gymnase: string | null; commune: string }) =>
-  creneau.gymnase ?? gymnaseParCommune[creneau.commune] ?? null;
+/* `getCategoriesPubliees` est le seul point d'entrée autorisé vers la collection :
+   il ne rend que les fiches confirmées par le bureau. Une fiche en attente ne
+   peut donc pas se retrouver sur cette page, même remplie. */
+const fiches = new Map((await getCategoriesPubliees()).map((fiche) => [fiche.id, fiche.data]));
 
-const gymnasesIncomplets = filieres.some((f) =>
-  f.categories.some((c) => c.creneaux.some((cr) => salleDe(cr) === null)),
-);
+/* Le lien se fait par `id` — le nom du fichier de la fiche — et jamais par le
+   libellé affiché : « -7 ans et Baby-hand » contre « -7 ans et baby-hand », un
+   rapprochement par texte se serait cassé sur cette seule majuscule sans rien
+   dire. Un `id` inconnu CASSE LE BUILD au lieu de vider silencieusement une
+   catégorie : une fiche renommée doit se voir tout de suite, pas être découverte
+   en ligne par un parent qui ne trouve plus ses horaires. */
+const ficheDe = (id: string) => {
+  const fiche = fiches.get(id);
+  if (!fiche) {
+    throw new Error(
+      `Planning : la catégorie « ${id} » n'a pas de fiche confirmée dans src/content/categories/.\n` +
+        `Fiches disponibles : ${[...fiches.keys()].join(', ')}.`,
+    );
+  }
+  return fiche;
+};
+
+/* `venue` porte la salle et la commune en une chaîne — « Gymnase Arnassan
+   (Lunel) ». La page les affiche en deux temps, séparés par un point médian.
+   Si la forme attendue n'est pas là, on rend la chaîne entière plutôt que d'en
+   deviner les morceaux. */
+const lieuDe = (venue: string): string => {
+  const decoupe = /^(.+?)\s*\(([^)]+)\)\s*$/.exec(venue);
+  return decoupe ? `${decoupe[1]} · ${decoupe[2]}` : venue;
+};
 ---
 
 <BaseLayout title="Planning des entraînements | HBLM">
@@ -165,39 +106,34 @@ const gymnasesIncomplets = filieres.some((f) =>
       <p class="page-sub">Les créneaux de la saison {saison}, catégorie par catégorie.</p>
     </div>
 
-    {gymnasesIncomplets && (
-      <p class="avis-gymnases">
-        Les horaires ci-dessous sont ceux de la saison {saison}. Le gymnase exact de
-        chaque créneau sera précisé prochainement&nbsp;: seule la commune est indiquée
-        pour l'instant. <a href={contactUrl}>Un doute&nbsp;? Contactez le club.</a>
-      </p>
-    )}
-
     {filieres.map((filiere) => (
       <section class="filiere">
         <h2 class="filiere-titre">{filiere.titre}</h2>
 
         <ul class="categories">
-          {filiere.categories.map((categorie) => (
-            <li class="categorie">
-              <h3 class="categorie-nom">
-                <span class="categorie-code">{categorie.code}</span>
-                {categorie.nom}
-              </h3>
-              <ul class="creneaux">
-                {categorie.creneaux.map((creneau) => (
-                  <li class="creneau">
-                    <span class="creneau-jour">{creneau.jour}</span>
-                    <span class="creneau-heure">{creneau.debut}&nbsp;–&nbsp;{creneau.fin}</span>
-                    <span class="creneau-lieu">
-                      {salleDe(creneau) ?? 'gymnase à préciser'} · {creneau.commune}
-                    </span>
-                    {creneau.groupe && <span class="creneau-groupe">{creneau.groupe}</span>}
-                  </li>
-                ))}
-              </ul>
-            </li>
-          ))}
+          {filiere.categories.map(({ id, code }) => {
+            const fiche = ficheDe(id);
+            const annees = formaterAnneesNaissance(fiche);
+            return (
+              <li class="categorie">
+                <h3 class="categorie-nom">
+                  <span class="categorie-code">{code}</span>
+                  {fiche.label}
+                </h3>
+                {annees && <p class="categorie-annees">{annees}</p>}
+                <ul class="creneaux">
+                  {fiche.trainingSlots.map((creneau) => (
+                    <li class="creneau">
+                      <span class="creneau-jour">{formaterJour(creneau)}</span>
+                      <span class="creneau-heure">{formaterHeures(creneau)}</span>
+                      <span class="creneau-lieu">{lieuDe(creneau.venue)}</span>
+                      {creneau.group && <span class="creneau-groupe">{creneau.group}</span>}
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            );
+          })}
         </ul>
       </section>
     ))}
@@ -300,6 +236,21 @@ const gymnasesIncomplets = filieres.some((f) =>
     margin: 0 0 14px;
   }
 
+  /* Années de naissance : un repère, pas un titre. Elles sont en retrait sous le
+     nom de la catégorie, sans capitales ni interlettrage — on les lit une fois
+     pour se situer, puis l'œil va aux horaires, qui sont l'objet de la page. */
+  .categorie-annees {
+    margin: 0 0 var(--space-3);
+    font-size: var(--size-eyebrow);
+    color: var(--color-text-muted);
+  }
+
+  /* Le nom se rapproche de ses années quand il en a : les deux forment un bloc,
+     et l'écart utile est celui qui les sépare des créneaux. */
+  .categorie-nom:has(+ .categorie-annees) {
+    margin-bottom: var(--space-1);
+  }
+
   .categorie-code {
     flex: none;
     padding: 3px 9px;
@@ -346,7 +297,6 @@ const gymnasesIncomplets = filieres.some((f) =>
     color: var(--color-text-muted);
   }
 
-  .avis-gymnases,
   .rappel {
     max-width: 860px;
     margin: 0 auto 32px;
@@ -363,7 +313,6 @@ const gymnasesIncomplets = filieres.some((f) =>
     margin-bottom: 0;
   }
 
-  .avis-gymnases a,
   .rappel a {
     color: var(--color-text);
     font-weight: var(--weight-body-strong);

@@ -13,7 +13,7 @@
 #     vers lui. Ne le passer à true/false que si une catégorie a une règle fixe.
 #   • contact — pas de référent désigné ; le contact générique prend le relais.
 
-label: "-7 ans et baby-hand"
+label: "-7 ans et Baby-hand"
 order: 10
 dataStatus: confirme
 
