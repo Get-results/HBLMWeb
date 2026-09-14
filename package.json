@@ -1,7 +1,7 @@
 {
   "name": "hblmweb",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "engines": {
     "node": ">=24.21.0"
@@ -16,7 +16,8 @@
     "check:tokens": "node scripts/check-tokens.mjs",
     "check:paths": "node scripts/check-base-paths.mjs",
     "check:links": "node scripts/check-links.mjs",
-    "check:a11y": "node scripts/check-a11y.mjs"
+    "check:a11y": "node scripts/check-a11y.mjs",
+    "check:version": "node scripts/check-version-bump.mjs"
   },
   "dependencies": {
     "@fontsource/poppins": "^5.3.0",
