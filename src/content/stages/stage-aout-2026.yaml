@@ -1,0 +1,44 @@
+# Stage du club — collection `stages` (schéma : src/content.config.ts).
+# Le nom de ce fichier est l'identifiant stable du stage.
+#
+# DONNÉES OFFICIELLES, relevées sur l'annonce et la billetterie HelloAsso du
+# club le 14/09/2026. Rien n'est déduit ni arrondi ici.
+#
+# Deux écarts volontaires avec la page HelloAsso :
+#   • `venue` — HelloAsso écrit « Salle Arnassan ». Le site dit partout
+#     « Gymnase Arnassan » (harmonisation faite sur la page « Le club ») ; on
+#     garde une seule dénomination pour tout le site.
+#   • `price` — laissé à `null` : HelloAsso masque la billetterie des événements
+#     terminés, le tarif de cette édition n'est plus consultable. Mieux vaut
+#     n'afficher aucun prix qu'un prix approché.
+#
+# Ce stage s'est tenu en août 2026 : il est donc `confirme` (ses données sont
+# vraies) et la page le range d'elle-même dans les éditions passées, à partir de
+# `endDate` — il n'y a aucun drapeau « passé » à basculer.
+
+title: "Stage Vacances Août 2026 (-9 / -11 / -13 / -15)"
+dataStatus: confirme
+
+# Guillemets obligatoires : sans eux, le parseur YAML convertit la valeur en
+# Date et lui colle un fuseau horaire.
+startDate: "2026-08-24"
+endDate: "2026-08-28"
+startTime: "09:30"
+endTime: "17:00"
+
+venue: "Gymnase Arnassan (Lunel)"
+
+# Libellé libre, et non des `id` de la collection `categories` : le club n'a pas
+# de catégorie -9 (voir le commentaire du schéma).
+audience: "-9, -11, -13 et -15 ans, filles et garçons"
+
+price: null
+
+registrationUrl: "https://www.helloasso.com/associations/handball-lunel-marsillargues/evenements/stage-vacances-aout-2026-9-11-13-15"
+
+paymentMethods:
+  - "carte bancaire en ligne"
+  - "chèque"
+  - "espèces"
+  - "coupons sport ANCV"
+  - "chèques vacances ANCV"
