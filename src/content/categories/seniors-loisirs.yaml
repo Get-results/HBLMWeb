@@ -13,7 +13,7 @@
 #     vers lui. Ne le passer à true/false que si une catégorie a une règle fixe.
 #   • contact — pas de référent désigné ; le contact générique prend le relais.
 
-label: "Séniors loisirs"
+label: "Handball loisirs"
 order: 80
 dataStatus: confirme
 
