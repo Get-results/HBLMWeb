@@ -184,6 +184,16 @@ const saisons = [...new Set(categories.map(({ data }) => data.season).filter(Boo
 		background-color: var(--color-surface);
 	}
 
+	/* Le filet de séparation en accent. C'est la seule couleur de la fiche, et
+	   elle a un rôle : marquer la coupure entre l'identité de la catégorie
+	   (libellé + années de naissance) et son détail pratique (créneaux). Répété
+	   d'une carte à l'autre, il donne à la section la pulsation qui lui manquait
+	   quand tout était gris.
+
+	   2px et non un aplat : DESIGN.md réserve l'accent aux badges, aux CTA et aux
+	   éléments décoratifs, et interdit explicitement les grandes surfaces. Un
+	   filet reste du trait. Et il ne porte aucun texte, donc la règle du
+	   « texte sur accent toujours en #222220 » ne s'applique pas ici. */
 	.entete {
 		display: flex;
 		align-items: baseline;
@@ -191,7 +201,7 @@ const saisons = [...new Set(categories.map(({ data }) => data.season).filter(Boo
 		gap: var(--space-4);
 		margin-bottom: var(--space-4);
 		padding-bottom: var(--space-3);
-		border-bottom: 1px solid var(--color-border);
+		border-bottom: 2px solid var(--color-accent);
 	}
 
 	.identite {
