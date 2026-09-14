@@ -10,7 +10,7 @@ interfaces tierces, décisions à prendre.
 > retire le `TODO` correspondant dans le code — les deux vont ensemble.
 
 Statuts : `[ ]` à faire · `[x]` fait · `[~]` en cours
-Dernière mise à jour : 11/09/2026
+Dernière mise à jour : 14/09/2026
 
 ---
 
@@ -32,6 +32,20 @@ Rien ici ne demande le bureau, mais rien ne peut être fait depuis le dépôt.
   `PUBLIC_UMAMI_URL` et `PUBLIC_UMAMI_ID` (localement + variables GitHub).
   → tant que c'est vide, aucun script de mesure n'est inclus. Le site fonctionne, il n'y a
   simplement aucune statistique de fréquentation.
+- [ ] **Remettre `docs/` dans le dépôt, une fois les identifiants retirés** — la
+  documentation de l'API des matchs (`FRONTEND_INTEGRATION.md`, `api-examples.json`,
+  `openapi.json`, `openapi.yaml`) a été sortie du dépôt le 14/09/2026, et `/docs/` est
+  désormais ignoré (`.gitignore`). Motif : `FRONTEND_INTEGRATION.md` documente la route
+  d'authentification de l'API avec `{ "username": "admin", "password": "admin" }` en
+  clair, et le dépôt est public.
+  → Le porteur a confirmé qu'il s'agit d'identifiants de **développement local**, sans
+  valeur en production. Ce n'est donc pas une urgence — mais ça n'a pas sa place dans un
+  dépôt public, où ça se lit comme un mode d'emploi d'authentification.
+  → Ce n'est pas non plus tenable durablement : `src/content.config.ts` renvoie à
+  `docs/FRONTEND_INTEGRATION.md` pour justifier le nommage des champs de matchs, et un
+  clone neuf ne l'a pas. C'est exactement le défaut de transmissibilité que vise NFR4.
+  → Geste attendu : retirer ce passage de la documentation (ou changer les identifiants
+  par défaut), puis reverser `docs/` dans le dépôt et supprimer la règle du `.gitignore`.
 
 ---
 
@@ -93,11 +107,38 @@ inventé ici finirait publié comme une information officielle.
   bon : « Trouver ma catégorie » affiche le contact du club plutôt qu'une catégorie
   inadaptée. Ce n'est pas un trou dans les données, c'est la réalité du club — à revoir si
   une équipe se crée.
-- [ ] **Stages** : dates, horaires, tarifs — `src/pages/stages.astro:24-26`.
-- [ ] **Confirmer le chiffre « 351 licenciés en 2025 »** affiché sur la page Le club
-  (`src/pages/le-club.astro:20-22`). Il vient du brief projet, relevé sur l'ancien site
-  WordPress — ce n'est donc pas une donnée inventée, mais il porte le millésime 2025 alors
-  que la saison 2026-2027 commence. À actualiser ou à confirmer.
+- [ ] **Tarif du stage d'août 2026** — introuvable aujourd'hui : HelloAsso masque la
+  billetterie des événements terminés, et la page de l'édition n'affiche plus aucun prix.
+  Le club l'a forcément encaissé : il suffit de le redemander au bureau. En attendant,
+  `price: null` dans `src/content/stages/stage-aout-2026.yaml` et la fiche ne montre aucun
+  prix — c'est volontaire, un tarif approché serait un tarif inventé.
+- [ ] **Dates de la prochaine édition de stage** — tant qu'aucun stage à venir n'est
+  confirmé, « Prochains stages » reste sur son état vide et renvoie vers le contact du
+  club. Ce n'est pas un défaut de la page, c'est l'état réel entre deux éditions.
+  → Quand les dates arrivent : un fichier de plus dans `src/content/stages/`, en
+  `dataStatus: confirme`. Le classement « à venir » / « passé » se fait seul à partir des
+  dates, il n'y a aucun drapeau à basculer (voir section 3).
+- [ ] **Confirmer ou actualiser le nombre de licenciés** — le chiffre n'est plus affiché
+  nulle part depuis le 14/09/2026. « 351 licenciés en 2025 » vient du brief projet, relevé
+  sur l'ancien site WordPress : ce n'est donc pas une donnée inventée, mais il porte le
+  millésime 2025 alors que la saison 2026-2027 a commencé, et l'accueil l'accompagnait d'un
+  « un record ! » que rien n'étaye.
+  → L'enjeu a changé : ce n'est plus un chiffre douteux publié en ligne, c'est un chiffre en
+  attente hors ligne. Il vit dans `src/lib/club.ts` derrière un drapeau `confirme: false`,
+  avec sa valeur et son année.
+  → Le rétablir tient en un booléen passé à `true` après accord du bureau — en corrigeant
+  `nombre` et `annee` si le bureau donne l'effectif de la saison en cours. Rien d'autre à
+  toucher : les deux pages qui l'affichaient (accueil et « Le club ») le relisent au même
+  endroit.
+- [ ] **Premier vrai article, à faire rédiger par le bureau** — le dépôt ne porte que
+  `src/content/articles/exemple-modele-d-article.md`, marqué `publicationStatus: exemple`,
+  qui ne sort jamais du build. Tant que personne n'a écrit un article et ne l'a passé à
+  `publie`, l'accueil et `/vie-du-club` affichent leur état vide. C'est l'état réel du
+  club en ligne, pas une page cassée — mais c'est un site d'actualités sans actualité.
+  → Un article est un fichier markdown : titre, date, type, accroche, photo de couverture
+  facultative, et le texte. Le pousser sur `main` suffit à le publier (AD-6).
+  → À caler **après** l'arbitrage sur la page de détail par article (section 5) : sans
+  elle, le corps du texte n'est lisible nulle part et le bureau rédigerait à l'aveugle.
 - [x] **Correspondance commune → gymnase** — confirmée par le bureau le 13/09/2026 :
   une commune désigne toujours la même salle. Lunel → Arnassan, Marsillargues → Spinosi,
   Lansargues → gymnase du collège. Les 27 créneaux du planning sont renseignés.
@@ -111,8 +152,13 @@ inventé ici finirait publié comme une information officielle.
   → `src/pages/le-club.astro` : quand les photos arrivent, remplacer le contenu du
   `.avatar` par une `<img>`, le cercle et sa bordure restent identiques.
   → Prévoir l'accord de chaque personne : le site et le dépôt sont publics.
-- [ ] **Liens des réseaux sociaux** du club (Instagram, Facebook) — plusieurs pages y
-  renvoient en texte sans lien cliquable (`matchs.astro`, `vie-du-club.astro`).
+- [ ] **Liens des réseaux sociaux** du club (Instagram, Facebook) — deux endroits y
+  renvoient en toutes lettres sans donner un seul lien cliquable : l'état vide de
+  `/vie-du-club` invite à « suivez-nous sur les réseaux sociaux du club », et le repli du
+  formulaire de contact (`src/components/ContactForm.astro`) renvoie « aux réseaux du
+  club ».
+  → Ce sont précisément les textes qu'on lit quand le reste manque : ils sont censés être
+  la porte de sortie, et ils ne mènent nulle part. Deux URL suffisent à les réparer.
 - [ ] **Logo officiel et photos** libres de droit — `asset_placeholder/` contient des visuels
   de travail (dont `logo_club.webp`) qui ne sont **pas** versionnés et ne sont pas utilisés
   par le site. `public/` ne contient que les favicons.
@@ -126,6 +172,12 @@ Journal des arbitrages, pour ne pas les rejouer dans six mois.
 
 | Date | Décision | Motif |
 |---|---|---|
+| 14/09/2026 | Un **article ne paraît que si `publicationStatus: publie`** | Même mécanisme que le `dataStatus` des catégories, mais un nom et des valeurs distincts parce que la question posée diffère : une fiche de catégorie attend la *confirmation* de ses données par le bureau, un article attend d'être *prêt* à paraître. La valeur par défaut ne publie pas, et `exemple` ne paraît jamais. |
+| 14/09/2026 | Un **stage ne paraît que si `dataStatus: confirme`**, et son classement passé / à venir est **déduit des dates** | Même drapeau que les catégories, pour la même raison : le site est publiquement en ligne. Le classement, lui, n'est jamais saisi — un champ « passé » à basculer à la main resterait à `false` le jour où personne n'y pense, et le site annoncerait un stage déjà terminé. Un stage passé reste `confirme` : ses données sont vraies, c'est sa date qui le range. |
+| 14/09/2026 | Le **tarif d'un stage peut rester inconnu sans empêcher sa publication**, contrairement au tarif de licence | HelloAsso masque la billetterie des événements terminés : le tarif d'août 2026 est réellement introuvable. L'exiger aurait conduit à en approcher un, c'est-à-dire à l'inventer. La fiche préfère n'afficher aucun prix, et le reste de ses informations est vrai. |
+| 14/09/2026 | Les **quatre cartes d'actualité inventées de l'accueil sont retirées** ; l'accueil lit désormais la même source que « Vie du club » | Elles étaient écrites en dur et ne relataient aucun fait vérifié — dont un « 351 licenciés, un record ! » — sur un site publiquement accessible. Une source unique pour les deux pages rend par ailleurs impossible qu'elles racontent deux choses différentes. |
+| 14/09/2026 | Les **chiffres du club passent derrière un drapeau de confirmation** ; le nombre de gymnases est **déduit de la liste** | L'effectif portait un millésime périmé et un superlatif que rien n'étaye : mieux vaut n'afficher aucun chiffre qu'un chiffre de 2025 présenté comme courant. Le « 4 gymnases » était un littéral qu'aucune liste ne garantissait — ajouter une salle laissait le texte mentir sans que rien ne le signale. |
+| 14/09/2026 | **Pas de demande de purge à GitHub Support** pour le commit orphelin `0d68fd2` | La purge serait la seule action qui retirerait vraiment l'objet, mais elle suppose d'ouvrir un ticket et d'attendre, pour un contenu dont rien n'est exploitable : identifiants de développement local, jeton d'exemple fabriqué, affiches déjà publiées par le club. Le seul point qui compte vraiment — la capture des visages du conseil d'administration — se traite en prévenant les personnes concernées, pas en discutant avec un support. |
 | 14/09/2026 | **Galeries photo ajournées**, droit à l'image mis de côté | Publier des photos, notamment de mineurs, sans autorisation écrite engage l'association. Les articles, eux, ne dépendent pas des photos : l'epic 4 avance sans sa partie galerie. |
 | 11/09/2026 | **Web3Forms** pour le formulaire de contact, plutôt qu'un backend maison | Site statique : aucune clé ne peut être gardée secrète côté client. Un Cloudflare Worker imposerait domaine + SPF/DKIM + anti-spam à maintenir, pour ~15 messages/an attendus. |
 | 11/09/2026 | **Pas de nom de domaine** pour l'instant, on reste sur `github.io` | Aller au plus simple tant que le site n'est pas en production. Le club en possède un, activable plus tard. |
@@ -136,6 +188,11 @@ Journal des arbitrages, pour ne pas les rejouer dans six mois.
 | 11/09/2026 | **Page Planning passée en « en cours de préparation »** | Les créneaux affichés étaient fabriqués et le site est publiquement accessible. Mieux vaut annoncer l'absence d'horaires que publier de faux horaires. |
 
 ---
+
+## 4. Sujets techniques ouverts
+
+Des constats et des limitations connus, chacun avec son état et ce qui le débloquerait.
+Rien ici n'attend le bureau, mais rien ne se règle non plus d'un simple commit.
 
 - [ ] **Lien vers la fiche officielle FFHandball (story 3.3)** — l'API ne fournit **aucune
   URL par match**. Le seul champ `url` existe sur `TrackedCategory`, pointe la *poule* et non
@@ -182,7 +239,29 @@ Journal des arbitrages, pour ne pas les rejouer dans six mois.
   → Le pire scénario actuel est du spam dans la boîte du club : désagréable, visible
   immédiatement, sans danger.
 
-## 4. À trancher plus tard
+- [ ] **Un commit orphelin reste public sur GitHub** — le commit
+  `0d68fd205764d468b39cd29be99db2be891380bd` (14/09/2026) a été poussé sur
+  `origin/feat/epic-4-vie-du-club`, puis remplacé par un force-push. Il n'est plus
+  atteignable depuis aucune branche et la copie locale est propre, mais GitHub conserve
+  l'objet et le sert à qui connaît son SHA.
+  → Il embarque les quatre fichiers `docs/` (voir section 1) et cinq captures d'écran.
+  Le point sensible n'est **pas** les identifiants `admin/admin` — ce sont ceux du
+  développement local — mais `image.png` : **l'organigramme du conseil d'administration,
+  13 noms, fonctions et photos de visage**, alors que le site n'affiche que des initiales
+  faute d'accord sur le droit à l'image. La publication contredit donc frontalement une
+  décision du bureau, et c'est le seul enjeu réel du dossier.
+  → **Décision du 14/09/2026 : pas de demande de purge à GitHub Support** (motif en
+  section 3). Ce n'est donc pas une action en attente, c'est un état assumé.
+  → Reste à faire : **prévenir le bureau** que cette capture a été publiquement accessible,
+  et depuis quand. C'est une obligation de transparence, pas un incident à déclarer — ce
+  sont des adultes en fonction associative, aucun mineur n'y figure.
+  → Garde-fou déjà posé : le `.gitignore` refuse maintenant toute image déposée à la
+  racine du dépôt. Le commit ne vient pas d'un défaut de conception mais d'un `git add`
+  trop large sur des fichiers de travail qui traînaient là.
+
+---
+
+## 5. À trancher plus tard
 
 - **Activer le nom de domaine du club** ? Déclencheur : mise en production réelle.
   Implique un `CNAME` sur GitHub Pages et la mise à jour de `site` dans `astro.config.mjs`.
@@ -191,9 +270,30 @@ Journal des arbitrages, pour ne pas les rejouer dans six mois.
 - **Qui met à jour le site au quotidien** (créneaux, actualités, stages) ? Personne au
   bureau, ou une personne désignée ? La réponse conditionne le niveau d'automatisation à
   viser dans les Epics 3 et 4.
+  → Élément de réponse déjà acquis : le club tient un **compte HelloAsso**, qui sert
+  aujourd'hui aux inscriptions aux stages — la billetterie du stage d'août 2026 est reliée
+  depuis `src/content/stages/stage-aout-2026.yaml`. Quelqu'un l'alimente donc déjà, et
+  publie déjà sur Instagram. La question n'est pas de trouver une personne capable de tenir
+  un outil en ligne, mais de savoir si le dépôt git est le bon outil **pour elle** (AD-6).
+- **Une page de détail par article ?** Sans route `/vie-du-club/[slug]`, le corps markdown
+  d'un article n'est lisible nulle part : l'accueil et `/vie-du-club` n'affichent que le
+  titre, la date, le type et l'accroche, alors que le schéma prévoit un vrai texte rédigé.
+  Déclencheur : **avant le premier vrai article** (section 2). Trancher après, c'est faire
+  rédiger le bureau à l'aveugle pour un format sans destination — soit un texte écrit pour
+  rien, soit une accroche qu'il faudra reprendre en article complet.
+- **`MATCHES_API_BASE_URL` : secret de CI, ou variable assumée ?** L'URL est traitée comme
+  un secret de l'environnement GitHub `api`, alors que le domaine `cedricsanchez.xyz` est
+  écrit en clair dans ce fichier même (section 4, Bot Fight Mode), et sur `main` depuis une
+  vingtaine de commits. Ce n'est pas exploitable : `scripts/fetch-matches.mjs` documente que
+  la route est publique et n'exige aucun en-tête — un lecteur du dépôt n'obtient rien qu'il
+  n'obtiendrait en interrogeant l'API directement. Mais le mélange actuel donne le coût du
+  secret sans son bénéfice, et rend les logs de CI illisibles au diagnostic. Deux issues
+  cohérentes : passer l'URL en **variable**, comme les `PUBLIC_*` pour la même raison, ou
+  maintenir le secret et retirer le domaine de ces notes. Déclencheur : le prochain
+  diagnostic de pipeline, ou la prochaine relecture de sécurité.
 
 ---
 
-## 5. Fait
+## 6. Fait
 
 *(rien pour l'instant — les éléments cochés ci-dessus viendront s'archiver ici)*
