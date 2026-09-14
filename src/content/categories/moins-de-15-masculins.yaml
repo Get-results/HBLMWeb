@@ -35,6 +35,7 @@ trainingSlots:
     startTime: "19:00"
     endTime: "20:30"
     venue: "Gymnase Arnassan (Lunel)"
+    group: "G1 & G2"
   - day: mardi
     startTime: "17:30"
     endTime: "19:00"
@@ -43,10 +44,12 @@ trainingSlots:
     startTime: "19:00"
     endTime: "20:30"
     venue: "Gymnase Arnassan (Lunel)"
+    group: "G1"
   - day: jeudi
     startTime: "17:30"
     endTime: "19:00"
     venue: "Gymnase Arnassan (Lunel)"
+    group: "G2"
 
 licenseFee: 210
 trialAvailable: null
