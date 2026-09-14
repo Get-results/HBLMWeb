@@ -1,23 +1,173 @@
 ---
-/* Jalon en attendant l'Epic 4 (articles et galeries photo).
-   Présente dès maintenant car l'accueil pointe dessus depuis le bloc
-   actualités. À remplacer par l'affichage des articles de la Story 4.3. */
+/* Vie du club — Story 4.3.
+
+   Remplace le jalon posé quand l'accueil pointait déjà ici depuis son bloc
+   actualités. La page liste les articles PUBLIÉS, du plus récent au plus
+   ancien, et rien d'autre : elle ne connaît pas la collection, elle demande
+   ses articles à src/lib/articles.ts, seul endroit qui décide de ce qui paraît.
+
+   Les galeries photo évoquées par la Story 4.3 sont volontairement absentes :
+   elles sont ajournées le 14/09/2026 avec la question du droit à l'image
+   (A-FAIRE-HORS-CODE.md, section 3). Écrire le code « prêt à activer » serait
+   se préparer à publier des photos que le club n'a pas le droit de publier. */
 import BaseLayout from '../layouts/BaseLayout.astro';
+import NewsCard from '../components/NewsCard.astro';
+import GenericContact from '../components/GenericContact.astro';
+import { getArticlesPublies, formaterDateArticle, libelleCategorie } from '../lib/articles';
+
+const articles = await getArticlesPublies();
 ---
 
 <BaseLayout title="Vie du club | HBLM">
-  <div class="container">
-    <header class="page-header">
-      <h1 class="title">Vie du club</h1>
-      <p class="subtitle">Actualités, événements et photos</p>
-    </header>
+  <div class="page">
+    <div class="page-header">
+      <p class="eyebrow">HBLM · Handball Lunel-Marsillargues</p>
+      <h1 class="page-title">Vie du<br />club<span class="accent-dot">.</span></h1>
+      <p class="page-sub">Les actualités et les événements du club, au fil de la saison.</p>
+    </div>
 
-    <section class="content-section">
-      <div class="card accent-card">
-        <h2>Bientôt disponible</h2>
-        <p>Les actualités du club, les comptes-rendus d'événements et les galeries photo seront rassemblés ici.</p>
-        <p>En attendant, suivez-nous sur les réseaux sociaux du club.</p>
+    {articles.length === 0 ? (
+      /* État réel au moment de la mise en ligne : le schéma et l'affichage
+         existent, aucun article n'est encore rédigé. On le dit plutôt que de
+         remplir la page de contenu inventé — même principe que la page Matchs
+         quand le calendrier est vide. */
+      <div class="encart">
+        <p class="encart-titre">Aucun article publié pour l'instant</p>
+        <p>
+          Les actualités et comptes-rendus d'événements du club seront rassemblés
+          ici. En attendant, suivez-nous sur les réseaux sociaux du club.
+        </p>
+        <GenericContact intro="Une information à nous transmettre ? Écrivez-nous." discret />
       </div>
-    </section>
+    ) : (
+      <section class="articles-section">
+        {/* Titre de section réel plutôt que masqué : NewsCard rend un <h3>, et
+            un h1 suivi d'un h3 saute un niveau de titre — une navigation par
+            titres y perd son repère (garde-fou check:a11y). */}
+        <h2 class="section-titre">Derniers articles</h2>
+        <ul class="articles">
+          {articles.map((article) => (
+            <li>
+              <NewsCard
+                title={article.data.title}
+                description={article.data.description}
+                date={formaterDateArticle(article.data.date)}
+                category={libelleCategorie(article.data.category)}
+                coverPhoto={article.data.coverPhoto}
+              />
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
   </div>
 </BaseLayout>
+
+<style>
+  .page {
+    width: 100%;
+    padding: var(--space-section-y) 6vw;
+  }
+
+  .page-header {
+    max-width: 720px;
+    margin: 0 auto var(--space-8);
+    text-align: center;
+  }
+
+  .eyebrow {
+    display: inline-block;
+    font-family: var(--font-body);
+    font-weight: var(--weight-body-strong);
+    font-size: var(--size-eyebrow);
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin: 0 0 10px 0;
+  }
+
+  .page-title {
+    font-family: var(--font-display);
+    font-weight: var(--weight-display);
+    font-size: clamp(34px, 6vw, 64px);
+    line-height: var(--leading-display);
+    letter-spacing: var(--tracking-display);
+    margin: 0 0 14px 0;
+    color: var(--color-text);
+    text-transform: uppercase;
+  }
+
+  .page-title .accent-dot {
+    color: var(--color-accent);
+  }
+
+  .page-sub {
+    font-size: var(--size-body);
+    color: var(--color-text-muted);
+    line-height: var(--leading-body);
+    margin: 0;
+  }
+
+  .articles-section {
+    max-width: 1080px;
+    margin: 0 auto;
+  }
+
+  .section-titre {
+    font-family: var(--font-heading);
+    font-weight: 900;
+    font-size: 22px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0 0 18px;
+    color: var(--color-text);
+  }
+
+  /* Une liste, et non une suite de cartes juxtaposées : une synthèse vocale
+     annonce alors le nombre d'articles avant de les énumérer. Les puces sont
+     retirées, la sémantique reste. */
+  .articles {
+    list-style: none;
+    margin: 0 auto;
+    padding: 0;
+    max-width: 1080px;
+    display: grid;
+    /* Les cartes portent leur propre largeur (320px, 78vw sous 640px) : la
+       grille se contente de les ranger et de les centrer, pour éviter qu'elles
+       flottent à gauche d'une colonne plus large qu'elles. */
+    grid-template-columns: repeat(auto-fit, 320px);
+    justify-content: center;
+    gap: var(--space-card-gap);
+  }
+
+  .encart {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: var(--space-6);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-surface);
+    color: var(--color-text-muted);
+    line-height: var(--leading-body);
+  }
+
+  .encart p {
+    margin: 0;
+  }
+
+  /* Sélecteur qualifié plutôt qu'un `!important` : `.encart p` ci-dessus est
+     plus spécifique qu'une simple classe et écraserait sinon cette marge. */
+  .encart p.encart-titre {
+    margin: 0 0 var(--space-2);
+    font-family: var(--font-heading);
+    font-weight: var(--weight-heading);
+    font-size: 1.25rem;
+    color: var(--color-text);
+  }
+
+  @media (max-width: 640px) {
+    .page { padding: 48px 5vw 64px; }
+    /* Sous 640px la carte vaut 78vw : une colonne de 320px la découperait. */
+    .articles { grid-template-columns: 1fr; justify-items: center; }
+  }
+</style>

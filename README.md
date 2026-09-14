@@ -77,12 +77,17 @@ HBLMWeb/
 Le dépôt Git constitue la source de vérité unique du contenu (AD-6). Il n'y a aucune base de données ni serveur d'application (AD-1). Le contenu est géré via des **Content Collections** Astro à schéma Zod strict (AD-3).
 
 ### 1. Articles — Vie du club (`src/content/articles/`)
-- **Format** : Fichiers Markdown (`.md`) avec en-tête frontmatter conforme au schéma de la collection (titre, date ISO 8601 `YYYY-MM-DD`, description, image de couverture optionnelle).
+- **Format** : Fichiers Markdown (`.md`) avec en-tête frontmatter conforme au schéma de la collection.
+- **Champs** : `title`, `date` (ISO 8601 `AAAA-MM-JJ`), `category` (`vie-du-club` | `actualite` | `evenement`), `description` (l'accroche affichée sur la carte), `coverPhoto` facultative (`{ src, alt }`, le fichier image étant déposé à côté de l'article), et `publicationStatus`.
+- **⚠️ `publicationStatus` — garde-fou éditorial** : `exemple` | `brouillon` | `publie`. **Seuls les articles `publie` paraissent en ligne**, et la valeur par défaut est `brouillon` : un fichier poussé sans ce champ n'est donc jamais publié par accident. `exemple` marque les fichiers de démonstration du schéma. Le filtre vit à un seul endroit, `src/lib/articles.ts` — les pages n'appellent jamais `getCollection('articles')` directement.
+- **Modèle à copier** : `src/content/articles/exemple-modele-d-article.md` (marqué `publicationStatus: exemple`, il ne paraît jamais).
 - **Ajouter un article** :
-  1. Créer un nouveau fichier dans `src/content/articles/` avec un nom en slug kebab-case (ex. `src/content/articles/reprise-saison-2026.md`).
-  2. Renseigner les métadonnées frontmatter obligatoires.
+  1. Copier le modèle dans `src/content/articles/` sous un nom en slug kebab-case (ex. `src/content/articles/reprise-saison-2026.md`).
+  2. Renseigner les métadonnées frontmatter.
   3. Rédiger le corps de l'article en Markdown standard.
-  4. Commiter et pousser sur la branche `main` (ou ouvrir une Pull Request). Le site est automatiquement reconstruit et publié avec le nouvel article.
+  4. Passer `publicationStatus` à `publie` quand l'article est prêt.
+  5. Commiter et pousser sur la branche `main` (ou ouvrir une Pull Request). Le site est automatiquement reconstruit et publié avec le nouvel article — aucune étape manuelle au-delà du push (AD-6).
+- **Galeries photo** : non implémentées, ajournées avec la question du droit à l'image (voir `A-FAIRE-HORS-CODE.md`).
 
 ### 2. Catégories — Trouver ma catégorie (`src/content/categories/`)
 - **Format** : Fichiers YAML ou Markdown structurés par catégorie sportive.
