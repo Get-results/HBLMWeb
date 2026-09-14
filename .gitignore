@@ -55,6 +55,11 @@ pnpm-debug.log*
 /_bmad-output/
 /.claude/skills/bmad-*/
 
+# Réglages Claude Code personnels à cette machine. Le fichier versionné est
+# .claude/settings.json (garde-fous partagés) ; celui-ci sert aux surcharges
+# locales et n'a pas à partir dans un commit.
+/.claude/settings.local.json
+
 # Verrou local du planificateur Claude Code
 /.claude/scheduled_tasks.lock
 
