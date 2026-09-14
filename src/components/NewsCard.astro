@@ -11,27 +11,50 @@
  *   description — texte court
  *   date        — label de date affiché dans le badge accent
  *   category    — label de catégorie (badge sombre)
+ *   coverPhoto  — photo de couverture et son alt, ou null (Story 4.2)
  *   icon        — HTML SVG du placeholder (slot nommé "icon", optionnel)
+ *
+ * Story 4.2 : le visuel placeholder (rayures + icône) existait déjà ici, il n'y
+ * a donc RIEN à construire pour l'absence de photo — juste à brancher la photo
+ * quand elle est là. Un article sans `coverPhoto` retombe sur le placeholder
+ * d'origine, la mise en page ne bouge pas.
  */
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
 interface Props {
 	title: string;
 	description: string;
 	date: string;
 	category: string;
+	coverPhoto?: { src: ImageMetadata; alt: string } | null;
 }
 
-const { title, description, date, category } = Astro.props;
+const { title, description, date, category, coverPhoto = null } = Astro.props;
 ---
 
 <article class="news-card">
 	<div class="card-visual">
-		<slot name="icon">
-			{/* Icône placeholder par défaut — ballon de handball stylisé */}
-			<svg class="visual-icon" viewBox="0 0 24 24" width="52" height="52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-				<circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5" />
-				<path d="M4 12c2-3 14-3 16 0M4 12c2 3 14 3 16 0M12 3v18" stroke="currentColor" stroke-width="1.5" />
-			</svg>
-		</slot>
+		{coverPhoto ? (
+			/* `widths` couvre les deux largeurs réellement rendues (320px de carte,
+			   78vw sur mobile) en 1x et 2x : au-delà, on ferait fabriquer au build
+			   des fichiers que personne ne télécharge. */
+			<Image
+				class="card-photo"
+				src={coverPhoto.src}
+				alt={coverPhoto.alt}
+				widths={[320, 640]}
+				sizes="(max-width: 639px) 78vw, 320px"
+			/>
+		) : (
+			<slot name="icon">
+				{/* Icône placeholder par défaut — ballon de handball stylisé */}
+				<svg class="visual-icon" viewBox="0 0 24 24" width="52" height="52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+					<circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5" />
+					<path d="M4 12c2-3 14-3 16 0M4 12c2 3 14 3 16 0M12 3v18" stroke="currentColor" stroke-width="1.5" />
+				</svg>
+			</slot>
+		)}
 	</div>
 	<div class="card-body">
 		<div class="badge-row">
@@ -99,6 +122,16 @@ const { title, description, date, category } = Astro.props;
 		justify-content: center;
 		border-bottom: 1px solid var(--color-border);
 		position: relative;
+	}
+
+	/* La photo remplit le gabarit 3:2 du visuel ; `object-fit: cover` recadre
+	   plutôt que de déformer — une photo d'équipe étirée est pire qu'un cadrage
+	   serré. */
+	.card-photo {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
 	}
 
 	.visual-icon {

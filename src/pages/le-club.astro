@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { gymnases, licencies } from '../lib/club';
 
 /* Composition transmise par le bureau le 12/09/2026 pour la saison 2026-2027,
    reprise de l'organigramme publié par le club.
@@ -28,39 +29,6 @@ const conseilAdministration = [
 ];
 
 const saison = '2026-2027';
-
-/* Adresses transmises par le bureau le 13/09/2026. Les dénominations suivent
-   celles du document du club — la page écrivait « Collège de Lansargues » et
-   « Gymnase Pierre de Coubertin » là où le club dit « Gymnase du collège » et
-   « Halle des sports Pierre de Coubertin ». Le planning utilise déjà la
-   dénomination du club : garder deux noms pour une même salle selon la page
-   était le vrai défaut. */
-const gymnases = [
-	{
-		nom: 'Gymnase Arnassan',
-		rue: 'Avenue Louis Médard',
-		codePostal: '34400',
-		ville: 'Lunel',
-	},
-	{
-		nom: 'Gymnase Spinosi',
-		rue: 'Chemin des Calinières',
-		codePostal: '34590',
-		ville: 'Marsillargues',
-	},
-	{
-		nom: 'Gymnase du collège',
-		rue: '3 rue du Mondial 98',
-		codePostal: '34130',
-		ville: 'Lansargues',
-	},
-	{
-		nom: 'Halle des sports Pierre de Coubertin',
-		rue: '133-193 rue du Dardalhon',
-		codePostal: '34400',
-		ville: 'Lunel-Viel',
-	},
-];
 
 /* Les photos des membres existent côté club mais n'ont pas encore été
    transmises. En attendant, l'avatar affiche les initiales : c'est déterministe,
@@ -92,11 +60,15 @@ const initiales = (nom: string) =>
 				En tant qu'association loi 1901, notre structure repose sur l'engagement de nos bénévoles. Nous accueillons les joueurs et joueuses de tout âge, dès 3 ans avec le baby-hand, jusqu'aux catégories seniors. Que vous cherchiez la compétition ou la pratique en loisir, vous trouverez votre place parmi nous.
 			</p>
 			
-			<div class="stats-card">
-				<div class="stat-number display">351</div>
-				<div class="stat-label">licenciés en 2025</div>
-				<div class="stat-note">Un record historique pour le club</div>
-			</div>
+			{/* Le chiffre ne paraît que confirmé par le bureau (voir src/lib/club.ts).
+			    Sinon la section se termine sur le paragraphe : mieux vaut une section
+			    plus courte qu'un effectif périmé donné pour l'effectif courant. */}
+			{licencies.confirme && (
+				<div class="stats-card">
+					<div class="stat-number display">{licencies.nombre}</div>
+					<div class="stat-label">licenciés en {licencies.annee}</div>
+				</div>
+			)}
 		</section>
 
 		<section class="club-section">

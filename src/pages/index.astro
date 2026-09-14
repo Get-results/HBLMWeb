@@ -3,8 +3,22 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import CtaLink from '../components/CtaLink.astro';
 import QuickLink from '../components/QuickLink.astro';
 import NewsCard from '../components/NewsCard.astro';
+import { getArticlesPublies, formaterDateArticle, libelleCategorie } from '../lib/articles';
+import { nombreGymnases, licencies } from '../lib/club';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+/* Le carrousel portait quatre cartes écrites en dur, dont le contenu ne
+   relatait aucun fait vérifié du club — « 351 licenciés en 2025, un record ! »,
+   « Retour en images » sans la moindre image — et dont deux « dates » n'en
+   étaient pas (« Récent », « 2025»). C'était publié, sur un site en ligne, et
+   c'est précisément ce que le garde-fou de la collection `articles` existe pour
+   empêcher. L'accueil lit donc la même source que « Vie du club », par le même
+   point de passage : ce qui n'est pas `publie` n'apparaît ni ici ni là-bas.
+
+   Quatre articles : le carrousel en montrait quatre, et c'est ce que la bande
+   défilante accueille sans que la dernière carte soit coupée trop tôt. */
+const articles = (await getArticlesPublies()).slice(0, 4);
 ---
 
 <BaseLayout title="Handball Lunel-Marsillargues">
@@ -16,7 +30,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		</h1>
 		<p class="hero-sub">
 			De 3 ans aux seniors, en compétition ou en loisir —
-			venez découvrir le handball dans l'un de nos 4 gymnases.
+			venez découvrir le handball dans l'un de nos {nombreGymnases} gymnases.
 		</p>
 		<div class="hero-actions">
 			<CtaLink href={`${base}/essai`} label="Faire un essai" />
@@ -88,62 +102,36 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 					La vie<br />du club<span class="accent-dot">.</span>
 				</h2>
 			</div>
+			{/* « records de licenciés » retiré : c'était la même affirmation non
+			    étayée que le « 351 licenciés, un record ! » du bloc plus bas. */}
 			<p class="section-sub">
-				Entraînements, inscriptions, stages, records de licenciés :
+				Entraînements, inscriptions, stages, événements :
 				tout ce qui fait vivre le club, semaine après semaine.
 			</p>
 		</div>
 
-		<div class="carousel-wrap">
-			<div class="carousel" tabindex="0" role="region" aria-label="Actualités du club, défilement horizontal">
-				<NewsCard
-					title="Ça reprend !"
-					description="Les entraînements redémarrent pour toutes les catégories : retrouvez le planning et le premier rendez-vous sur le parquet."
-					date="17 août"
-					category="Vie du club"
-				>
-					<svg slot="icon" class="visual-icon" viewBox="0 0 24 24" width="52" height="52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-						<circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5" />
-						<path d="M4 12c2-3 14-3 16 0M4 12c2 3 14 3 16 0M12 3v18" stroke="currentColor" stroke-width="1.5" />
-					</svg>
-				</NewsCard>
-
-				<NewsCard
-					title="Inscriptions saison 2026-2027 ouvertes"
-					description="Les inscriptions pour la nouvelle saison sont lancées : toutes les infos pour rejoindre le club, débutants comme confirmés."
-					date="Récent"
-					category="Actualité"
-				>
-					<svg slot="icon" class="visual-icon" viewBox="0 0 24 24" width="52" height="52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-						<rect x="4" y="3" width="16" height="18" rx="1.5" stroke="currentColor" stroke-width="1.5" />
-						<path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" stroke-width="1.5" />
-					</svg>
-				</NewsCard>
-
-				<NewsCard
-					title="Stage d'été : la dernière semaine avant la rentrée"
-					description="Retour en images sur la dernière semaine de stage estival, juste avant la reprise officielle des entraînements."
-					date="24 → 28 août"
-					category="Événement"
-				>
-					<svg slot="icon" class="visual-icon" viewBox="0 0 24 24" width="52" height="52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-						<path d="M12 3l2.4 5.6L20 9.3l-4.2 3.8L17 19l-5-3.1L7 19l1.2-5.9L4 9.3l5.6-.7L12 3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
-					</svg>
-				</NewsCard>
-
-				<NewsCard
-					title="351 licenciés en 2025, un record !"
-					description="Le club franchit un nouveau cap avec 351 licenciés cette saison, confirmant la dynamique du HBLM sur le territoire."
-					date="2025"
-					category="Vie du club"
-				>
-					<svg slot="icon" class="visual-icon" viewBox="0 0 24 24" width="52" height="52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-						<path d="M12 21c4.5-3 7-6.5 7-10.5A7 7 0 0 0 5 10.5C5 14.5 7.5 18 12 21z" stroke="currentColor" stroke-width="1.5" />
-						<circle cx="12" cy="10.5" r="2.5" stroke="currentColor" stroke-width="1.5" />
-					</svg>
-				</NewsCard>
+		{/* Section masquée quand rien n'est publié — plutôt qu'un carrousel vide,
+		    ou que le contenu inventé qui s'y trouvait. Le lien « Voir toutes les
+		    actualités » reste, lui : la page existe et porte son propre état vide. */}
+		{articles.length > 0 ? (
+			<div class="carousel-wrap">
+				<div class="carousel" tabindex="0" role="region" aria-label="Actualités du club, défilement horizontal">
+					{articles.map((article) => (
+						<NewsCard
+							title={article.data.title}
+							description={article.data.description}
+							date={formaterDateArticle(article.data.date)}
+							category={libelleCategorie(article.data.category)}
+							coverPhoto={article.data.coverPhoto}
+						/>
+					))}
+				</div>
 			</div>
-		</div>
+		) : (
+			<p class="news-vide">
+				Les premières actualités de la saison paraîtront ici.
+			</p>
+		)}
 
 		<div class="cta-row">
 			<CtaLink href={`${base}/vie-du-club`} label="Voir toutes les actualités" />
@@ -154,8 +142,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<section class="section club-brief">
 		<div class="club-brief-inner">
 			<h2 class="club-brief-title">Le club en bref</h2>
+			{/* L'effectif ne s'affiche que confirmé par le bureau (src/lib/club.ts) ;
+			    le nombre de gymnases est déduit de la liste, jamais écrit en dur. */}
 			<p class="club-brief-text">
-				351 licenciés, 4 gymnases entre Lunel et Marsillargues,
+				{licencies.confirme && <>{licencies.nombre} licenciés, </>}
+				{nombreGymnases} gymnases entre Lunel et Marsillargues,
 				un bureau associatif engagé — le HBLM accueille petits et
 				grands depuis des années.
 			</p>
@@ -300,6 +291,19 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	.carousel::-webkit-scrollbar-thumb {
 		background: var(--color-text-muted);
 		border-radius: var(--radius-sm);
+	}
+
+	/* État vide de la section actualités : une phrase, au même gabarit que le
+	   sous-titre de section, et pas un encart qui attirerait l'œil sur une
+	   absence. */
+	.news-vide {
+		max-width: 720px;
+		margin: 0 auto;
+		padding: 0 6vw;
+		text-align: center;
+		font-size: var(--size-body);
+		line-height: var(--leading-body);
+		color: var(--color-text-muted);
 	}
 
 	.cta-row {

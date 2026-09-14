@@ -27,3 +27,68 @@ const connus = new Set<string>(nomsEquipesClub);
 export function estEquipeDuClub(nom: string): boolean {
 	return connus.has(nom.trim());
 }
+
+/* ---------------------------------------------------------------------------
+   Faits publiés sur le club
+
+   Ces valeurs étaient écrites en dur, et deux fois : sur l'accueil et sur la
+   page « Le club ». Le nombre de gymnases y était en outre un littéral (« nos
+   4 gymnases ») qu'aucune liste ne garantissait — ajouter une salle laissait
+   le texte mentir sans que rien ne le signale.
+   -------------------------------------------------------------------------- */
+
+/* Adresses transmises par le bureau le 13/09/2026. Les dénominations suivent
+   celles du document du club — la page écrivait « Collège de Lansargues » et
+   « Gymnase Pierre de Coubertin » là où le club dit « Gymnase du collège » et
+   « Halle des sports Pierre de Coubertin ». Le planning utilise déjà la
+   dénomination du club : garder deux noms pour une même salle selon la page
+   était le vrai défaut. */
+export const gymnases = [
+	{
+		nom: 'Gymnase Arnassan',
+		rue: 'Avenue Louis Médard',
+		codePostal: '34400',
+		ville: 'Lunel',
+	},
+	{
+		nom: 'Gymnase Spinosi',
+		rue: 'Chemin des Calinières',
+		codePostal: '34590',
+		ville: 'Marsillargues',
+	},
+	{
+		nom: 'Gymnase du collège',
+		rue: '3 rue du Mondial 98',
+		codePostal: '34130',
+		ville: 'Lansargues',
+	},
+	{
+		nom: 'Halle des sports Pierre de Coubertin',
+		rue: '133-193 rue du Dardalhon',
+		codePostal: '34400',
+		ville: 'Lunel-Viel',
+	},
+] as const;
+
+/** Nombre de gymnases, DÉDUIT de la liste ci-dessus et jamais écrit en toutes
+    lettres : la phrase suit l'ajout ou le retrait d'une salle. */
+export const nombreGymnases = gymnases.length;
+
+/* Nombre de licenciés — même garde-fou que le `dataStatus` des catégories, et
+   pour la même raison : le site est publiquement en ligne.
+
+   « 351 licenciés en 2025 » vient du brief projet, relevé sur l'ancien site
+   WordPress. Ce n'est donc pas un chiffre inventé, mais il porte le millésime
+   2025 alors que la saison 2026-2027 a commencé, et il était accompagné sur
+   l'accueil d'un « un record ! » que rien n'étaye. Tant que le bureau ne l'a
+   pas actualisé ou confirmé, les pages n'affichent AUCUN chiffre plutôt qu'un
+   chiffre périmé présenté comme courant.
+
+   Pour le rétablir : passer `confirme` à true après accord du bureau, en
+   corrigeant `nombre` et `annee` si besoin. Rien d'autre à toucher — les deux
+   pages qui l'affichaient le relisent ici. */
+export const licencies = {
+	nombre: 351,
+	annee: 2025,
+	confirme: false,
+} as const;

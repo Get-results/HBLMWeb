@@ -42,32 +42,17 @@ const { href, title, description } = Astro.props;
 		color: var(--color-text);
 		position: relative;
 		transition: transform 0.15s ease;
-
-		/* Coin griffé */
-		clip-path: polygon(
-			0 0,
-			100% 0,
-			100% calc(100% - 16px),
-			calc(100% - 16px) 100%,
-			0 100%
-		);
 	}
 
-	/* Griffures */
-	.quick-link::before {
-		content: '';
-		position: absolute;
-		right: 2px;
-		bottom: 2px;
-		width: 14px;
-		height: 14px;
-		background:
-			linear-gradient(135deg, transparent 47%, var(--color-accent) 47.5%, var(--color-accent) 50%, transparent 50.5%),
-			linear-gradient(135deg, transparent 55%, var(--color-accent) 55.5%, var(--color-accent) 58%, transparent 58.5%),
-			linear-gradient(135deg, transparent 63%, var(--color-accent) 63.5%, var(--color-accent) 66%, transparent 66.5%);
-		pointer-events: none;
-		opacity: 0.9;
-	}
+	/* Ni coin griffé ni griffures ici, et c'est une règle, pas un oubli :
+	   DESIGN.md > Do's and Don'ts — « Don't appliquer le motif griffé à un
+	   élément interactif (bouton, champ) — il identifie uniquement le contenu ».
+	   Ce composant rend un <a href> ; il en portait un malgré tout.
+
+	   La raison d'être du motif est de dire « ceci est du contenu ». Posé sur un
+	   lien, il ne dit plus rien — il devient un ornement que seul son auteur
+	   déchiffre, et un visiteur qui passe quarante secondes sur le site n'en a
+	   aucune chance. Le relief au survol suffit à signaler que c'est cliquable. */
 
 	.quick-link:hover {
 		transform: translateY(-2px);
