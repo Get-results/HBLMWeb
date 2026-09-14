@@ -188,3 +188,39 @@ export function blocDate(
 		heure: `${heures}h${minutes}`,
 	};
 }
+
+/** Les matchs du club dont le coup d'envoi tombe dans la fenêtre glissante
+    `[maintenant, maintenant + jours[`.
+
+    Fenêtre glissante et non semaine calendaire lundi→dimanche : une semaine
+    calendaire se vide le dimanche en fin d'après-midi, une fois les rencontres
+    jouées — précisément le moment où l'on vient chercher le week-end suivant.
+
+    Un match sans date est écarté : on ne peut pas affirmer qu'il tombe dans la
+    fenêtre, et l'accueil n'est pas l'endroit où poser la question. Il reste
+    visible sur /matchs, où la section « Date à préciser » le porte. */
+export async function getMatchsProchainsJours(
+	jours = 7,
+	maintenant = new Date(),
+): Promise<MatchDuClub[]> {
+	const debut = maintenant.getTime();
+	const fin = debut + jours * 24 * 60 * 60 * 1000;
+	return (await getMatchsDuClub()).filter((m) => {
+		if (!m.dateHeure) return false;
+		const instant = new Date(m.dateHeure).getTime();
+		return instant >= debut && instant < fin;
+	});
+}
+
+/** « du 14 au 21 septembre », « du 28 septembre au 5 octobre ».
+
+    Les dates réelles, jamais « cette semaine » : le site est rebuildé une fois
+    par jour (cron de deploy.yml). Si un build échoue, « cette semaine » devient
+    faux en silence, alors qu'une période datée reste vérifiable d'un coup d'œil.
+    Le mois de départ n'est répété que s'il diffère de celui d'arrivée. */
+export function libellePeriode(debut: Date, fin: Date): string {
+	const moisDebut = MOIS[debut.getMonth()];
+	const moisFin = MOIS[fin.getMonth()];
+	const borneDebut = moisDebut === moisFin ? `${debut.getDate()}` : `${debut.getDate()} ${moisDebut}`;
+	return `du ${borneDebut} au ${fin.getDate()} ${moisFin}`;
+}

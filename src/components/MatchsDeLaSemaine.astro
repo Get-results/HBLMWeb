@@ -1,0 +1,243 @@
+---
+/* Bandeau « Cette semaine » de la page d'accueil.
+
+   Il répond à une seule question — « qui joue dans les jours qui viennent ? » —
+   et renvoie vers /matchs pour tout le reste. L'accueil ne duplique donc pas la
+   page Matchs (FR12) : ce sont deux niveaux de détail. Les filtres par équipe,
+   le regroupement mensuel et les résultats restent là-bas.
+
+   La carte est celle de la page Matchs (CarteMatch), pas une copie : deux
+   gabarits de carte pour la même information dériveraient l'un de l'autre à la
+   première retouche.
+
+   Aucun appel réseau côté client : tout est rendu au build, comme la page
+   Matchs (AD-9, AD-10). */
+import CtaLink from './CtaLink.astro';
+import Carte from './CarteMatch.astro';
+import { getMatchsProchainsJours, libellePeriode } from '../lib/matchs';
+
+/* Un week-end de championnat porte jusqu'à dix rencontres pour le club. Les
+   afficher toutes ferait de l'accueil une seconde page Matchs ; on en montre
+   quatre — deux lignes de deux sur écran large — et on annonce le reste
+   honnêtement plutôt que de le tronquer en silence. */
+const MAX_CARTES = 4;
+const FENETRE_JOURS = 7;
+
+const maintenant = new Date();
+const fin = new Date(maintenant.getTime() + FENETRE_JOURS * 24 * 60 * 60 * 1000);
+const matchs = await getMatchsProchainsJours(FENETRE_JOURS, maintenant);
+const periode = libellePeriode(maintenant, fin);
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+{/* Pas de rencontre dans la fenêtre : la section n'existe pas. Un encart
+    « aucun match cette semaine » en page d'accueil attirerait l'œil sur une
+    absence — trêve de Noël, intersaison — alors que la page Matchs porte déjà
+    son propre état vide. */}
+{matchs.length > 0 && (
+	<section class="semaine" aria-labelledby="semaine-titre">
+		<div class="entete">
+			<div>
+				<p class="periode">Matchs · {periode}</p>
+				<h2 id="semaine-titre" class="titre">
+					Cette<br />semaine<span class="point">.</span>
+				</h2>
+			</div>
+			<p class="sous-titre">
+				Les rencontres de nos équipes dans les {FENETRE_JOURS} prochains jours,
+				reprises des données officielles de la FFHandball.
+			</p>
+		</div>
+
+		{/* Le surplus est masqué au build et non retiré : le script rejoue le
+		    plafond après avoir écarté les matchs déjà joués, et fait alors remonter
+		    une carte de la réserve. Sans JavaScript, le visiteur voit les quatre
+		    premières et la ligne de reste — juste à une journée près. */}
+		<ul class="cartes" id="semaine-liste">
+			{matchs.map((match, index) => (
+				<li
+					class="match"
+					data-debut={match.dateHeure}
+					hidden={index >= MAX_CARTES}
+				>
+					<Carte match={match} />
+				</li>
+			))}
+		</ul>
+
+		{/* Compté au build, recalculé par le script : après le coup d'envoi d'une
+		    rencontre, le nombre annoncé ici serait faux. */}
+		<p
+			class="reste"
+			id="semaine-reste"
+			data-periode={periode}
+			hidden={matchs.length <= MAX_CARTES}
+		>
+			+ {matchs.length - MAX_CARTES} autre{matchs.length - MAX_CARTES > 1 ? 's' : ''} rencontre{matchs.length - MAX_CARTES > 1 ? 's' : ''} {periode}
+		</p>
+
+		{/* Visible seulement si le script a écarté toutes les cartes — tous les
+		    matchs de la fenêtre ont été joués depuis le dernier build. */}
+		<p class="vide" id="semaine-vide" hidden>
+			Les rencontres de ces derniers jours sont terminées.
+		</p>
+
+		<div class="cta-row">
+			<CtaLink href={`${base}/matchs`} label="Tous les matchs" />
+		</div>
+	</section>
+)}
+
+<script is:inline>
+	(() => {
+		const liste = document.getElementById('semaine-liste');
+		if (!liste) return;
+
+		/* Le site est rebuildé une fois par jour (cron de deploy.yml). Sans ce
+		   réajustement, un match joué samedi à 12h resterait annoncé « cette
+		   semaine » jusqu'au lendemain 3h — soit tout le samedi après-midi, quand
+		   l'accueil est le plus consulté. Même motif que la page Matchs. */
+		const maintenant = Date.now();
+		const MAX_CARTES = 4;
+
+		const restants = [...liste.querySelectorAll('li[data-debut]')].filter((carte) => {
+			const debut = carte.dataset.debut;
+			if (debut && new Date(debut).getTime() < maintenant) {
+				carte.remove();
+				return false;
+			}
+			return true;
+		});
+
+		restants.forEach((carte, index) => {
+			carte.hidden = index >= MAX_CARTES;
+		});
+
+		const reste = document.getElementById('semaine-reste');
+		if (reste) {
+			const surplus = Math.max(0, restants.length - MAX_CARTES);
+			reste.hidden = surplus === 0;
+			if (surplus > 0) {
+				const pluriel = surplus > 1 ? 's' : '';
+				/* La période reste celle du build : c'est la fenêtre que le bandeau
+				   annonce, et le nombre s'y rapporte. */
+				const periode = reste.dataset.periode ?? '';
+				reste.textContent = `+ ${surplus} autre${pluriel} rencontre${pluriel} ${periode}`.trim();
+			}
+		}
+
+		if (restants.length === 0) {
+			liste.hidden = true;
+			const vide = document.getElementById('semaine-vide');
+			if (vide) vide.hidden = false;
+		}
+	})();
+</script>
+
+<style>
+	/* Fond de page et non `--color-surface` : la section « Accès rapides » qui
+	   suit est déjà posée sur surface, et deux sections surface contiguës se
+	   lisent comme un seul bloc, séparées par un filet doublé. Le filet du haut
+	   suffit à détacher le bandeau du hero. */
+	.semaine {
+		padding: var(--space-section-y) 5vw;
+		border-top: 1px solid var(--color-border);
+	}
+
+	.entete {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-end;
+		gap: var(--space-6);
+		margin-bottom: 44px;
+		flex-wrap: wrap;
+	}
+
+	/* La période datée plutôt que « cette semaine » seul : elle reste vérifiable
+	   si un build quotidien échoue. */
+	.periode {
+		display: inline-block;
+		font-family: var(--font-body);
+		font-weight: var(--weight-body-strong);
+		font-size: var(--size-eyebrow);
+		letter-spacing: var(--tracking-eyebrow);
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+		margin: 0 0 10px;
+	}
+
+	.titre {
+		font-family: var(--font-heading);
+		font-weight: var(--weight-heading);
+		font-size: clamp(40px, 7vw, 92px);
+		line-height: var(--leading-display);
+		letter-spacing: var(--tracking-display);
+		text-transform: uppercase;
+		color: var(--color-text);
+		margin: 0;
+	}
+
+	.point {
+		color: var(--color-accent);
+	}
+
+	.sous-titre {
+		max-width: 420px;
+		font-size: 15px;
+		color: var(--color-text-muted);
+		line-height: 1.5;
+		margin: 0 0 6px;
+	}
+
+	.cartes {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: var(--space-4);
+	}
+
+	.cartes[hidden] {
+		display: none;
+	}
+
+	/* Même gabarit de carte que la page Matchs, fond compris. */
+	.match {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		align-items: center;
+		gap: 0 var(--space-4);
+		padding: var(--space-4);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		background-color: var(--color-surface);
+	}
+
+	/* Une règle `display` l'emporte sur l'attribut `hidden` : sans cette ligne,
+	   les cartes en réserve resteraient visibles. */
+	.match[hidden] {
+		display: none;
+	}
+
+	.reste,
+	.vide {
+		margin: var(--space-6) 0 0;
+		font-size: 15px;
+		color: var(--color-text-muted);
+	}
+
+	.cta-row {
+		display: flex;
+		justify-content: center;
+		margin-top: 52px;
+	}
+
+	@media (min-width: 640px) {
+		.cartes {
+			grid-template-columns: 1fr 1fr;
+			gap: var(--space-6);
+		}
+	}
+</style>

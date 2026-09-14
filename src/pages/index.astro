@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import CtaLink from '../components/CtaLink.astro';
 import QuickLink from '../components/QuickLink.astro';
 import NewsCard from '../components/NewsCard.astro';
+import MatchsDeLaSemaine from '../components/MatchsDeLaSemaine.astro';
 import { getArticlesPublies, formaterDateArticle, libelleCategorie } from '../lib/articles';
 import { nombreGymnases, licencies } from '../lib/club';
 
@@ -37,6 +38,12 @@ const articles = (await getArticlesPublies()).slice(0, 4);
 			<a href={`${base}/matchs`} class="hero-link">Consulter les matchs</a>
 		</div>
 	</section>
+
+	{/* ──────────────── MATCHS DE LA SEMAINE ──────────────── */}
+	{/* Juste sous le hero : c'est la question qu'un licencié ou un parent se pose
+	    en arrivant sur le site un vendredi. La section se retire d'elle-même quand
+	    aucune rencontre n'est programmée dans les sept jours. */}
+	<MatchsDeLaSemaine />
 
 	{/* ──────────────── RACCOURCIS ──────────────── */}
 	<section class="section quick-links-section" aria-label="Accès rapides">
