@@ -55,19 +55,25 @@ jobs:
         env:
           MATCHES_API_BASE_URL: ${{ secrets.MATCHES_API_BASE_URL }}
 
-      # Les variables PUBLIC_* sont inlinées dans le HTML au build : ce sont des
-      # valeurs publiques (clé de destination Web3Forms, identifiants Umami), pas
-      # des secrets. Elles se règlent dans Settings → Secrets and variables →
-      # Actions → Variables. Une variable absente vaut "" : le site se construit
-      # quand même, avec le repli prévu (bloc de contact, pas de script Umami).
+      # Les valeurs PUBLIC_* sont inlinées dans le HTML au build : elles sont
+      # publiques par nature (clé de destination Web3Forms, identifiants Umami).
+      # Une variable est donc le bon support — elle reste relisible dans les
+      # réglages, alors qu'un secret est masqué jusque dans les logs, ce qui rend
+      # tout diagnostic pénible.
+      #
+      # `vars.X || secrets.X` accepte néanmoins les deux : plusieurs de ces
+      # valeurs ont été créées en secrets, et faire échouer le build pour une
+      # question de rangement n'aurait servi personne. Une valeur absente vaut ""
+      # des deux côtés : le site se construit quand même, avec le repli prévu
+      # (bloc de contact, pas de script Umami).
       - name: Build
         run: npm run build
         env:
-          PUBLIC_CONTACT_ENDPOINT: ${{ vars.PUBLIC_CONTACT_ENDPOINT }}
-          PUBLIC_CONTACT_ACCESS_KEY: ${{ vars.PUBLIC_CONTACT_ACCESS_KEY }}
-          PUBLIC_CONTACT_EMAIL: ${{ vars.PUBLIC_CONTACT_EMAIL }}
-          PUBLIC_UMAMI_URL: ${{ vars.PUBLIC_UMAMI_URL }}
-          PUBLIC_UMAMI_ID: ${{ vars.PUBLIC_UMAMI_ID }}
+          PUBLIC_CONTACT_ENDPOINT: ${{ vars.PUBLIC_CONTACT_ENDPOINT || secrets.PUBLIC_CONTACT_ENDPOINT }}
+          PUBLIC_CONTACT_ACCESS_KEY: ${{ vars.PUBLIC_CONTACT_ACCESS_KEY || secrets.PUBLIC_CONTACT_ACCESS_KEY }}
+          PUBLIC_CONTACT_EMAIL: ${{ vars.PUBLIC_CONTACT_EMAIL || secrets.PUBLIC_CONTACT_EMAIL }}
+          PUBLIC_UMAMI_URL: ${{ vars.PUBLIC_UMAMI_URL || secrets.PUBLIC_UMAMI_URL }}
+          PUBLIC_UMAMI_ID: ${{ vars.PUBLIC_UMAMI_ID || secrets.PUBLIC_UMAMI_ID }}
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
