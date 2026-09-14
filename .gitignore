@@ -55,9 +55,10 @@ pnpm-debug.log*
 /_bmad-output/
 /.claude/skills/bmad-*/
 
-# Réglages Claude Code personnels à cette machine. Le fichier versionné est
-# .claude/settings.json (garde-fous partagés) ; celui-ci sert aux surcharges
-# locales et n'a pas à partir dans un commit.
+# Réglages Claude Code personnels à cette machine, qui n'ont pas à partir dans un
+# commit. Aucun réglage n'est versionné ici : le garde-fou `git add` vit dans
+# ~/.claude, hors du dépôt — versionné, il ne s'appliquerait qu'aux branches qui
+# le portent et disparaîtrait au premier `git switch`. Voir CLAUDE.md § 2.
 /.claude/settings.local.json
 
 # Verrou local du planificateur Claude Code

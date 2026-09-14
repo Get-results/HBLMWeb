@@ -29,7 +29,10 @@ parent pour rien ; un chiffre approximatif se publie comme une information offic
 ## 2. Git
 
 - **Mettre en scène des chemins explicites.** `git add -A`, `git add .` et `git add --all`
-  sont refusés par un hook (`.claude/hooks/refus-git-add-global.sh`). Motif : le 14/09/2026
+  sont interdits, et refusés par un hook installé hors du dépôt
+  (`~/.claude/hooks/refus-git-add-global.sh`) — un hook versionné ici ne s'appliquerait
+  qu'aux branches qui le portent, et disparaîtrait au premier `git switch`. La règle vaut
+  même sans le hook : un poste qui ne l'a pas doit s'y tenir. Motif : le 14/09/2026
   un `git add -A` a publié cinq fichiers de travail qui traînaient à la racine, dont un
   document interne nommant des personnes. Sur un dépôt public, l'objet reste servi par
   GitHub même après un force-push.
@@ -81,3 +84,39 @@ un commentaire au fond d'un composant.
 
 Ce fichier est versionné dans un dépôt public : n'y écrire ni secret, ni donnée
 personnelle, ni mode d'emploi pour accéder à l'un des deux.
+
+## 7. Version du site
+
+Le champ `version` de `package.json` est la **seule** source du numéro affiché en bas de
+chaque page (`src/components/Footer.astro`, lu au build). Ne jamais écrire un numéro en dur
+ailleurs.
+
+**Chaque PR incrémente la version**, dans un commit de la PR — jamais après coup sur `main`.
+Utiliser `npm version <patch|minor|major> --no-git-tag-version`, qui écrit le fichier sans
+créer de tag ni de commit.
+
+On suit **Semantic Versioning 2.0.0** (<https://semver.org>). La spec exige une *API
+publique déclarée* et ne dit rien d'un site web : ici, l'API publique est **l'ensemble des
+URL du site et ce qu'un visiteur ou un lien extérieur peut attendre d'y trouver.** C'est ce
+contrat-là qui décide de l'incrément.
+
+| Incrément | Quand | Exemples sur ce site |
+|---|---|---|
+| **MAJOR** | Rupture du contrat : une URL disparaît ou change, une page est supprimée, la navigation est refondue. Un favori ou un lien extérieur cesse de fonctionner. | Renommer `/le-club` ; supprimer `/stages` ; refonte complète de la navigation. |
+| **MINOR** | Ajout compatible : rien de ce qui existait ne casse. | Nouvelle page ; nouveau composant visible ; formulaire de contact activé ; affichage de la version. |
+| **PATCH** | Correction compatible, ou changement invisible pour le visiteur. | Correction de bug ou de contenu ; ajustement visuel ; token ; script de vérification ; documentation ; CI. |
+
+Une PR qui ne touche que la doc ou l'outillage prend quand même un **PATCH** : la règle est
+« une PR, un incrément », sans exception à arbitrer.
+
+`check:version` (`scripts/check-version-bump.mjs`) refuse en CI une PR dont la version n'a
+pas augmenté par rapport à la base. Il tourne dans le job `build` de `ci.yml`, **pas** dans
+`npm run build` : il a besoin de la branche de base, que le build local n'a pas forcément.
+Pour le lancer à la main : `git fetch origin main` puis `npm run check:version`. Il vérifie
+qu'on s'est posé la question de l'incrément, **pas** qu'on a choisi le bon ordre — ça, ça
+demande de savoir si une URL disparaît, et ça reste un jugement humain.
+
+**Avant la mise en ligne publique, on reste en `0.y.z`** : la spec réserve la majeure zéro au
+développement initial, où tout peut changer. Le passage à **`1.0.0` se fait à la mise en
+ligne publique du site**, et à ce moment-là seulement. Tant qu'on est en `0.y.z`, une rupture
+d'URL prend une **minore**, pas une majeure — la majeure reste à zéro.
