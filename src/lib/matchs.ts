@@ -189,6 +189,11 @@ export function blocDate(
 	};
 }
 
+/** Durée de la fenêtre « cette semaine », en jours. Une seule valeur pour
+    l'accueil et pour la page Matchs : les deux surfaces doivent découper la
+    même semaine, sinon un match annoncé sur l'une manque à l'autre. */
+export const FENETRE_SEMAINE_JOURS = 7;
+
 /** Les matchs du club dont le coup d'envoi tombe dans la fenêtre glissante
     `[maintenant, maintenant + jours[`.
 
@@ -200,17 +205,28 @@ export function blocDate(
     fenêtre, et l'accueil n'est pas l'endroit où poser la question. Il reste
     visible sur /matchs, où la section « Date à préciser » le porte. */
 export async function getMatchsProchainsJours(
-	jours = 7,
+	jours: number = FENETRE_SEMAINE_JOURS,
 	maintenant = new Date(),
 ): Promise<MatchDuClub[]> {
-	const { debut, fin } = fenetreProchainsJours(maintenant, jours);
-	return (await getMatchsDuClub()).filter((m) => {
-		if (!m.dateHeure) return false;
-		/* Comparaison de chaînes ISO : leur ordre lexicographique EST l'ordre
-		   chronologique, et aucune des deux bornes ne passe par un `Date` — donc
-		   aucun fuseau ne s'invite. Même doctrine que `formaterDateMatch`. */
-		return m.dateHeure >= debut && m.dateHeure <= fin;
-	});
+	const fenetre = fenetreProchainsJours(maintenant, jours);
+	return (await getMatchsDuClub()).filter((m) => estDansLaFenetre(m, fenetre));
+}
+
+/** Vrai si le coup d'envoi tombe dans la fenêtre.
+
+    Extrait de `getMatchsProchainsJours` pour que la page Matchs découpe sa
+    section « Cette semaine » avec exactement le même test : un match annoncé
+    sur l'accueil doit se retrouver là-bas au même endroit, et deux tests
+    séparés auraient divergé. */
+export function estDansLaFenetre(
+	match: MatchDuClub,
+	fenetre: { debut: string; fin: string },
+): boolean {
+	if (!match.dateHeure) return false;
+	/* Comparaison de chaînes ISO : leur ordre lexicographique EST l'ordre
+	   chronologique, et aucune des deux bornes ne passe par un `Date` — donc
+	   aucun fuseau ne s'invite. Même doctrine que `formaterDateMatch`. */
+	return match.dateHeure >= fenetre.debut && match.dateHeure <= fenetre.fin;
 }
 
 /* Fuseau du club. Les heures de l'API sont des heures de Paris écrites sans
@@ -274,4 +290,41 @@ export function libellePeriode(debut: string, fin: string): string {
 	const borneDebut =
 		moisDebut === moisFin ? `${Number(jourDebut)}` : `${Number(jourDebut)} ${moisDebut}`;
 	return `du ${borneDebut} au ${Number(jourFin)} ${moisFin}`;
+}
+
+
+/** Libellé d'équipe par poule : « -15 ans filles » seul, ou
+    « -15 ans filles · 2e Division » quand la catégorie engage plusieurs équipes.
+
+    La division n'est ajoutée que dans ce cas parce qu'elle est alors le SEUL
+    discriminant — « Lunel Marsillargues-Lansargues » désigne trois équipes — et
+    qu'elle alourdirait « -11 ans garçons », qui n'en a qu'une.
+
+    Les poules non rattachées à une fiche de catégorie sont absentes de la
+    table : l'appelant retombe sur le nom d'équipe brut de la FFHandball. */
+export function libellesParPoule(matchs: MatchDuClub[]): Map<string, string> {
+	const poulesParCategorie = new Map<string, Set<string>>();
+	for (const m of matchs) {
+		if (!m.categorieId) continue;
+		if (!poulesParCategorie.has(m.categorieId)) poulesParCategorie.set(m.categorieId, new Set());
+		poulesParCategorie.get(m.categorieId)!.add(m.poolId);
+	}
+
+	const table = new Map<string, string>();
+	for (const m of matchs) {
+		if (!m.categorieId || table.has(m.poolId)) continue;
+		const plusieurs = (poulesParCategorie.get(m.categorieId)?.size ?? 1) > 1;
+		table.set(
+			m.poolId,
+			plusieurs && m.division ? `${m.categorieLabel} · ${m.division}` : m.categorieLabel!,
+		);
+	}
+	return table;
+}
+
+/** « sam 19 ». Le jour et le quantième, sans le mois : dans une liste bornée à
+    sept jours, le mois ne lève aucune ambiguïté et coûte une colonne. */
+export function jourCourt(valeur: string | null): string | null {
+	const bloc = blocDate(valeur);
+	return bloc ? `${bloc.jour} ${bloc.numero}` : null;
 }

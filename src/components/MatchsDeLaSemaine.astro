@@ -2,33 +2,46 @@
 /* Bandeau « Cette semaine » de la page d'accueil.
 
    Il répond à une seule question — « qui joue dans les jours qui viennent ? » —
-   et renvoie vers /matchs pour tout le reste. L'accueil ne duplique donc pas la
-   page Matchs (FR12) : ce sont deux niveaux de détail. Les filtres par équipe,
-   le regroupement mensuel et les résultats restent là-bas.
+   et renvoie vers /matchs pour tout le reste : les résultats, les rencontres
+   plus lointaines, le filtre par équipe.
 
-   La carte est celle de la page Matchs (CarteMatch), pas une copie : deux
-   gabarits de carte pour la même information dériveraient l'un de l'autre à la
-   première retouche.
+   Une LISTE et non des cartes. La première version montrait quatre cartes de
+   115 px et masquait le reste derrière « + N autres rencontres » : sur un
+   week-end de championnat chargé, la moitié du club ne se voyait pas sur la
+   section qui prétend l'annoncer. Le problème n'était pas la place mais le
+   format — un gabarit de vitrine appliqué à une donnée d'horaire. À cette
+   densité, toute la semaine tient, et aucune équipe n'est coupée.
 
-   Aucun appel réseau côté client : tout est rendu au build, comme la page
-   Matchs (AD-9, AD-10). */
+   Le nom d'équipe FFHandball cède la place à la catégorie : sur un bandeau qui
+   ne parle que du HBLM, « LUNEL MARSILLARGUES-LANSARGUES » est la seule chose
+   qui se répète à chaque ligne, quand « -15 ans filles » est ce que le lecteur
+   cherche.
+
+   Aucun appel réseau côté client : tout est rendu au build (AD-9, AD-10). */
 import CtaLink from './CtaLink.astro';
-import Carte from './CarteMatch.astro';
-import { getMatchsProchainsJours, libellePeriode, fenetreProchainsJours } from '../lib/matchs';
-
-/* Un week-end de championnat en porte plusieurs pour le club. Les afficher
-   toutes ferait de l'accueil une seconde page Matchs ; on en montre quatre —
-   deux lignes de deux sur écran large — et on annonce le reste honnêtement
-   plutôt que de le tronquer en silence. */
-const MAX_CARTES = 4;
-const FENETRE_JOURS = 7;
+import {
+	getMatchsDuClub,
+	estDansLaFenetre,
+	fenetreProchainsJours,
+	libellePeriode,
+	libellesParPoule,
+	jourCourt,
+	blocDate,
+	FENETRE_SEMAINE_JOURS,
+} from '../lib/matchs';
 
 /* Une seule fenêtre pour le filtre et pour le libellé : deux calculs séparés
    finiraient par annoncer une période que la liste ne couvre pas. */
 const maintenant = new Date();
-const fenetre = fenetreProchainsJours(maintenant, FENETRE_JOURS);
-const matchs = await getMatchsProchainsJours(FENETRE_JOURS, maintenant);
+const fenetre = fenetreProchainsJours(maintenant, FENETRE_SEMAINE_JOURS);
 const periode = libellePeriode(fenetre.debut, fenetre.fin);
+
+/* Tous les matchs servent à nommer les équipes : la mention de la division
+   dépend du nombre d'équipes engagées par la catégorie sur la saison entière,
+   pas sur la seule semaine affichée. */
+const tous = await getMatchsDuClub();
+const matchs = tous.filter((m) => estDansLaFenetre(m, fenetre));
+const libelles = libellesParPoule(tous);
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
@@ -47,42 +60,41 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 				</h2>
 			</div>
 			<p class="sous-titre">
-				Les rencontres de nos équipes dans les {FENETRE_JOURS} prochains jours,
-				reprises des données officielles de la FFHandball.
+				Toutes les rencontres de nos équipes dans les {FENETRE_SEMAINE_JOURS} prochains
+				jours, reprises des données officielles de la FFHandball.
 			</p>
 		</div>
 
-		{/* Le surplus est masqué au build et non retiré : le script rejoue le
-		    plafond après avoir écarté les matchs déjà joués, et fait alors remonter
-		    une carte de la réserve. Sans JavaScript, le visiteur voit les quatre
-		    premières et la ligne de reste — juste à une journée près. */}
-		{/* `data-max` porte la limite jusqu'au script : déclarée deux fois, elle
-		    finirait par valoir 4 au build et autre chose après réajustement, sans
-		    que rien ne le signale. */}
-		<ul class="cartes" id="semaine-liste" data-max={MAX_CARTES}>
+		<ul class="lignes" id="semaine-liste">
 			{matchs.map((match, index) => (
-				<li
-					class="carte-match"
-					data-debut={match.dateHeure}
-					hidden={index >= MAX_CARTES}
-				>
-					<Carte match={match} />
+				<li class="ligne" data-debut={match.dateHeure} style={`--rang: ${index}`}>
+					{/* <time> plutôt qu'un <span> : c'est une date, et lisible par une
+					    machine. La fenêtre tenant sur sept jours, le mois n'y lève
+					    aucune ambiguïté — il coûterait une colonne pour rien. */}
+					<time class="quand" datetime={match.dateHeure!}>
+						<span class="jour">{jourCourt(match.dateHeure)}</span>
+						<span class="heure">{blocDate(match.dateHeure)!.heure}</span>
+					</time>
+
+					{/* La catégorie porte le nom du club sans le répéter. Sans fiche de
+					    catégorie rattachée à la poule, on retombe sur le nom brut plutôt
+					    que sur rien. */}
+					<p class="equipe">{libelles.get(match.poolId) ?? match.equipeClub}</p>
+
+					<p class="meta">
+						<span class="adversaire"><span class="contre">contre</span> {match.adversaire}</span>
+						<span class="separateur" aria-hidden="true">·</span>
+						{/* Domicile et extérieur se distinguent par le mot et par le poids,
+						    jamais par la couleur seule. */}
+						<span class="lieu" data-domicile={String(match.domicile)}>
+							{match.domicile ? 'Domicile' : 'Extérieur'}
+						</span>
+					</p>
 				</li>
 			))}
 		</ul>
 
-		{/* Compté au build, recalculé par le script : après le coup d'envoi d'une
-		    rencontre, le nombre annoncé ici serait faux. */}
-		<p
-			class="reste"
-			id="semaine-reste"
-			data-periode={periode}
-			hidden={matchs.length <= MAX_CARTES}
-		>
-			+ {matchs.length - MAX_CARTES} autre{matchs.length - MAX_CARTES > 1 ? 's' : ''} rencontre{matchs.length - MAX_CARTES > 1 ? 's' : ''} {periode}
-		</p>
-
-		{/* Visible seulement si le script a écarté toutes les cartes — tous les
+		{/* Visible seulement si le script a écarté toutes les lignes — tous les
 		    matchs de la fenêtre ont été joués depuis le dernier build. */}
 		<p class="vide" id="semaine-vide" hidden>
 			Les rencontres de ces derniers jours sont terminées.
@@ -102,43 +114,55 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		/* Le site est rebuildé une fois par jour (cron de deploy.yml). Sans ce
 		   réajustement, un match joué samedi à 12h resterait annoncé « cette
 		   semaine » jusqu'au lendemain 3h — soit tout le samedi après-midi, quand
-		   l'accueil est le plus consulté. Même motif que la page Matchs. */
+		   l'accueil est le plus consulté. Même motif que la page Matchs.
+
+		   Ici la comparaison passe bien par un `Date` : on est dans le navigateur
+		   du visiteur, à l'heure du club, et non sur un serveur de build en UTC. */
 		const maintenant = Date.now();
-		/* Lue sur l'élément, jamais réécrite ici : le frontmatter est la seule
-		   source de cette limite. */
-		const MAX_CARTES = Number(liste.dataset.max) || 4;
-
-		const restants = [...liste.querySelectorAll('li[data-debut]')].filter((carte) => {
-			const debut = carte.dataset.debut;
-			if (debut && new Date(debut).getTime() < maintenant) {
-				carte.remove();
-				return false;
-			}
-			return true;
+		liste.querySelectorAll('li[data-debut]').forEach((ligne) => {
+			const debut = ligne.dataset.debut;
+			if (debut && new Date(debut).getTime() < maintenant) ligne.remove();
 		});
 
-		restants.forEach((carte, index) => {
-			carte.hidden = index >= MAX_CARTES;
-		});
-
-		const reste = document.getElementById('semaine-reste');
-		if (reste) {
-			const surplus = Math.max(0, restants.length - MAX_CARTES);
-			reste.hidden = surplus === 0;
-			if (surplus > 0) {
-				const pluriel = surplus > 1 ? 's' : '';
-				/* La période reste celle du build : c'est la fenêtre que le bandeau
-				   annonce, et le nombre s'y rapporte. */
-				const periode = reste.dataset.periode ?? '';
-				reste.textContent = `+ ${surplus} autre${pluriel} rencontre${pluriel} ${periode}`.trim();
-			}
-		}
-
-		if (restants.length === 0) {
+		if (!liste.querySelector('li')) {
 			liste.hidden = true;
 			const vide = document.getElementById('semaine-vide');
 			if (vide) vide.hidden = false;
+			return;
 		}
+
+		/* Apparition en fondu, UNE FOIS, à l'entrée dans le champ de vision. Le
+		   mouvement sert ici la découverte d'une section, jamais la lecture d'un
+		   horaire : rien ne défile, rien ne disparaît, rien n'attend son tour —
+		   deux horaires restent comparables d'un coup d'œil, ce qu'un carrousel
+		   interdit.
+
+		   La classe `prete` n'est posée que par ce script : sans JavaScript, les
+		   lignes restent visibles au lieu d'être opaques à zéro pour toujours. Et
+		   rien du tout si le visiteur a demandé moins d'animations. */
+		if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+		if (!('IntersectionObserver' in window)) return;
+		liste.classList.add('prete');
+
+		const reveler = () => liste.classList.add('anime');
+		const observateur = new IntersectionObserver(
+			(entrees) => {
+				for (const entree of entrees) {
+					if (!entree.isIntersecting) continue;
+					reveler();
+					observateur.disconnect();
+				}
+			},
+			{ threshold: 0.15 },
+		);
+		observateur.observe(liste);
+
+		/* Filet de sécurité. `prete` pose les lignes à `opacity: 0` et seule
+		   l'animation les ramène : tout ce qui empêcherait l'observateur de se
+		   déclencher laisserait les horaires de la semaine invisibles. Aucune
+		   information du club ne doit dépendre d'une animation — passé ce délai,
+		   on révèle quoi qu'il arrive. */
+		setTimeout(reveler, 1500);
 	})();
 </script>
 
@@ -157,7 +181,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		justify-content: space-between;
 		align-items: flex-end;
 		gap: var(--space-6);
-		margin-bottom: 44px;
+		margin-bottom: var(--space-8);
 		flex-wrap: wrap;
 	}
 
@@ -197,20 +221,93 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		margin: 0 0 6px;
 	}
 
-	.cartes {
+	.lignes {
 		list-style: none;
 		margin: 0;
 		padding: 0;
-		display: grid;
-		grid-template-columns: 1fr;
-		gap: var(--space-4);
+		border-top: 1px solid var(--color-border);
 	}
 
-	.cartes[hidden] {
+	.lignes[hidden] {
 		display: none;
 	}
 
-	.reste,
+	/* Un filet entre les lignes plutôt qu'un cadre autour de chacune : la liste se
+	   balaie comme un tableau d'affichage de gymnase, l'œil descend une colonne au
+	   lieu de sauter d'un objet à l'autre. Ces lignes n'utilisent donc PAS
+	   `.carte-match` — ce ne sont pas des cartes.
+
+	   Mobile d'abord : la date tient sa colonne, l'équipe et l'adversaire
+	   s'empilent à droite. */
+	.ligne {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr);
+		align-items: baseline;
+		column-gap: var(--space-4);
+		padding: var(--space-3) 0;
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.quand {
+		grid-row: span 2;
+		display: flex;
+		flex-direction: column;
+		min-width: 62px;
+		line-height: 1.25;
+	}
+
+	.jour {
+		font-family: var(--font-heading);
+		font-weight: var(--weight-heading);
+		font-size: 0.9375rem;
+		text-transform: uppercase;
+		color: var(--color-text);
+	}
+
+	.heure {
+		font-size: 0.875rem;
+		color: var(--color-text-muted);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.equipe {
+		margin: 0;
+		font-size: 0.8125rem;
+		font-weight: var(--weight-body-strong);
+		text-transform: uppercase;
+		letter-spacing: 0.02em;
+		color: var(--color-text-muted);
+	}
+
+	.meta {
+		margin: 0;
+		font-size: 0.9375rem;
+		color: var(--color-text-muted);
+	}
+
+	.adversaire {
+		font-family: var(--font-heading);
+		font-weight: var(--weight-heading);
+		font-size: 1rem;
+		color: var(--color-text);
+	}
+
+	.contre {
+		font-family: var(--font-body);
+		font-weight: 400;
+		font-size: 0.9375rem;
+		color: var(--color-text-muted);
+	}
+
+	.separateur {
+		margin: 0 var(--space-2);
+	}
+
+	.lieu[data-domicile='true'] {
+		font-weight: var(--weight-body-strong);
+		color: var(--color-text);
+	}
+
 	.vide {
 		margin: var(--space-6) 0 0;
 		font-size: 15px;
@@ -220,13 +317,47 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	.cta-row {
 		display: flex;
 		justify-content: center;
-		margin-top: 52px;
+		margin-top: var(--space-8);
 	}
 
-	@media (min-width: 640px) {
-		.cartes {
-			grid-template-columns: 1fr 1fr;
-			gap: var(--space-6);
+	/* Une seule ligne dès qu'il y a la place : date, équipe, adversaire et lieu
+	   alignés en colonnes, ce qui rend les horaires comparables d'un coup d'œil. */
+	@media (min-width: 720px) {
+		.ligne {
+			grid-template-columns: auto minmax(0, 15rem) minmax(0, 1fr);
+			column-gap: var(--space-6);
+		}
+
+		.quand {
+			grid-row: auto;
+			flex-direction: row;
+			align-items: baseline;
+			gap: var(--space-3);
+			min-width: 8.5rem;
+		}
+	}
+
+	/* Le mouvement est réservé à l'arrivée de la section, une fois, et ne
+	   s'applique jamais si le visiteur a demandé moins d'animations. */
+	@media (prefers-reduced-motion: no-preference) {
+		.lignes.prete > .ligne {
+			opacity: 0;
+		}
+
+		.lignes.anime > .ligne {
+			animation: apparait 420ms ease-out forwards;
+			animation-delay: calc(var(--rang) * 55ms);
+		}
+
+		@keyframes apparait {
+			from {
+				opacity: 0;
+				transform: translateY(6px);
+			}
+			to {
+				opacity: 1;
+				transform: none;
+			}
 		}
 	}
 </style>
