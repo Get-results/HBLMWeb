@@ -45,6 +45,26 @@ main:focus {
 	outline: none;
 }
 
+/* Bouton-icône de la barre de navigation — la bascule de thème et le hamburger.
+   Habillage partagé et non dupliqué : le style scopé d'un composant Astro ne peut
+   pas atteindre l'autre, donc deux copies locales divergeraient à la première
+   retouche (un :hover ajouté d'un côté seulement, une taille changée). Zone
+   tactile de 44px, icône centrée dedans.
+   Le focus visible vient de la règle :focus-visible ci-dessus. */
+.icon-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	padding: 0;
+	border: none;
+	border-radius: var(--radius-full);
+	background: transparent;
+	color: var(--color-text);
+	cursor: pointer;
+}
+
 /* Lien d'évitement — hors écran tant qu'il n'a pas le focus, puis ramené en haut
    à gauche. On ne l'escamote pas avec `display: none` : il doit rester atteignable
    au clavier et annonçable par un lecteur d'écran. */
@@ -52,7 +72,7 @@ main:focus {
 	position: absolute;
 	top: var(--space-4);
 	left: var(--space-4);
-	z-index: 200; /* au-dessus du bouton de thème (z-index: 100) */
+	z-index: 200; /* au-dessus du header collant (z-index: 50) */
 	transform: translateY(calc(-100% - var(--space-4) * 2));
 	padding: var(--space-3) var(--space-4);
 	border: 1px solid var(--color-border);
