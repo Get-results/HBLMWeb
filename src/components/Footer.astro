@@ -1,8 +1,17 @@
 ---
 /*
  * Footer du site — monté une seule fois par BaseLayout.
- * Contact, plan du site, mention légale.
+ * Contact, plan du site, mention légale, version.
  */
+import { version } from '../../package.json';
+
+/* Le numéro de version vient de `package.json` et de nulle part ailleurs : une
+   version écrite en dur dans un composant devient fausse au premier oubli. Elle
+   est lue au build, donc la page reste statique — rien n'est calculé chez le
+   visiteur. Pour la faire évoluer : `npm version patch|minor|major`, ou éditer le
+   champ `version`. Elle sert à savoir, depuis un téléphone et sans accès au
+   dépôt, quelle mise en ligne on a sous les yeux. */
+
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
@@ -33,6 +42,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<p class="footer-legal">
 		<span>© 2026 Handball Lunel-Marsillargues</span>
 		<a href={`${base}/mentions-legales`}>Mentions légales</a>
+		<span class="footer-version">v{version}</span>
 	</p>
 </footer>
 
@@ -116,11 +126,24 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		color: var(--color-text);
 	}
 
+	/* Discret par construction : il hérite de la couleur en retrait et de la taille
+	   « eyebrow » de la ligne légale, et passe à droite dès qu'il y a la place. Il
+	   ne doit jamais concurrencer les mentions légales, seule information
+	   obligatoire de cette ligne. Chiffres tabulaires pour qu'il ne fasse pas
+	   danser la ligne quand la version s'allonge. */
+	.footer-version {
+		font-variant-numeric: tabular-nums;
+	}
+
 	@media (min-width: 640px) {
 		.footer-inner {
 			flex-direction: row;
 			justify-content: space-between;
 			align-items: flex-start;
+		}
+
+		.footer-version {
+			margin-left: auto;
 		}
 	}
 </style>
