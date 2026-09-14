@@ -1,6 +1,6 @@
 ---
 /*
- * Bascule clair/sombre. Monté une seule fois par BaseLayout, jamais par page.
+ * Bascule clair/sombre. Montée une seule fois par le Header, jamais par page.
  *
  * Sans choix explicite, le thème suit `prefers-color-scheme` et aucun
  * `data-theme` n'est posé ; un clic force un thème et le persiste. Le script
@@ -31,10 +31,8 @@
 
 <style>
 	.theme-toggle {
-		position: fixed;
-		top: var(--space-4);
-		right: var(--space-4);
-		z-index: 100;
+		/* Aucun positionnement propre : le bouton se place dans le flux de la
+		   barre de navigation, qui le monte (voir Header.astro). */
 
 		/* Zone tactile ≥44px sur mobile, icône de 20px centrée dedans. */
 		display: inline-flex;
@@ -44,9 +42,11 @@
 		height: 44px;
 		padding: 0;
 
-		border: 1px solid var(--color-border);
+		/* Même habillage que le hamburger voisin : les deux commandes de la
+		   barre se ressemblent au lieu de se disputer l'attention. */
+		border: none;
 		border-radius: var(--radius-full);
-		background-color: var(--color-surface);
+		background: transparent;
 		color: var(--color-text);
 		cursor: pointer;
 	}
