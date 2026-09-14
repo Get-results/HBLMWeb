@@ -4,6 +4,7 @@ import CtaLink from '../components/CtaLink.astro';
 import QuickLink from '../components/QuickLink.astro';
 import NewsCard from '../components/NewsCard.astro';
 import { getArticlesPublies, formaterDateArticle, libelleCategorie } from '../lib/articles';
+import { nombreGymnases, licencies } from '../lib/club';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
@@ -29,7 +30,7 @@ const articles = (await getArticlesPublies()).slice(0, 4);
 		</h1>
 		<p class="hero-sub">
 			De 3 ans aux seniors, en compétition ou en loisir —
-			venez découvrir le handball dans l'un de nos 4 gymnases.
+			venez découvrir le handball dans l'un de nos {nombreGymnases} gymnases.
 		</p>
 		<div class="hero-actions">
 			<CtaLink href={`${base}/essai`} label="Faire un essai" />
@@ -101,8 +102,10 @@ const articles = (await getArticlesPublies()).slice(0, 4);
 					La vie<br />du club<span class="accent-dot">.</span>
 				</h2>
 			</div>
+			{/* « records de licenciés » retiré : c'était la même affirmation non
+			    étayée que le « 351 licenciés, un record ! » du bloc plus bas. */}
 			<p class="section-sub">
-				Entraînements, inscriptions, stages, records de licenciés :
+				Entraînements, inscriptions, stages, événements :
 				tout ce qui fait vivre le club, semaine après semaine.
 			</p>
 		</div>
@@ -139,8 +142,11 @@ const articles = (await getArticlesPublies()).slice(0, 4);
 	<section class="section club-brief">
 		<div class="club-brief-inner">
 			<h2 class="club-brief-title">Le club en bref</h2>
+			{/* L'effectif ne s'affiche que confirmé par le bureau (src/lib/club.ts) ;
+			    le nombre de gymnases est déduit de la liste, jamais écrit en dur. */}
 			<p class="club-brief-text">
-				351 licenciés, 4 gymnases entre Lunel et Marsillargues,
+				{licencies.confirme && <>{licencies.nombre} licenciés, </>}
+				{nombreGymnases} gymnases entre Lunel et Marsillargues,
 				un bureau associatif engagé — le HBLM accueille petits et
 				grands depuis des années.
 			</p>

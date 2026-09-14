@@ -31,6 +31,15 @@ pnpm-debug.log*
 /asset_placeholder/
 /assets/
 
+# Documentation de l'API des matchs, fournie par le porteur du projet.
+# NON VERSIONNÉE, et c'est délibéré : FRONTEND_INTEGRATION.md documente la route
+# d'authentification avec des identifiants par défaut en clair
+# (`{ "username": "admin", "password": "admin" }`). Le dépôt est public — les
+# publier reviendrait à annoncer comment s'authentifier sur l'API.
+# À reverser dans le dépôt une fois ce passage retiré ou les identifiants
+# changés : `src/content.config.ts` y renvoie, et un clone neuf ne l'a pas.
+/docs/
+
 # BMAD : installation, outputs et skills installées — outillage local, non versionné
 /_bmad/
 /_bmad-output/
