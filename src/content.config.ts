@@ -185,4 +185,120 @@ const matches = defineCollection({
 	}),
 });
 
-export const collections = { categories, matches };
+/* Stages de vacances — collection `stages`.
+
+   Chargée en YAML pour la même raison que `categories` : un stage est une fiche
+   de données (dates, horaires, lieu, tarif, inscription) et non un texte rédigé.
+   Le markdown n'apporterait qu'un corps vide à maintenir. Le nom du fichier fait
+   l'`id` de l'entrée, en kebab-case — `stage-aout-2026.yaml`.
+
+   Les dates sont des chaînes « AAAA-MM-JJ » et les horaires des chaînes
+   « HH:MM », jamais des `Date` : un stage est une plage annoncée en heure
+   locale, comme les créneaux d'entraînement et comme `matches.matchDate`. Une
+   `Date` y ajouterait un fuseau qui décalerait l'affichage selon la machine qui
+   construit le site. Les guillemets sont donc obligatoires dans le YAML, sinon
+   le parseur convertit lui-même la valeur en `Date`.
+   Conséquence utile : c'est de ces dates que la page déduit « à venir » ou
+   « passé ». Aucun drapeau saisi à la main — un stage resté annoncé en haut de
+   page des mois après sa tenue est exactement le faux qu'on cherche à éviter. */
+const stages = defineCollection({
+	loader: glob({ pattern: '**/*.yaml', base: './src/content/stages' }),
+	schema: z
+		.object({
+			/* Intitulé affiché tel quel, repris de l'annonce du club. */
+			title: z.string().min(1),
+
+			startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date attendue au format AAAA-MM-JJ'),
+			endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date attendue au format AAAA-MM-JJ'),
+
+			/* Horaires de la journée, identiques sur toute la durée du stage : c'est
+			   ainsi que le club les annonce. Le jour où une édition aura des horaires
+			   différents d'un jour à l'autre, ce sera le moment de les détailler —
+			   pas avant (AD-3). */
+			startTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Heure attendue au format HH:MM'),
+			endTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Heure attendue au format HH:MM'),
+
+			/* Gymnase + commune en clair, comme `trainingSlot.venue` : pas de
+			   collection `gymnases` tant qu'une poignée de salles suffit (AD-3).
+			   C'est la dénomination du site qui fait foi, pas celle de la billetterie
+			   — « Gymnase Arnassan » là où HelloAsso écrit « Salle Arnassan ». */
+			venue: z.string().min(1),
+
+			/* Public visé, en libellé libre — et NON une liste d'`id` de la collection
+			   `categories`. Le stage d'août 2026 vise « -9, -11, -13 et -15, filles et
+			   garçons » alors qu'il n'existe aucune catégorie -9 au club (il a
+			   `baby-hand` et `ecole-de-hand`). Référencer par `id` obligerait donc soit
+			   à inventer une catégorie, soit à faire disparaître un public réellement
+			   invité : deux façons de mentir sur un fait du club. Un stage ne s'adresse
+			   d'ailleurs pas aux équipes engagées en championnat mais à des tranches
+			   d'âge, licenciés comme non-licenciés — ce n'est pas la même notion que
+			   la catégorie. Le jour où une page devra vraiment croiser les deux, le
+			   besoin sera réel et le champ pourra changer de nature. */
+			audience: z.string().min(1),
+
+			/* Tarif en euros. `null` = non renseigné, jamais 0 qui se lirait
+			   « gratuit » — même raisonnement que `licenseFee`.
+			   Différence assumée avec `licenseFee` en revanche : le tarif n'est PAS
+			   exigé d'un stage confirmé (voir le garde-fou plus bas). HelloAsso masque
+			   la billetterie des événements terminés, le tarif d'août 2026 est donc
+			   réellement introuvable. L'exiger conduirait à en approcher un, c'est-à-
+			   dire à en inventer un ; la page préfère n'afficher aucun prix. */
+			price: z.number().positive().nullable().default(null),
+
+			/* Billetterie en ligne (HelloAsso). `null` = pas d'inscription en ligne
+			   pour cette édition. Sur un stage passé, la page cesse d'en faire un
+			   bouton d'inscription : l'événement est clos. */
+			registrationUrl: z.string().url().nullable().default(null),
+
+			/* Moyens de paiement acceptés, en libellés d'affichage (« chèques vacances
+			   ANCV »). Une énumération fermée serait à rouvrir au premier moyen que le
+			   club accepte en plus, pour un champ qui n'est que lu. Vide = le club ne
+			   l'a pas précisé, et la page n'en dit alors rien. */
+			paymentMethods: z.array(z.string().min(1)).default([]),
+
+			/* Même garde-fou éditorial que `categories`, et pour la même raison : le
+			   site est publiquement en ligne. Seules les fiches `confirme` sortent du
+			   build. Un stage passé reste `confirme` — ses données sont vraies ; c'est
+			   sa date qui le range dans les éditions passées, jamais son statut. */
+			dataStatus: z.enum(['exemple', 'a-confirmer', 'confirme']).default('a-confirmer'),
+		})
+		/* On refuse au build une fiche marquée « confirmée » qui ne porte pas ce
+		   qu'une fiche publiée doit contenir, comme pour `categories` : sans ça,
+		   `dataStatus` redevient un drapeau qu'on coche par distraction. */
+		.superRefine((stage, ctx) => {
+			/* Cohérence des dates et des horaires : vérifiée quel que soit le statut.
+			   Une plage inversée est une faute de saisie, pas un contenu en attente —
+			   et elle fausserait le classement passé / à venir. */
+			if (stage.endDate < stage.startDate) {
+				ctx.addIssue({
+					code: 'custom',
+					path: ['endDate'],
+					message: 'La date de fin doit être postérieure ou égale à la date de début.',
+				});
+			}
+			if (stage.endTime <= stage.startTime) {
+				ctx.addIssue({
+					code: 'custom',
+					path: ['endTime'],
+					message: "L'heure de fin doit être postérieure à l'heure de début.",
+				});
+			}
+
+			if (stage.dataStatus !== 'confirme') return;
+
+			/* Sans lien de billetterie ni moyen de paiement, un stage publié laisse le
+			   visiteur sans aucune façon d'y inscrire son enfant : la fiche n'est pas
+			   exploitable, même complète par ailleurs. Exigence volontairement « au
+			   moins l'un des deux » — le club encaisse aussi sur place le jour même. */
+			if (stage.registrationUrl === null && stage.paymentMethods.length === 0) {
+				ctx.addIssue({
+					code: 'custom',
+					path: ['registrationUrl'],
+					message:
+						"Un stage confirmé doit indiquer comment s'inscrire : un lien de billetterie, ou au moins un moyen de paiement.",
+				});
+			}
+		}),
+});
+
+export const collections = { categories, matches, stages };

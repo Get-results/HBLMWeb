@@ -1,5 +1,25 @@
 ---
+/* Page Stages — deux sections alimentées par la collection `stages`.
+
+   Le classement « à venir » / « passé » est DÉDUIT des dates par
+   `getStagesClasses()` : la page n'a aucun drapeau à lire, et un stage ne peut
+   donc pas rester annoncé après sa tenue.
+
+   « Prochains stages » est vide tant qu'aucune date n'est confirmée, et c'est
+   l'état normal entre deux éditions. On l'annonce alors franchement et on
+   renvoie vers le contact, comme le fait la page Planning : le site est
+   publiquement en ligne, une date approximative ferait se déplacer un parent
+   pour rien. */
 import BaseLayout from '../layouts/BaseLayout.astro';
+import GenericContact from '../components/GenericContact.astro';
+import {
+	getStagesClasses,
+	formaterPeriode,
+	formaterHoraires,
+	formaterTarifStage,
+} from '../lib/stages';
+
+const { aVenir, passes } = await getStagesClasses();
 ---
 
 <BaseLayout title="Stages | HBLM">
@@ -8,7 +28,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <h1 class="title">Stages de Handball</h1>
       <p class="subtitle">Perfectionnement et découverte pendant les vacances</p>
     </header>
-    
+
     <section class="content-section">
       <div class="card">
         <h2>Au programme</h2>
@@ -19,14 +39,218 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
       <div class="card accent-card">
         <h2>Prochains stages</h2>
-        <!-- TODO: contenu à fournir par le club -->
-        <div class="placeholder-content">
-          <p><strong>Dates :</strong> [À compléter par le club]</p>
-          <p><strong>Horaires :</strong> [À compléter par le club]</p>
-          <p><strong>Tarifs :</strong> [À compléter par le club]</p>
-        </div>
+
+        {aVenir.length === 0 ? (
+          <>
+            <p>
+              Aucune date de stage n'est arrêtée pour le moment. Nous publierons ici
+              les dates, les horaires et le lieu dès que le club les aura fixés —
+              nous préférons ne rien annoncer plutôt qu'annoncer une date dont nous
+              ne sommes pas sûrs.
+            </p>
+            <GenericContact intro="Vous voulez être prévenu·e de la prochaine édition ? Écrivez-nous." />
+          </>
+        ) : (
+          <ul class="stages">
+            {aVenir.map((stage) => (
+              <li class="stage">
+                <h3 class="stage-titre">{stage.data.title}</h3>
+                <dl class="stage-infos">
+                  <dt>Dates</dt>
+                  <dd>{formaterPeriode(stage)}</dd>
+                  <dt>Horaires</dt>
+                  <dd>{formaterHoraires(stage)}</dd>
+                  <dt>Lieu</dt>
+                  <dd>{stage.data.venue}</dd>
+                  <dt>Ouvert aux</dt>
+                  <dd>{stage.data.audience}</dd>
+                  {/* Aucune ligne « Tarif » quand le prix est inconnu : une ligne
+                      vide ou un « à préciser » se lirait comme une information. */}
+                  {stage.data.price !== null && (
+                    <>
+                      <dt>Tarif</dt>
+                      <dd>{formaterTarifStage(stage.data.price)}</dd>
+                    </>
+                  )}
+                  {stage.data.paymentMethods.length > 0 && (
+                    <>
+                      <dt>Paiement</dt>
+                      <dd>{stage.data.paymentMethods.join(', ')}</dd>
+                    </>
+                  )}
+                </dl>
+
+                {stage.data.registrationUrl && (
+                  <a class="button" href={stage.data.registrationUrl} rel="external noopener">
+                    S'inscrire sur HelloAsso <span class="sortant" aria-hidden="true">↗</span>
+                  </a>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
+
+      {/* Les éditions passées ne sont pas du remplissage : elles montrent que le
+          club organise réellement des stages, ce qu'une section « à venir » vide
+          ne peut pas dire. */}
+      {passes.length > 0 && (
+        <div class="card">
+          <h2>Stages passés</h2>
+          <p>Ces éditions sont terminées, les inscriptions sont closes.</p>
+
+          <ul class="stages">
+            {passes.map((stage) => (
+              <li class="stage stage-passe">
+                <h3 class="stage-titre">
+                  {stage.data.title}
+                  <span class="badge">Terminé</span>
+                </h3>
+                <dl class="stage-infos">
+                  <dt>Dates</dt>
+                  <dd>{formaterPeriode(stage)}</dd>
+                  <dt>Horaires</dt>
+                  <dd>{formaterHoraires(stage)}</dd>
+                  <dt>Lieu</dt>
+                  <dd>{stage.data.venue}</dd>
+                  <dt>Ouvert aux</dt>
+                  <dd>{stage.data.audience}</dd>
+                  {stage.data.price !== null && (
+                    <>
+                      <dt>Tarif</dt>
+                      <dd>{formaterTarifStage(stage.data.price)}</dd>
+                    </>
+                  )}
+                  {stage.data.paymentMethods.length > 0 && (
+                    <>
+                      <dt>Paiement</dt>
+                      <dd>{stage.data.paymentMethods.join(', ')}</dd>
+                    </>
+                  )}
+                </dl>
+
+                {/* Sur une édition close, le lien HelloAsso reste utile comme
+                    référence, mais surtout pas sous la forme d'un bouton
+                    d'inscription : on ne fait pas cliquer un parent sur
+                    « s'inscrire » pour un stage qui a eu lieu. */}
+                {stage.data.registrationUrl && (
+                  <p class="stage-lien">
+                    <a href={stage.data.registrationUrl} rel="external noopener">
+                      Voir l'annonce de cette édition sur HelloAsso
+                      <span class="sortant" aria-hidden="true">↗</span>
+                    </a>
+                    <span class="stage-lien-note"> (site externe — inscriptions closes)</span>
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </section>
   </div>
 </BaseLayout>
 
+<style>
+  /* Mobile d'abord : une colonne, puis deux quand la largeur le permet. */
+  .stages {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-card-gap);
+  }
+
+  .stage {
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-input-bg);
+  }
+
+  .stage-titre {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    font-family: var(--font-heading);
+    font-weight: var(--weight-heading);
+    font-size: var(--size-body);
+    color: var(--color-text);
+    margin: 0 0 var(--space-3);
+  }
+
+  /* « Terminé » est écrit en toutes lettres et non signalé par une couleur
+     seule : la nuance doit rester lisible en niveaux de gris (WCAG 1.4.1). */
+  .badge {
+    padding: var(--space-1) var(--space-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    font-family: var(--font-body);
+    font-weight: var(--weight-body-strong);
+    font-size: var(--size-eyebrow);
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  .stage-infos {
+    margin: 0;
+    display: grid;
+    gap: var(--space-1) var(--space-4);
+    font-size: var(--size-body);
+    line-height: var(--leading-body);
+  }
+
+  .stage-infos dt {
+    font-weight: var(--weight-body-strong);
+    color: var(--color-text);
+  }
+
+  .stage-infos dd {
+    margin: 0 0 var(--space-2);
+    color: var(--color-text-muted);
+  }
+
+  .stage-infos dd:last-child {
+    margin-bottom: 0;
+  }
+
+  .stage-lien {
+    margin: var(--space-4) 0 0;
+    font-size: var(--size-body);
+  }
+
+  .stage-lien a {
+    color: var(--color-text);
+    font-weight: var(--weight-body-strong);
+    /* Souligné + flèche : le lien se distingue sans dépendre de la couleur. */
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .stage-lien-note {
+    color: var(--color-text-muted);
+  }
+
+  /* La flèche annonce une sortie du site. Décorative pour la synthèse vocale —
+     le texte du lien dit déjà « HelloAsso » et « site externe ». */
+  .sortant {
+    margin-left: var(--space-1);
+  }
+
+  @media (min-width: 600px) {
+    .stage {
+      padding: var(--space-6);
+    }
+
+    /* Étiquette / valeur côte à côte : plus compact, et les valeurs s'alignent. */
+    .stage-infos {
+      grid-template-columns: max-content 1fr;
+    }
+
+    .stage-infos dd {
+      margin-bottom: 0;
+    }
+  }
+</style>
