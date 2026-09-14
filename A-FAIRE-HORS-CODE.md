@@ -60,17 +60,15 @@ inventé ici finirait publié comme une information officielle.
   `mailto` en attendant (`PUBLIC_CONTACT_EMAIL`).
 - [ ] **Composition du bureau** — nom du/de la président·e, secrétaire, trésorier·ère.
   → `src/pages/le-club.astro:31-42`, actuellement `[Nom à compléter]` ×3.
-- [ ] **Vrais créneaux d'entraînement** — jour, gymnase, catégorie, horaires, pour toutes
-  les équipes. *Le point le plus attendu du site.*
-  → `src/pages/planning.astro` affiche « Planning en cours de préparation » depuis le
-  11/09/2026. Les exemples fabriqués qui y figuraient ont été retirés : ils étaient
-  **publiés en ligne** et un parent pouvait se déplacer sur un horaire inventé.
-  → Les styles des créneaux sont conservés dans la page : dès que les horaires arrivent,
-  il n'y a que le balisage à réécrire.
-  → Format attendu, par jour : gymnase + une ligne par catégorie avec son horaire.
-    Exemple : *Lundi — Gymnase Arnassan (Lunel) — -15 ans, 18h–19h30*.
-  → Penser aussi à rétablir la sous-ligne de la page et le rappel « le planning peut
-  évoluer en cours de saison », retirés avec les créneaux.
+- [x] **Vrais créneaux d'entraînement** — transmis par le bureau et en ligne depuis le
+  13/09/2026. `src/pages/planning.astro` n'affiche plus « Planning en cours de
+  préparation » : les 27 créneaux réels y figurent, gymnases nommés.
+  → Rappel de ce que cet item protégeait : les exemples **fabriqués** qui occupaient la
+  page avant le 11/09 étaient publiés en ligne, et un parent pouvait se déplacer sur un
+  horaire inventé. C'est le motif de la règle 1 de `CLAUDE.md`.
+  → Les créneaux sont écrits dans la page, pas dans une collection de `src/content/`.
+  Tant qu'ils ne bougent pas, ça tient ; le jour où le bureau en change un en cours de
+  saison, il faudra éditer du balisage plutôt qu'une fiche de données.
 - [ ] **Mentions légales** — la page existe désormais (`src/pages/mentions-legales.astro`,
   liée depuis le footer) avec **14 champs à compléter** : dénomination officielle, siège,
   n° RNA, SIRET, téléphone, e-mail, agrément Jeunesse et Sports / affiliation FFHandball,
