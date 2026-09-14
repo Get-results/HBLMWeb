@@ -65,9 +65,14 @@ inventé ici finirait publié comme une information officielle.
   → **16 questions prêtes à envoyer au bureau** dans la description de la PR #3.
   → Point à valider : la durée de conservation des messages est proposée à **12 mois**.
   Aucune durée n'est imposée par la CNIL, c'est au bureau de trancher.
-- [ ] **Autorisations de droit à l'image** — à vérifier pour les photos déjà publiées,
-  **en particulier celles de mineurs**. Si les accords écrits n'existent pas, il faut les
-  recueillir ou retirer les photos. Soulevé lors de la rédaction des mentions légales.
+- [ ] **Autorisations de droit à l'image** — mis de côté le 14/09/2026, avec pour
+  conséquence directe l'ajournement des **galeries photo** (partie de la story 4.3).
+  → À rouvrir avant toute publication de photo sur le site, en particulier de mineurs.
+  → Argument soulevé : les photos du club sont déjà sur Instagram. À noter pour qui
+  reprendra le sujet — les CGU d'Instagram encadrent ce que Meta peut faire du contenu
+  publié là-bas, elles ne donnent aucun droit de republication ailleurs. Le club a
+  cependant déjà pris une décision de publication : le site est une seconde surface, pas
+  une nature de risque différente.
 
 ### Non bloquant, mais visible comme « trou » dans la page
 
@@ -121,6 +126,7 @@ Journal des arbitrages, pour ne pas les rejouer dans six mois.
 
 | Date | Décision | Motif |
 |---|---|---|
+| 14/09/2026 | **Galeries photo ajournées**, droit à l'image mis de côté | Publier des photos, notamment de mineurs, sans autorisation écrite engage l'association. Les articles, eux, ne dépendent pas des photos : l'epic 4 avance sans sa partie galerie. |
 | 11/09/2026 | **Web3Forms** pour le formulaire de contact, plutôt qu'un backend maison | Site statique : aucune clé ne peut être gardée secrète côté client. Un Cloudflare Worker imposerait domaine + SPF/DKIM + anti-spam à maintenir, pour ~15 messages/an attendus. |
 | 11/09/2026 | **Pas de nom de domaine** pour l'instant, on reste sur `github.io` | Aller au plus simple tant que le site n'est pas en production. Le club en possède un, activable plus tard. |
 | 11/09/2026 | L'endpoint du formulaire reste une **variable d'environnement** | Passer plus tard à un backend maison ne coûtera qu'un changement de variable, aucune ligne de code. |
@@ -161,6 +167,20 @@ Journal des arbitrages, pour ne pas les rejouer dans six mois.
   l'affichage, l'anomalie reste dans la source. À corriger côté scraper ou côté API, sans
   quoi elle se reproduira à chaque catégorie où la FFHandball renomme une équipe en cours
   de saison.
+
+- [ ] **Protection anti-spam du formulaire de contact** — à activer si du spam arrive, pas
+  avant. État actuel : seul le honeypot `botcheck` protège, et il n'arrête que les robots
+  qui remplissent une vraie page. La clé Web3Forms étant publique par conception — elle est
+  dans le HTML — n'importe qui peut poster directement sur leur API sans passer par le site,
+  et contourner le piège.
+  → **hCaptcha** est la seule protection réellement efficace sur l'offre gratuite, et
+  Web3Forms l'intègre sans configuration (clé de site partagée fournie).
+  → La **restriction par domaine** répondrait exactement au problème, mais elle est payante.
+  → Coût d'hCaptcha à ne pas oublier : un script tiers sur un site conçu sans JavaScript
+  client, une friction pour le visiteur, et une **obligation RGPD** — il faudra compléter
+  les mentions légales, car un tiers reçoit alors des données du visiteur.
+  → Le pire scénario actuel est du spam dans la boîte du club : désagréable, visible
+  immédiatement, sans danger.
 
 ## 4. À trancher plus tard
 
