@@ -15,6 +15,24 @@ import ThemeToggle from './ThemeToggle.astro';
 import Logo from './Logo.astro';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+/* Lien actif : comparé sur le chemin sans slash final, pour que `/matchs` et
+   `/matchs/` marquent la même entrée. Un sous-chemin (`/matchs/xxx`) souligne
+   aussi son entrée parente. */
+const current = Astro.url.pathname.replace(/\/+$/, '');
+
+const links = [
+	{ href: `${base}/planning`, label: 'Planning' },
+	{ href: `${base}/inscription`, label: 'Inscription' },
+	{ href: `${base}/stages`, label: 'Stages' },
+	{ href: `${base}/le-club`, label: 'Le club' },
+	{ href: `${base}/matchs`, label: 'Matchs' },
+];
+
+const isCurrent = (href: string) => {
+	const target = href.replace(/\/+$/, '');
+	return current === target || current.startsWith(`${target}/`);
+};
 ---
 
 <header class="site-header">
@@ -59,11 +77,13 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 	<nav id="nav-menu" class="nav-menu" aria-label="Navigation principale">
 		<ul class="nav-list">
-			<li><a href={`${base}/planning`}>Planning</a></li>
-			<li><a href={`${base}/inscription`}>Inscription</a></li>
-			<li><a href={`${base}/stages`}>Stages</a></li>
-			<li><a href={`${base}/le-club`}>Le club</a></li>
-			<li><a href={`${base}/matchs`}>Matchs</a></li>
+			{links.map((link) => (
+				<li>
+					<a href={link.href} aria-current={isCurrent(link.href) ? 'page' : undefined}>
+						{link.label}
+					</a>
+				</li>
+			))}
 		</ul>
 	</nav>
 </header>
@@ -167,8 +187,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		gap: var(--space-6);
 	}
 
+	/* `inline-block` et non `block` : le soulignement est posé en ::after sur la
+	   boîte du lien, qui doit épouser le texte et non toute la largeur du menu. */
 	.nav-list a {
-		display: block;
+		position: relative;
+		display: inline-block;
 		text-decoration: none;
 		font-family: var(--font-heading);
 		font-weight: var(--weight-heading);
@@ -177,8 +200,40 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		padding: var(--space-2) 0;
 	}
 
+	/* Soulignement jaune : révélé au survol, permanent sur la page courante. */
+	.nav-list a::after {
+		content: '';
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		height: 3px;
+		border-radius: var(--radius-full);
+		background-color: var(--color-accent);
+		transform: scaleX(0);
+		transform-origin: left center;
+		transition: transform 180ms ease;
+	}
+
+	.nav-list a:hover::after,
+	.nav-list a:focus-visible::after,
+	.nav-list a[aria-current='page']::after {
+		transform: scaleX(1);
+	}
+
+	/* La page courante reste lisible sans dépendre de la seule couleur du trait. */
+	.nav-list a[aria-current='page'] {
+		color: var(--color-text);
+	}
+
 	.nav-list a:hover {
 		color: var(--color-accent);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.nav-list a::after {
+			transition: none;
+		}
 	}
 
 	/* Desktop : ≥640px */
@@ -216,7 +271,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			font-size: 14px;
 			font-weight: var(--weight-body-strong);
 			font-family: var(--font-body);
-			padding: 0;
+			padding: var(--space-1) 0;
+		}
+
+		.nav-list a::after {
+			height: 2px;
 		}
 	}
 </style>
