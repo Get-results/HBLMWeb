@@ -1,0 +1,110 @@
+---
+/*
+ * Page d'erreur 404.
+ *
+ * Astro génère `404.html` à la racine du build ; GitHub Pages la sert
+ * automatiquement pour toute URL inconnue, sans configuration.
+ *
+ * Elle existe parce que le club diffuse ses liens à la main, sur WhatsApp et
+ * sur les réseaux : une adresse mal recopiée ou un ancien lien partagé tombe
+ * ici. Plutôt que la page blanche du serveur, on ramène le visiteur vers les
+ * deux pages qu'il cherchait probablement.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Logo from '../components/Logo.astro';
+import CtaLink from '../components/CtaLink.astro';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<BaseLayout
+	title="Page introuvable - HBLM"
+	description="Cette page n'existe pas ou a été déplacée."
+>
+	<section class="erreur">
+		{/* Seul visuel de la page, sans texte qui le double : il porte donc un
+		    vrai alt, contrairement aux autres emplacements du blason. */}
+		<Logo size={120} alt="Blason du Handball Lunel-Marsillargues" class="erreur-blason" />
+
+		<p class="eyebrow">Erreur 404</p>
+		<h1 class="display erreur-titre">
+			Cette page a filé<br />au vestiaire<span class="accent-dot">.</span>
+		</h1>
+		<p class="erreur-sub">
+			L'adresse demandée n'existe pas, ou la page a changé de place depuis que
+			le lien a été partagé.
+		</p>
+
+		<div class="erreur-actions">
+			<CtaLink href={`${base}/`} label="Retour à l'accueil" />
+			<a href={`${base}/planning`} class="erreur-lien">Voir le planning</a>
+		</div>
+	</section>
+</BaseLayout>
+
+<style>
+	.erreur {
+		max-width: 640px;
+		margin: 0 auto;
+		padding: var(--space-section-y) 5vw;
+		text-align: center;
+	}
+
+	/* :global() : l'<img> est rendue par Logo.astro et porte son scope. */
+	.erreur :global(.erreur-blason) {
+		display: block;
+		margin: 0 auto var(--space-8);
+	}
+
+	/* `.eyebrow` et `.accent-dot` ne sont pas dans global.css : chaque page qui
+	   les utilise les redéclare dans son propre <style>. On suit l'existant
+	   (index.astro) plutôt que de globaliser au passage. */
+	.eyebrow {
+		display: inline-block;
+		margin: 0;
+		font-family: var(--font-body);
+		font-weight: var(--weight-body-strong);
+		font-size: var(--size-eyebrow);
+		letter-spacing: var(--tracking-eyebrow);
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+	}
+
+	.accent-dot {
+		color: var(--color-accent);
+	}
+
+	/* `.display` ne porte que le poids : l'interligne serré des grands titres
+	   est déclaré par chaque titre (cf. .hero-title dans index.astro). Sans
+	   cela, le titre sur deux lignes s'aère et perd le rythme du reste du site. */
+	.erreur-titre {
+		margin: var(--space-3) 0 var(--space-6);
+		font-size: clamp(2.25rem, 7vw, 3.5rem);
+		line-height: var(--leading-display);
+		letter-spacing: var(--tracking-display);
+	}
+
+	.erreur-sub {
+		margin: 0 0 var(--space-8);
+		color: var(--color-text-muted);
+		font-size: 1.0625rem;
+	}
+
+	.erreur-actions {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		align-items: center;
+		gap: var(--space-4) var(--space-6);
+	}
+
+	.erreur-lien {
+		color: var(--color-text-muted);
+		text-decoration: underline;
+		text-underline-offset: 4px;
+	}
+
+	.erreur-lien:hover {
+		color: var(--color-text);
+	}
+</style>

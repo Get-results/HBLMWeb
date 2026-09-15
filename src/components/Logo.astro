@@ -1,0 +1,43 @@
+---
+/*
+ * Blason du club — point de passage unique vers `src/assets/logo.webp`.
+ *
+ * Passer par un composant plutôt que d'importer l'image dans chaque page :
+ * le fichier source est raster (432x432), donc chaque emplacement doit
+ * demander la bonne taille pour éviter à la fois l'agrandissement flou et le
+ * téléchargement d'un visuel dix fois trop grand. Centraliser ce calcul ici
+ * évite de le refaire — et de le rater — à chaque appel.
+ *
+ * `alt` vaut "" par défaut : partout où le blason est posé (header, footer,
+ * page Le club), il accompagne le nom du club écrit juste à côté. L'annoncer
+ * une seconde fois au lecteur d'écran serait une répétition. Ne renseigner
+ * `alt` que si le blason est SEUL à porter l'information.
+ *
+ * Props :
+ *   size  — côté en px du carré rendu (le blason est circulaire et centré)
+ *   alt   — texte alternatif, "" si décoratif (défaut)
+ *   class — classe CSS transmise à l'<img>
+ */
+import { Image } from 'astro:assets';
+import logo from '../assets/logo.webp';
+
+interface Props {
+	size?: number;
+	alt?: string;
+	class?: string;
+}
+
+const { size = 34, alt = '', class: className } = Astro.props;
+---
+
+{/* densities 1x/2x : la source fait 432px, ce qui couvre du 2x jusqu'à 216px
+    de rendu. Au-delà, Astro ne peut pas inventer de pixels. */}
+<Image
+	src={logo}
+	alt={alt}
+	width={size}
+	height={size}
+	densities={[1, 2]}
+	class={className}
+	loading="eager"
+/>
