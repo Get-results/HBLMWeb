@@ -1,0 +1,60 @@
+---
+/*
+ * Blason du club — point de passage unique vers `src/assets/logo.svg`.
+ *
+ * La source est VECTORIELLE (convertie du fichier Illustrator du club) : elle
+ * est donc nette à n'importe quelle taille, et un seul fichier sert tous les
+ * emplacements, du blason de 36px du header au filigrane de 520px du hero.
+ * C'est ce qui a permis de retirer le jeu de densités 1x/2x qu'imposait
+ * l'ancienne source raster de 432px.
+ *
+ * Passer par un composant plutôt que d'importer le SVG dans chaque page garde
+ * un seul endroit à corriger le jour où le club fournit un nouveau blason.
+ *
+ * `alt` vaut "" par défaut : partout où le blason est posé (header, footer,
+ * page Le club), il accompagne le nom du club écrit juste à côté. L'annoncer
+ * une seconde fois au lecteur d'écran serait une répétition. Ne renseigner
+ * `alt` que si le blason est SEUL à porter l'information.
+ *
+ * Props :
+ *   size  — côté en px du carré rendu (le blason est circulaire et centré)
+ *   alt   — texte alternatif, "" si décoratif (défaut)
+ *   class — classe CSS transmise à l'<img>
+ *   loading — "eager" (défaut) ou "lazy" pour un blason hors du premier écran
+ */
+import logo from '../assets/logo.svg';
+
+interface Props {
+	size?: number;
+	alt?: string;
+	class?: string;
+	loading?: 'eager' | 'lazy';
+}
+
+const { size = 36, alt = '', class: className, loading = 'eager' } = Astro.props;
+---
+
+{/* Une <img> nue, volontairement, et non le composant <Image> d'astro:assets.
+
+    Deux raisons, dans cet ordre :
+
+    1. <Image> traite le SVG comme une image à décliner et en écrit une COPIE
+       par taille demandée. Avec cinq emplacements, le build sortait six
+       fichiers de 56 Ko rigoureusement identiques, à six URL différentes : le
+       visiteur retéléchargeait le même blason en passant du header au footer.
+       Une <img> pointant `logo.src` donne une URL unique, mise en cache une
+       fois pour tout le site.
+    2. Un SVG est vectoriel : il n'y a rien à redimensionner au build, `width`
+       et `height` suffisent à le poser à la bonne taille.
+
+    Pas inline non plus : le fichier fait ~55 Ko, l'inliner le recopierait dans
+    le HTML des 11 pages au lieu d'être mis en cache séparément. */}
+<img
+	src={logo.src}
+	alt={alt}
+	width={size}
+	height={size}
+	class={className}
+	loading={loading}
+	decoding="async"
+/>

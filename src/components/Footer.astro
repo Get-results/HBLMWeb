@@ -12,16 +12,22 @@ import { version } from '../../package.json';
    champ `version`. Elle sert à savoir, depuis un téléphone et sans accès au
    dépôt, quelle mise en ligne on a sous les yeux. */
 
+import Logo from './Logo.astro';
+
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
 <footer class="site-footer">
 	<div class="footer-inner">
 		<div class="footer-brand">
-			<p class="footer-name">Handball Lunel-Marsillargues</p>
-			<p class="footer-contact">
-				<a href={`${base}/inscription#contact-form`}>Nous contacter</a>
-			</p>
+			{/* Blason décoratif (alt="") : le nom du club est écrit juste à côté. */}
+			<Logo size={44} class="footer-blason" />
+			<div class="footer-brand-text">
+				<p class="footer-name">Handball Lunel-Marsillargues</p>
+				<p class="footer-contact">
+					<a href={`${base}/inscription#contact-form`}>Nous contacter</a>
+				</p>
+			</div>
 		</div>
 
 		<nav class="footer-nav" aria-label="Plan du site">
@@ -60,6 +66,19 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	}
 
 	.footer-brand {
+		display: flex;
+		align-items: center;
+		gap: var(--space-4);
+	}
+
+	/* :global() : l'<img> est rendue par Logo.astro et porte donc le scope de
+	   ce composant-là, pas celui du footer. */
+	.footer-brand :global(.footer-blason) {
+		display: block;
+		flex-shrink: 0;
+	}
+
+	.footer-brand-text {
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-2);

@@ -1,0 +1,23 @@
+{
+  "name": "Handball Lunel-Marsillargues",
+  "short_name": "HBLM",
+  "description": "Le club de handball de Lunel et Marsillargues : entraînements, inscriptions, stages et matchs.",
+  "lang": "fr",
+  "start_url": "/HBLMWeb/",
+  "scope": "/HBLMWeb/",
+  "display": "browser",
+  "background_color": "#EDEBE7",
+  "theme_color": "#201F1C",
+  "icons": [
+    {
+      "src": "/HBLMWeb/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/HBLMWeb/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

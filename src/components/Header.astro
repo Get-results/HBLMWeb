@@ -12,12 +12,22 @@
  */
 import ThemeToggle from './ThemeToggle.astro';
 
+import Logo from './Logo.astro';
+
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
 <header class="site-header">
+	{/* Le blason porte déjà « HBLM » dans son dessin : sur mobile, où la barre
+	    doit aussi loger le hamburger, il se suffit et le logotype texte est
+	    masqué. Sur desktop les deux cohabitent, le texte restant la cible de
+	    clic lisible. L'aria-label du lien couvre les deux cas, d'où le blason
+	    en alt="" (décoratif). */}
 	<a href={`${base}/`} class="site-logo" aria-label="Accueil HBLM">
-		<span class="logo-text">HBLM</span><span class="logo-dot">.</span>
+		<Logo size={36} class="logo-blason" />
+		{/* Le sigle et son point sont enveloppés ensemble : le `gap` du flex
+		    s'appliquerait sinon aussi entre les deux et décollerait le point. */}
+		<span class="logo-text">HBLM<span class="logo-dot">.</span></span>
 	</a>
 
 	{/* Les deux commandes de la barre. L'ordre du DOM est celui du mobile : le
@@ -59,7 +69,15 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 </header>
 
 <style>
+	/* Hauteur du header, déclarée une fois et réutilisée par l'overlay du menu
+	   mobile qui doit commencer juste en dessous. Elle est pilotée par le plus
+	   haut de ses enfants — le bouton hamburger, 44px, cible tactile minimale
+	   — plus les deux paddings verticaux et la bordure : 44 + 2x16 + 1 = 77.
+	   Le blason (36px) tient dedans sans la changer.
+	   Elle valait 57px en dur, ce qui ne correspondait plus au rendu : l'overlay
+	   démarrait sous le header et ses premiers liens passaient derrière. */
 	.site-header {
+		--header-h: 77px;
 		position: sticky;
 		top: 0;
 		z-index: 50;
@@ -71,15 +89,31 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		border-bottom: 1px solid var(--color-border);
 	}
 
-	/* Logo texte */
+	/* Blason + logo texte */
 	.site-logo {
 		display: inline-flex;
-		align-items: baseline;
+		align-items: center;
+		gap: var(--space-3);
 		text-decoration: none;
 		font-family: var(--font-heading);
 		font-weight: var(--weight-heading);
 		font-size: 24px;
 		color: var(--color-text);
+	}
+
+	/* :global() est nécessaire : l'<img> est rendue par Logo.astro, donc elle
+	   porte le scope de CE composant-là, pas celui du header. Un sélecteur
+	   scopé `.logo-blason` ne l'atteindrait jamais. Le préfixe `.site-logo`
+	   garde la portée réelle limitée au header. */
+	.site-logo :global(.logo-blason) {
+		display: block; /* sinon l'img, inline, traîne un blanc de ligne de base */
+		flex-shrink: 0;
+	}
+
+	/* Sur mobile le blason porte déjà le sigle : le texte ferait doublon dans
+	   une barre qui doit aussi loger le hamburger. */
+	.logo-text {
+		display: none;
 	}
 
 	.logo-dot {
@@ -114,7 +148,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		display: none;
 		position: fixed;
 		inset: 0;
-		top: 57px; /* hauteur du header (padding + taille de police) */
+		top: var(--header-h); /* commence juste sous le header, qui est son parent */
 		z-index: 49;
 		background-color: var(--color-bg);
 		padding: var(--space-8) 5vw;
@@ -149,6 +183,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 	/* Desktop : ≥640px */
 	@media (min-width: 640px) {
+		.logo-text {
+			display: inline;
+		}
+
 		.nav-toggle {
 			display: none;
 		}

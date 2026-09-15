@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Logo from '../components/Logo.astro';
 import { gymnases, nombreGymnases, licencies } from '../lib/club';
 
 /* Composition transmise par le bureau le 12/09/2026 pour la saison 2026-2027,
@@ -48,6 +49,10 @@ const initiales = (nom: string) =>
 <BaseLayout title="Le club - HBLM">
 	<div class="page-container">
 		<header class="page-header">
+			{/* Le blason en tête de la page institutionnelle du club — décoratif
+			    (alt="") puisque le nom complet est écrit dans l'intro juste en
+			    dessous. */}
+			<Logo size={96} class="club-blason" />
 			<h1 class="display">Le club</h1>
 			<p class="intro">
 				Le Handball Lunel-Marsillargues (HBLM) est un club associatif dynamique, animé par des bénévoles passionnés.
@@ -140,6 +145,13 @@ const initiales = (nom: string) =>
 	.page-header {
 		margin-bottom: var(--space-section-y);
 		text-align: center;
+	}
+
+	/* :global() : l'<img> est rendue par Logo.astro et porte son scope, pas
+	   celui de cette page. */
+	.page-header :global(.club-blason) {
+		display: block;
+		margin: 0 auto var(--space-6);
 	}
 
 	.page-header h1 {
