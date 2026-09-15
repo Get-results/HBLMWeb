@@ -7,32 +7,55 @@ de personne identifiable.
 
 | Fichier | Ce que c'est |
 |---|---|
-| `logo.webp` | Blason officiel du club, 432x432, fond transparent |
+| `logo.svg` | Blason officiel du club, vectoriel, 500x500 dans son `viewBox` |
 
 ## Le blason
 
 Il est servi par le composant `src/components/Logo.astro`, qui est le **seul**
-point d'entrée : ne pas importer `logo.webp` directement dans une page.
+point d'entrée : ne pas importer `logo.svg` directement dans une page.
 
-Limite à connaître : la source est **raster**, 432x432. Au-delà d'environ 216px
-de rendu, le 2x demandé par `Logo.astro` n'est plus tenable et l'image
-s'adoucit. Les emplacements actuels (34px header, 44px footer, 96px page Le
-club, 120px page 404) restent largement en dessous.
+Il est **vectoriel**, donc net à n'importe quelle taille : le même fichier sert
+le blason de 36px du header et le filigrane de 520px du hero d'accueil. Il n'y a
+plus de taille maximale à surveiller — c'était le cas de la première version,
+tirée d'un PNG de 432px.
 
-Un **filigrane en grand format dans le hero d'accueil** a été écarté pour cette
-raison : il demande un fichier vectoriel. Si un SVG du blason est transmis par
-le club, c'est ici qu'il se pose, et `Logo.astro` s'en sert à la place.
+### D'où il vient, et comment le refabriquer
+
+La source est `logo-hblm.ai` (Illustrator 27, 2022), transmis par le club et
+conservé dans `/assets/` à la racine, non versionné. C'est un PDF déguisé, sans
+aucun bitmap et avec les textes déjà vectorisés — vérifiable avec
+`pdfimages -list` et `pdffonts`, qui ne doivent rien retourner.
+
+```sh
+pdftocairo -svg assets/logo-hblm.ai /tmp/logo-brut.svg
+npx svgo@3 /tmp/logo-brut.svg -o src/assets/logo.svg --precision=1 --multipass
+# puis remplacer width="500pt" height="500pt" par width="500" height="500"
+```
+
+`--precision=1` fait passer le fichier de 357 Ko à 55 Ko (23 Ko une fois
+compressé par le serveur) sans différence visible, y compris sur le texte
+circulaire et les rayures du tigre — comparé côte à côte avec `precision=2` au
+navigateur avant de trancher.
 
 ### Les déclinaisons dans `public/`
 
 `favicon.ico`, `favicon-32.png`, `apple-touch-icon.png`, `icon-512.png` et
-`og-image.jpg` sont dérivés de ce même fichier. Ils vivent dans `public/` et non
+`og-image.jpg` sont dérivés du même fichier Illustrator, via un rendu PNG de
+2084x2084 (`pdftocairo -png -r 300 -transp`). Ils vivent dans `public/` et non
 ici parce que des clients extérieurs — l'onglet du navigateur, le robot
 d'aperçu de Facebook ou WhatsApp — les réclament à une URL **fixe**, ce que le
 pipeline d'images d'Astro ne garantit pas puisqu'il hache les noms de fichiers.
 
-Ils ne sont pas régénérés au build : si `logo.webp` change, les refabriquer. Le
-script qui les a produits est dans le message du commit qui les a introduits.
+Ils ne sont pas régénérés au build : si le blason change, les refabriquer avec
+le script donné dans le message du commit qui les a introduits.
 `apple-touch-icon.png` et `icon-512.png` reçoivent un fond `#EDEBE7` car iOS et
 Android aplatissent la transparence sur du noir, ce qui masquerait le disque
 noir du blason.
+
+## Le filigrane du hero
+
+`src/pages/index.astro` pose le blason en filigrane à droite du titre d'accueil,
+à 7 % d'opacité, au-dessus de 1200px de large seulement. Ce seuil est **mesuré**,
+pas arbitraire : en dessous, le filigrane passe derrière le texte au lieu de
+l'accompagner. Le raisonnement complet est dans le commentaire CSS, à lire avant
+de toucher à la taille, au seuil ou au décalage.

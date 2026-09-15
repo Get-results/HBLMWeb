@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import CtaLink from '../components/CtaLink.astro';
 import QuickLink from '../components/QuickLink.astro';
 import NewsCard from '../components/NewsCard.astro';
+import Logo from '../components/Logo.astro';
 import MatchsDeLaSemaine from '../components/MatchsDeLaSemaine.astro';
 import { getArticlesPublies, formaterDateArticle, libelleCategorie } from '../lib/articles';
 import { licencies } from '../lib/club';
@@ -25,6 +26,10 @@ const articles = (await getArticlesPublies()).slice(0, 4);
 <BaseLayout title="Handball Lunel-Marsillargues">
 	{/* ──────────────── HERO ──────────────── */}
 	<section class="hero">
+		{/* Filigrane décoratif, donc alt="" : il ne dit rien que le titre ne
+		    dise déjà, et le blason lisible est dans le header juste au-dessus. */}
+		<Logo size={520} class="hero-filigrane" />
+
 		<p class="eyebrow">HBLM · Club de handball</p>
 		<h1 class="display hero-title">
 			Le handball<br />à Lunel et<br />Marsillargues<span class="accent-dot">.</span>
@@ -214,8 +219,51 @@ const articles = (await getArticlesPublies()).slice(0, 4);
 
 	/* ─── HERO ─── */
 	.hero {
+		position: relative; /* référence du filigrane */
 		padding: var(--space-section-y) 5vw;
 		padding-top: clamp(48px, 10vw, 120px);
+		overflow: hidden; /* le filigrane déborde à droite : on le coupe au bord */
+	}
+
+	/* Filigrane du blason, calé à droite À CÔTÉ du titre, jamais dessous.
+	   :global() : l'<img> est rendue par Logo.astro et porte son scope.
+
+	   Le seuil de 1200px n'est pas une valeur ronde choisie au hasard, il est
+	   mesuré. Le titre plafonne à ~743px de glyphes (le clamp atteint son
+	   maximum de 80px), et le filigrane commence à `largeur - 420px` avec les
+	   valeurs ci-dessous. Les deux ne se croisent plus qu'à partir d'environ
+	   1163px ; 1200 laisse une marge confortable. Descendre le seuil, agrandir
+	   le blason ou réduire son décalage à droite le ferait repasser derrière le
+	   texte — c'était le cas d'une première version à 900px.
+
+	   En dessous du seuil, `display: none` : un ornement n'a pas à encombrer un
+	   écran qui n'a pas la place, et le composant rend une <img> classique donc
+	   la plupart des navigateurs évitent aussi le téléchargement. */
+	.hero :global(.hero-filigrane) {
+		display: none;
+	}
+
+	@media (min-width: 1200px) {
+		.hero :global(.hero-filigrane) {
+			display: block;
+			position: absolute;
+			top: 50%;
+			right: -100px;
+			transform: translateY(-50%);
+			z-index: 0;
+			/* 0.07 : assez pour qu'on devine le blason, assez peu pour que le
+			   texte muted (--color-text-muted) garde son contraste par-dessus.
+			   Ne pas monter sans revérifier la lisibilité dans les DEUX thèmes. */
+			opacity: 0.07;
+			pointer-events: none;
+			user-select: none;
+		}
+
+		/* Le contenu repasse devant le filigrane. */
+		.hero > :not(.hero-filigrane) {
+			position: relative;
+			z-index: 1;
+		}
 	}
 
 	.hero-title {

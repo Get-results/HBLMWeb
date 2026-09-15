@@ -1,12 +1,15 @@
 ---
 /*
- * Blason du club — point de passage unique vers `src/assets/logo.webp`.
+ * Blason du club — point de passage unique vers `src/assets/logo.svg`.
  *
- * Passer par un composant plutôt que d'importer l'image dans chaque page :
- * le fichier source est raster (432x432), donc chaque emplacement doit
- * demander la bonne taille pour éviter à la fois l'agrandissement flou et le
- * téléchargement d'un visuel dix fois trop grand. Centraliser ce calcul ici
- * évite de le refaire — et de le rater — à chaque appel.
+ * La source est VECTORIELLE (convertie du fichier Illustrator du club) : elle
+ * est donc nette à n'importe quelle taille, et un seul fichier sert tous les
+ * emplacements, du blason de 36px du header au filigrane de 560px du hero.
+ * C'est ce qui a permis de retirer le jeu de densités 1x/2x qu'imposait
+ * l'ancienne source raster de 432px.
+ *
+ * Passer par un composant plutôt que d'importer le SVG dans chaque page garde
+ * un seul endroit à corriger le jour où le club fournit un nouveau blason.
  *
  * `alt` vaut "" par défaut : partout où le blason est posé (header, footer,
  * page Le club), il accompagne le nom du club écrit juste à côté. L'annoncer
@@ -17,27 +20,41 @@
  *   size  — côté en px du carré rendu (le blason est circulaire et centré)
  *   alt   — texte alternatif, "" si décoratif (défaut)
  *   class — classe CSS transmise à l'<img>
+ *   loading — "eager" (défaut) ou "lazy" pour un blason hors du premier écran
  */
-import { Image } from 'astro:assets';
-import logo from '../assets/logo.webp';
+import logo from '../assets/logo.svg';
 
 interface Props {
 	size?: number;
 	alt?: string;
 	class?: string;
+	loading?: 'eager' | 'lazy';
 }
 
-const { size = 34, alt = '', class: className } = Astro.props;
+const { size = 36, alt = '', class: className, loading = 'eager' } = Astro.props;
 ---
 
-{/* densities 1x/2x : la source fait 432px, ce qui couvre du 2x jusqu'à 216px
-    de rendu. Au-delà, Astro ne peut pas inventer de pixels. */}
-<Image
-	src={logo}
+{/* Une <img> nue, volontairement, et non le composant <Image> d'astro:assets.
+
+    Deux raisons, dans cet ordre :
+
+    1. <Image> traite le SVG comme une image à décliner et en écrit une COPIE
+       par taille demandée. Avec cinq emplacements, le build sortait six
+       fichiers de 56 Ko rigoureusement identiques, à six URL différentes : le
+       visiteur retéléchargeait le même blason en passant du header au footer.
+       Une <img> pointant `logo.src` donne une URL unique, mise en cache une
+       fois pour tout le site.
+    2. Un SVG est vectoriel : il n'y a rien à redimensionner au build, `width`
+       et `height` suffisent à le poser à la bonne taille.
+
+    Pas inline non plus : le fichier fait ~55 Ko, l'inliner le recopierait dans
+    le HTML des 11 pages au lieu d'être mis en cache séparément. */}
+<img
+	src={logo.src}
 	alt={alt}
 	width={size}
 	height={size}
-	densities={[1, 2]}
 	class={className}
-	loading="eager"
+	loading={loading}
+	decoding="async"
 />
