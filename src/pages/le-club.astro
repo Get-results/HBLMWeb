@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { gymnases, licencies } from '../lib/club';
+import { gymnases, nombreGymnases, licencies } from '../lib/club';
 
 /* Composition transmise par le bureau le 12/09/2026 pour la saison 2026-2027,
    reprise de l'organigramme publié par le club.
@@ -108,7 +108,9 @@ const initiales = (nom: string) =>
 
 		<section class="club-section">
 			<h2>Nos gymnases</h2>
-			<p>Nos entraînements et matchs se déroulent sur 4 installations :</p>
+			{/* Le compte vient de la liste (src/lib/club.ts) : écrit en dur, il mentait
+			    dès qu'une salle était ajoutée ou retirée. */}
+			<p>Nos entraînements et matchs se déroulent sur {nombreGymnases} installations :</p>
 			<div class="gyms-grid">
 				{gymnases.map((gymnase) => (
 					<article class="gym-card">
