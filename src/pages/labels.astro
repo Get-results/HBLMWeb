@@ -1,0 +1,258 @@
+---
+import { Image } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import sceau from '../assets/labels/club-labellise.png';
+import {
+	dateReleve,
+	ficheOfficielle,
+	labelsDuClub,
+	nombreLabelsFederaux,
+} from '../lib/labels';
+
+/* Page « Nos labels ».
+
+   Elle répond à une question que le visiteur se pose devant les pictogrammes de
+   la fiche fédérale, et à laquelle rien ne répond aujourd'hui : « ça veut dire
+   quoi ? ». Chaque label a donc sa carte, et son ancre — `/labels#arbitrage` —
+   pour que le bureau puisse renvoyer directement vers l'un d'eux depuis un
+   message ou un article.
+
+   Tout le contenu vient de src/lib/labels.ts, y compris la date du relevé : la
+   page ne sait rien qu'elle ait écrit elle-même. */
+
+const nombreObtenus = labelsDuClub.length;
+
+/* Date du relevé en toutes lettres. `Date` est sûr ici, contrairement aux dates
+   de matchs et d'articles : on ne LIT pas un jour à partir d'une chaîne sans
+   heure, on formate un jour déjà connu — et le fuseau de la machine de build ne
+   peut donc pas le décaler d'un jour. */
+const dateReleveLisible = new Intl.DateTimeFormat('fr-FR', {
+	day: 'numeric',
+	month: 'long',
+	year: 'numeric',
+	timeZone: 'UTC',
+}).format(new Date(`${dateReleve}T12:00:00Z`));
+---
+
+<BaseLayout
+	title="Nos labels - HBLM"
+	description={`Le HBLM est titulaire de ${nombreObtenus} des ${nombreLabelsFederaux} labels décernés par la Fédération française de handball. Ce que chacun récompense.`}
+>
+	<div class="page-container">
+		<header class="page-header">
+			{/* Le sceau fédéral, décoratif : le titre et l'intro disent déjà ce
+			    qu'il représente, et l'annoncer une troisième fois serait du bruit
+			    au lecteur d'écran. */}
+			<span class="sceau-fond">
+				<Image class="sceau" src={sceau} alt="" widths={[116, 232]} sizes="116px" />
+			</span>
+			<h1 class="display">Nos labels</h1>
+			<p class="intro">
+				La Fédération française de handball distingue les clubs qui structurent durablement leur
+				activité. Le HBLM est titulaire de <strong>{nombreObtenus} de ses {nombreLabelsFederaux} labels</strong>.
+			</p>
+		</header>
+
+		<section class="club-section">
+			<h2>Ce qu'est un label fédéral</h2>
+			<p>
+				Un label ne se gagne pas sur le terrain : ce n'est ni un titre, ni un classement. C'est une
+				reconnaissance accordée sur dossier, instruit par le comité départemental et la ligue, qui
+				atteste qu'un club fait réellement vivre une activité — former ses arbitres, accueillir les
+				tout-petits, faire progresser ses jeunes, tenir son association.
+			</p>
+			<p>
+				Chaque label est attribué pour <strong>deux ans</strong>, puis réexaminé. Les obtenir n'est
+				donc pas un acquis : c'est un travail de bénévoles à recommencer, saison après saison.
+			</p>
+		</section>
+
+		<section class="club-section">
+			<h2>Les labels du club</h2>
+			<ul class="labels-grid">
+				{labelsDuClub.map((label) => (
+					/* L'`id` porte l'ancre partageable. Il est sur le <li> et non sur le
+					   titre : c'est la carte entière qu'on veut voir arriver en haut de
+					   l'écran, pictogramme compris, pas seulement sa ligne de titre. */
+					<li class="label-card" id={label.slug}>
+						<div class="label-head">
+							{/* alt vide : le nom du label est écrit juste à côté. */}
+							<span class="label-pastille">
+								<Image src={label.icone} alt="" widths={[64, 128]} sizes="64px" />
+							</span>
+							<h3>{label.nom}</h3>
+						</div>
+						<p class="label-resume">{label.resume}</p>
+						<p class="label-description">{label.description}</p>
+					</li>
+				))}
+			</ul>
+		</section>
+
+		<section class="club-section">
+			<h2>Vérifier par vous-même</h2>
+			<p>
+				Ces labels sont publics : ils figurent sur la fiche du club tenue par la fédération, d'où
+				cette page les tient. Relevé du {dateReleveLisible}.
+			</p>
+			<p>
+				<a class="lien-fiche" href={ficheOfficielle} target="_blank" rel="noopener noreferrer">
+					Voir la fiche officielle du club sur ffhandball.fr
+					{/* Prévenir de l'ouverture dans un nouvel onglet : sans ça, le bouton
+					    « précédent » ne ramène pas en arrière et le visiteur se croit
+					    bloqué. Le texte est visible, pas seulement annoncé aux lecteurs
+					    d'écran — un lecteur voyant a la même surprise. */}
+					<span class="nouvel-onglet"> (nouvel onglet)</span>
+				</a>
+			</p>
+		</section>
+	</div>
+</BaseLayout>
+
+<style>
+	.page-container {
+		padding: var(--space-6) var(--space-4);
+		max-width: 800px;
+		margin: 0 auto;
+	}
+
+	.page-header {
+		margin-bottom: var(--space-section-y);
+		text-align: center;
+	}
+
+	.page-header h1 {
+		margin-bottom: var(--space-4);
+		font-size: clamp(2.5rem, 8vw, 4rem);
+	}
+
+	/* Le sceau fédéral est l'INVERSE des pictogrammes : son texte circulaire est
+	   blanc (le « Labellisé » cyan, lui, se voit partout). Il est donc lisible
+	   tel quel sur le thème sombre, et invisible sur le clair. D'où ce fond
+	   sombre posé uniquement quand la bascule a forcé le clair — en sombre il
+	   n'y a rien à poser, le fond de page fait déjà le travail. */
+	.sceau-fond {
+		display: block;
+		width: fit-content;
+		margin: 0 auto var(--space-6);
+		padding: var(--space-3);
+		border-radius: var(--radius-full);
+	}
+
+	:root[data-theme='light'] .sceau-fond {
+		background-color: #201f1c;
+	}
+
+	/* :global() : l'<img> est rendue par <Image> d'astro:assets et ne porte pas
+	   le scope de cette page. */
+	.sceau-fond :global(.sceau) {
+		display: block;
+		width: 116px;
+		height: auto;
+	}
+
+	.intro {
+		font-size: 1.125rem;
+		color: var(--color-text-muted);
+		max-width: 600px;
+		margin: 0 auto;
+	}
+
+	.intro strong {
+		color: var(--color-text);
+	}
+
+	.club-section {
+		margin-bottom: var(--space-section-y);
+	}
+
+	.club-section h2 {
+		font-size: clamp(1.75rem, 5vw, 2.5rem);
+		margin-bottom: var(--space-6);
+	}
+
+	.club-section p {
+		margin-bottom: var(--space-4);
+	}
+
+	.labels-grid {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		gap: var(--space-card-gap);
+	}
+
+	/* Deux colonnes seulement à partir de 640px : en dessous, les descriptions
+	   de trois phrases tomberaient à trois mots par ligne. */
+	@media (min-width: 640px) {
+		.labels-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+
+	.label-card {
+		background-color: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-6);
+		/* Sans ce décalage, l'ancre `/labels#arbitrage` amène la carte pile SOUS le
+		   header collant, qui en mange le pictogramme. 96px = la hauteur du header
+		   (~82px) plus une respiration ; mesuré au navigateur, pas deviné. Ce n'est
+		   pas un token : aucune autre page n'a d'ancre à ce jour, et créer une
+		   variable globale pour un seul usage la rendrait fausse ailleurs. */
+		scroll-margin-top: 96px;
+	}
+
+	.label-head {
+		display: flex;
+		align-items: center;
+		gap: var(--space-4);
+		margin-bottom: var(--space-4);
+	}
+
+	/* Le pictogramme fédéral est un trait cyan sur fond transparent, dessiné
+	   pour un fond clair. Le thème par défaut du site étant sombre, il est posé
+	   sur une pastille claire FIXE — un fond qui suivrait le thème ferait
+	   disparaître le cyan dans le sombre. Voir src/assets/labels/README.md. */
+	.label-pastille {
+		--taille-pastille: 64px;
+
+		flex-shrink: 0;
+		display: grid;
+		place-items: center;
+		width: var(--taille-pastille);
+		height: var(--taille-pastille);
+		border-radius: var(--radius-full);
+		background-color: #ffffff;
+	}
+
+	.label-pastille :global(img) {
+		width: 44px;
+		height: auto;
+	}
+
+	.label-head h3 {
+		font-size: 1.25rem;
+		line-height: 1.2;
+	}
+
+	.label-resume {
+		font-weight: var(--weight-body-strong);
+	}
+
+	.label-description {
+		color: var(--color-text-muted);
+		/* Dernier élément de la carte : sa marge basse creuserait le padding. */
+		margin-bottom: 0;
+	}
+
+	.lien-fiche {
+		font-weight: var(--weight-body-strong);
+	}
+
+	.nouvel-onglet {
+		color: var(--color-text-muted);
+		font-weight: var(--weight-body);
+	}
+</style>

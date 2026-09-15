@@ -128,6 +128,28 @@ inventé ici finirait publié comme une information officielle.
   `nombre` et `annee` si le bureau donne l'effectif de la saison en cours. Rien d'autre à
   toucher : les deux pages qui l'affichaient (accueil et « Le club ») le relisent au même
   endroit.
+  → Piste supplémentaire, relevée le 15/09/2026 : la fiche du club sur
+  `monclub.ffhandball.fr` annonce **99 licenciés (51 hommes, 48 femmes)**. L'écart avec 351
+  est trop grand pour être une simple évolution — la fiche fédérale est manifestement
+  périmée sur ce point (elle est en revanche à jour sur les labels). À ne pas reprendre
+  telle quelle : c'est une raison de plus de demander le chiffre au bureau.
+- [ ] **Ce que le club fait pour chacun de ses sept labels** — la page « Nos labels »
+  (`/labels`) est en ligne, mais ses textes décrivent le **dispositif fédéral** : ce que
+  chaque label récompense chez n'importe quel club. Ils sont exacts et impersonnels.
+  → Demander au bureau, pour chaque label, deux ou trois phrases sur ce que le HBLM fait
+  concrètement : combien d'arbitres formés cette saison, qui encadre le BabyHand, ce que
+  la commission féminisation a mis en place… C'est ce qui transformera une page
+  d'explication en page de fierté.
+  → À coller dans le champ `description` de `src/lib/labels.ts`, label par label. La page
+  n'a pas besoin d'être modifiée.
+- [ ] **Niveau et validité des labels** — la fiche fédérale affiche les sept pictogrammes
+  sans indiquer ni le **niveau** de chaque label (s'il en existe un : bronze / argent / or
+  ou équivalent), ni la **période de validité** des deux ans en cours. Ces deux
+  informations sont donc absentes du site plutôt qu'estimées.
+  → Le bureau doit avoir la notification de labellisation reçue de la ligue ou du comité.
+  → Quand elles arrivent : ajouter les champs dans `src/lib/labels.ts` et les afficher sur
+  la carte du label. Et penser à la date de fin — un label expiré affiché comme courant est
+  exactement le défaut que le nombre de licenciés a déjà produit.
 - [ ] **Premier vrai article, à faire rédiger par le bureau** — le dépôt ne porte que
   `src/content/articles/exemple-modele-d-article.md`, marqué `publicationStatus: exemple`,
   qui ne sort jamais du build. Tant que personne n'a écrit un article et ne l'a passé à

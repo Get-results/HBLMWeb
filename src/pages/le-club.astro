@@ -1,7 +1,11 @@
 ---
+import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Logo from '../components/Logo.astro';
 import { gymnases, nombreGymnases, licencies } from '../lib/club';
+import { labelsDuClub, nombreLabelsFederaux } from '../lib/labels';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 /* Composition transmise par le bureau le 12/09/2026 pour la saison 2026-2027,
    reprise de l'organigramme publié par le club.
@@ -74,6 +78,31 @@ const initiales = (nom: string) =>
 					<div class="stat-label">licenciés en {licencies.annee}</div>
 				</div>
 			)}
+		</section>
+
+		{/* Aperçu des labels, développé sur /labels. Ici on ne met que les
+		    pictogrammes et leur nom : la page dédiée porte les explications, les
+		    répéter ici ferait deux textes à tenir à jour pour un seul fait. */}
+		<section class="club-section">
+			<h2>Nos labels fédéraux</h2>
+			<p>
+				La Fédération française de handball distingue les clubs qui structurent durablement leur
+				activité. Le HBLM est titulaire de {labelsDuClub.length} de ses {nombreLabelsFederaux} labels.
+			</p>
+			<ul class="labels-apercu">
+				{labelsDuClub.map((label) => (
+					<li>
+						{/* alt vide : le nom du label est écrit juste en dessous. */}
+						<span class="label-pastille">
+							<Image src={label.icone} alt="" widths={[56, 112]} sizes="56px" />
+						</span>
+						<span class="label-nom">{label.nom}</span>
+					</li>
+				))}
+			</ul>
+			<p>
+				<a class="lien-labels" href={`${base}/labels`}>Ce que chaque label récompense</a>
+			</p>
 		</section>
 
 		<section class="club-section">
@@ -206,6 +235,57 @@ const initiales = (nom: string) =>
 	.stat-note {
 		font-size: 0.875rem;
 		color: var(--color-text-muted);
+	}
+
+	/* Labels fédéraux — aperçu. Les explications sont sur /labels. */
+	.labels-apercu {
+		list-style: none;
+		padding: 0;
+		/* auto-fill + minmax plutôt qu'un nombre de colonnes fixe : sept pastilles
+		   ne se répartissent proprement sur aucune grille régulière, et le nombre
+		   de labels changera. La largeur minimale suit la pastille de 56px plus
+		   les noms longs (« Club Formateur ») sur deux lignes au pire. */
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+		gap: var(--space-6) var(--space-4);
+		margin: var(--space-8) 0;
+	}
+
+	.labels-apercu li {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: var(--space-2);
+		text-align: center;
+	}
+
+	/* Pastille claire fixe sous le pictogramme fédéral : son trait cyan est
+	   dessiné pour un fond clair et disparaîtrait sur le thème sombre, qui est
+	   celui par défaut. Même raisonnement et même valeur que sur /labels —
+	   voir src/assets/labels/README.md. */
+	.label-pastille {
+		display: grid;
+		place-items: center;
+		width: 56px;
+		height: 56px;
+		border-radius: var(--radius-full);
+		background-color: #ffffff;
+	}
+
+	/* :global() : l'<img> vient de <Image> d'astro:assets, hors du scope. */
+	.label-pastille :global(img) {
+		width: 38px;
+		height: auto;
+	}
+
+	.label-nom {
+		font-size: 0.875rem;
+		color: var(--color-text-muted);
+		line-height: 1.3;
+	}
+
+	.lien-labels {
+		font-weight: var(--weight-body-strong);
 	}
 
 	/* Bureau & CA */
