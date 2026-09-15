@@ -81,18 +81,14 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 					    que sur rien. */}
 					<p class="equipe">{libelles.get(match.poolId) ?? match.equipeClub}</p>
 
-					<p class="adversaire"><span class="contre">contre</span> {match.adversaire}</p>
-
-					{/* Colonne à part, et non collé derrière l'adversaire : les noms
-					    d'adversaire n'ont pas la même longueur, ce qui dispersait la
-					    mention sur 116 px horizontalement — l'œil ne pouvait pas la
-					    balayer verticalement, qui est pourtant la seule question posée
-					    ici (« lesquels se jouent chez nous ? »).
-
-					    Domicile et extérieur se distinguent par le mot et par le poids,
-					    jamais par la couleur seule. */}
-					<p class="lieu" data-domicile={String(match.domicile)}>
-						{match.domicile ? 'Domicile' : 'Extérieur'}
+					<p class="meta">
+						<span class="adversaire"><span class="contre">contre</span> {match.adversaire}</span>
+						<span class="separateur" aria-hidden="true">·</span>
+						{/* Domicile et extérieur se distinguent par le mot et par le poids,
+						    jamais par la couleur seule. */}
+						<span class="lieu" data-domicile={String(match.domicile)}>
+							{match.domicile ? 'Domicile' : 'Extérieur'}
+						</span>
 					</p>
 				</li>
 			))}
@@ -245,10 +241,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	   s'empilent à droite. */
 	.ligne {
 		display: grid;
-		grid-template-columns: auto minmax(0, 1fr) auto;
-		grid-template-areas:
-			'quand equipe equipe'
-			'quand adversaire lieu';
+		grid-template-columns: auto minmax(0, 1fr);
 		align-items: baseline;
 		column-gap: var(--space-4);
 		padding: var(--space-3) 0;
@@ -256,7 +249,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	}
 
 	.quand {
-		grid-area: quand;
+		grid-row: span 2;
 		display: flex;
 		flex-direction: column;
 		min-width: 62px;
@@ -278,7 +271,6 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	}
 
 	.equipe {
-		grid-area: equipe;
 		margin: 0;
 		font-size: 0.8125rem;
 		font-weight: var(--weight-body-strong);
@@ -287,9 +279,13 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		color: var(--color-text-muted);
 	}
 
-	.adversaire {
-		grid-area: adversaire;
+	.meta {
 		margin: 0;
+		font-size: 0.9375rem;
+		color: var(--color-text-muted);
+	}
+
+	.adversaire {
 		font-family: var(--font-heading);
 		font-weight: var(--weight-heading);
 		font-size: 1rem;
@@ -303,15 +299,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		color: var(--color-text-muted);
 	}
 
-	/* Alignée à gauche de sa colonne : c'est l'alignement des DÉBUTS de mot qui
-	   rend une colonne balayable, pas celui des fins. */
-	.lieu {
-		grid-area: lieu;
-		justify-self: start;
-		margin: 0;
-		min-width: 5.5rem;
-		font-size: 0.9375rem;
-		color: var(--color-text-muted);
+	.separateur {
+		margin: 0 var(--space-2);
 	}
 
 	.lieu[data-domicile='true'] {
@@ -335,12 +324,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	   alignés en colonnes, ce qui rend les horaires comparables d'un coup d'œil. */
 	@media (min-width: 720px) {
 		.ligne {
-			grid-template-columns: auto minmax(0, 15rem) minmax(0, 1fr) auto;
-			grid-template-areas: 'quand equipe adversaire lieu';
+			grid-template-columns: auto minmax(0, 15rem) minmax(0, 1fr);
 			column-gap: var(--space-6);
 		}
 
 		.quand {
+			grid-row: auto;
 			flex-direction: row;
 			align-items: baseline;
 			gap: var(--space-3);
