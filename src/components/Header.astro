@@ -221,15 +221,6 @@ const isCurrent = (href: string) => {
 		transform: scaleX(1);
 	}
 
-	/* La page courante reste lisible sans dépendre de la seule couleur du trait. */
-	.nav-list a[aria-current='page'] {
-		color: var(--color-text);
-	}
-
-	.nav-list a:hover {
-		color: var(--color-accent);
-	}
-
 	@media (prefers-reduced-motion: reduce) {
 		.nav-list a::after {
 			transition: none;
