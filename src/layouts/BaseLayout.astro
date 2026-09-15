@@ -37,8 +37,9 @@ const umamiId = import.meta.env.PUBLIC_UMAMI_ID;
 		{umamiUrl && umamiId && (
 			<script defer src={umamiUrl} data-website-id={umamiId}></script>
 		)}
-		{/* Applique un thème forcé avant le premier paint — sinon le thème système
-		    s'affiche puis bascule visiblement. Doit rester inline et synchrone. */}
+		{/* Applique un thème forcé avant le premier paint — sinon le sombre, thème
+		    de base, s'affiche puis bascule visiblement chez un visiteur qui a
+		    choisi le clair. Doit rester inline et synchrone. */}
 		<script is:inline>
 			try {
 				var stored = localStorage.getItem('hblm-theme');
@@ -46,7 +47,7 @@ const umamiId = import.meta.env.PUBLIC_UMAMI_ID;
 					document.documentElement.setAttribute('data-theme', stored);
 				}
 			} catch (e) {
-				/* localStorage indisponible : on retombe sur prefers-color-scheme. */
+				/* localStorage indisponible : on retombe sur le thème de base (sombre). */
 			}
 		</script>
 	</head>

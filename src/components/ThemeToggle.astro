@@ -2,13 +2,13 @@
 /*
  * Bascule clair/sombre. Montée une seule fois par le Header, jamais par page.
  *
- * Sans choix explicite, le thème suit `prefers-color-scheme` et aucun
- * `data-theme` n'est posé ; un clic force un thème et le persiste. Le script
- * précoce de BaseLayout réapplique ce choix avant le premier paint.
+ * Sans choix explicite, le thème est le sombre (thème de base, tokens.css) et
+ * aucun `data-theme` n'est posé ; un clic force un thème et le persiste. Le
+ * script précoce de BaseLayout réapplique ce choix avant le premier paint.
  *
- * `aria-pressed` ne peut pas être connu au rendu serveur (il dépend du
- * localStorage et de la préférence système du visiteur) : il est rendu à
- * "false" puis corrigé par le script ci-dessous. L'icône, elle, est pilotée en
+ * `aria-pressed` est rendu à "true" : c'est l'état du visiteur sans choix
+ * persisté, donc le cas dominant. Le seul écart — un visiteur ayant forcé le
+ * clair — est corrigé par le script ci-dessous. L'icône, elle, est pilotée en
  * CSS pur pour qu'elle soit juste dès le premier paint, sans attendre le JS.
  */
 ---
@@ -18,7 +18,7 @@
 	class="icon-button"
 	type="button"
 	aria-label="Basculer entre thème clair et sombre"
-	aria-pressed="false"
+	aria-pressed="true"
 >
 	<svg class="icon icon-moon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 		<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
@@ -40,29 +40,19 @@
 		display: block;
 	}
 
-	/* L'icône annonce l'action, pas l'état : en clair on propose la lune.
-	   Les trois cas reprennent exactement la cascade de tokens.css —
-	   clair par défaut, sombre système sauf clair forcé, sombre forcé. */
-	.icon-sun {
+	/* L'icône annonce l'action, pas l'état : en sombre on propose le soleil.
+	   Les deux cas reprennent exactement la cascade de tokens.css —
+	   sombre par défaut, clair seulement s'il est forcé. */
+	.icon-moon {
 		display: none;
 	}
 
-	@media (prefers-color-scheme: dark) {
-		:global(html:not([data-theme='light'])) .icon-moon {
-			display: none;
-		}
-
-		:global(html:not([data-theme='light'])) .icon-sun {
-			display: block;
-		}
-	}
-
-	:global(html[data-theme='dark']) .icon-moon {
-		display: none;
-	}
-
-	:global(html[data-theme='dark']) .icon-sun {
+	:global(html[data-theme='light']) .icon-moon {
 		display: block;
+	}
+
+	:global(html[data-theme='light']) .icon-sun {
+		display: none;
 	}
 </style>
 
@@ -70,13 +60,11 @@
 	const STORAGE_KEY = 'hblm-theme';
 	const root = document.documentElement;
 	const button = document.getElementById('theme-toggle');
-	const systemDark = window.matchMedia('(prefers-color-scheme: dark)');
 
-	/* Le thème réellement affiché : un choix forcé s'il existe, sinon le système. */
+	/* Le thème réellement affiché : le clair uniquement s'il a été forcé,
+	   sinon le sombre — thème de base, indépendant du réglage système. */
 	function effectiveTheme() {
-		const forced = root.getAttribute('data-theme');
-		if (forced === 'dark' || forced === 'light') return forced;
-		return systemDark.matches ? 'dark' : 'light';
+		return root.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
 	}
 
 	function syncPressed() {
@@ -94,11 +82,5 @@
 		} catch {
 			/* Navigation privée stricte : la bascule marche, elle ne survit pas au rechargement. */
 		}
-	});
-
-	/* Tant qu'aucun choix n'est forcé, la page suit le système en direct :
-	   l'icône bascule seule en CSS, aria-pressed doit suivre aussi. */
-	systemDark.addEventListener('change', () => {
-		if (!root.hasAttribute('data-theme')) syncPressed();
 	});
 </script>

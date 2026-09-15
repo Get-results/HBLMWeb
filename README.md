@@ -61,7 +61,7 @@ HBLMWeb/
 │   │   └── BaseLayout.astro      # Layout global : polices, tokens CSS, accessibilité, métadonnées, mesure d'audience
 │   ├── pages/                    # Routage par fichiers du site Astro (index.astro, le-club.astro, matchs.astro...)
 │   └── styles/
-│       ├── tokens.css            # Design tokens (palette "Pont de Gris", thèmes clair et sombre, espacements)
+│       ├── tokens.css            # Design tokens (palette "Pont de Gris" : sombre par défaut, clair sur bascule, espacements)
 │       └── global.css            # Reset CSS minimal, typographie et styles globaux
 ├── _bmad-output/                 # Spécifications et artefacts d'architecture (ARCHITECTURE-SPINE.md)
 ├── .nvmrc                        # Version de Node.js du projet
