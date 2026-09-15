@@ -128,10 +128,18 @@ export function formaterDateMatch(valeur: string | null): string | null {
 
 /** Un match est passé si son coup d'envoi est antérieur à `maintenant`.
     Sans date, on ne peut pas trancher : on le traite comme à venir plutôt que
-    de l'enterrer dans les résultats, où personne ne le chercherait. */
+    de l'enterrer dans les résultats, où personne ne le chercherait.
+
+    `maintenant` est ramené à l'heure murale du club avant comparaison, comme
+    dans `estDansLaFenetre` : les deux bornes sont alors dans le même référentiel
+    et l'ordre lexicographique des chaînes ISO suffit. Un `new Date()` sur
+    `dateHeure` — qui n'a ni fuseau ni Z — lui appliquerait celui du serveur de
+    build, UTC sur GitHub Actions : les matchs du jour basculaient dans les
+    résultats deux heures trop tard l'été, avec un « Résultat pas encore connu »
+    posé sur une rencontre en cours. */
 export function estPasse(match: MatchDuClub, maintenant: Date): boolean {
 	if (!match.dateHeure) return false;
-	return new Date(`${match.dateHeure}`).getTime() < maintenant.getTime();
+	return match.dateHeure < heureClub(maintenant);
 }
 
 /** Clé de regroupement mensuel, « 2026-09 ». */

@@ -10,7 +10,7 @@ interfaces tierces, décisions à prendre.
 > retire le `TODO` correspondant dans le code — les deux vont ensemble.
 
 Statuts : `[ ]` à faire · `[x]` fait · `[~]` en cours
-Dernière mise à jour : 14/09/2026
+Dernière mise à jour : 15/09/2026
 
 ---
 
@@ -176,6 +176,7 @@ Journal des arbitrages, pour ne pas les rejouer dans six mois.
 | 14/09/2026 | Les **quatre cartes d'actualité inventées de l'accueil sont retirées** ; l'accueil lit désormais la même source que « Vie du club » | Elles étaient écrites en dur et ne relataient aucun fait vérifié — dont un « 351 licenciés, un record ! » — sur un site publiquement accessible. Une source unique pour les deux pages rend par ailleurs impossible qu'elles racontent deux choses différentes. |
 | 14/09/2026 | Les **chiffres du club passent derrière un drapeau de confirmation** ; le nombre de gymnases est **déduit de la liste** | L'effectif portait un millésime périmé et un superlatif que rien n'étaye : mieux vaut n'afficher aucun chiffre qu'un chiffre de 2025 présenté comme courant. Le « 4 gymnases » était un littéral qu'aucune liste ne garantissait — ajouter une salle laissait le texte mentir sans que rien ne le signale. |
 | 14/09/2026 | **Pas de demande de purge à GitHub Support** pour le commit orphelin du 14/09 (section 4) | La purge serait la seule action qui retirerait vraiment l'objet, mais elle suppose d'ouvrir un ticket et d'attendre, pour un contenu dont rien n'est techniquement exploitable. Le seul point qui compte se traite en prévenant les personnes concernées, pas en discutant avec un support. |
+| 15/09/2026 | **Décalage de 2h des horaires de matchs corrigé à la source**, pas côté site | L'API sert de l'UTC là où son contrat annonce une heure locale. Compenser dans le front figerait une hypothèse sur la source et rendrait les horaires faux dans l'autre sens le jour où elle est réparée. |
 | 14/09/2026 | **Galeries photo ajournées**, droit à l'image mis de côté | Publier des photos, notamment de mineurs, sans autorisation écrite engage l'association. Les articles, eux, ne dépendent pas des photos : l'epic 4 avance sans sa partie galerie. |
 | 11/09/2026 | **Web3Forms** pour le formulaire de contact, plutôt qu'un backend maison | Site statique : aucune clé ne peut être gardée secrète côté client. Un Cloudflare Worker imposerait domaine + SPF/DKIM + anti-spam à maintenir, pour ~15 messages/an attendus. |
 | 11/09/2026 | **Pas de nom de domaine** pour l'instant, on reste sur `github.io` | Aller au plus simple tant que le site n'est pas en production. Le club en possède un, activable plus tard. |
@@ -212,6 +213,23 @@ Rien ici n'attend le bureau, mais rien ne se règle non plus d'un simple commit.
   → À noter pour qui reprendrait le sujet : le Bot Fight Mode de l'offre gratuite ne peut
   **pas** être contourné par une règle WAF. Seul Super Bot Fight Mode (offre Pro) accepte
   des exceptions par chemin.
+
+- [ ] **Horaires des matchs décalés de 2h (côté API)** — `/api/matches` renvoie des heures
+  en **UTC**, alors que son contrat annonce une heure locale sans fuseau
+  (`docs/FRONTEND_INTEGRATION.md`, `docs/openapi.yaml:593`). Tous les coups d'envoi
+  s'affichent donc 2h trop tôt en heure d'été.
+  → Constat sur les 77 matchs livrés (12/09 → 18/10/2026) : pic du samedi à **12h00–14h30**
+  et dernier coup d'envoi à **19h00**, aucun match de séniors le samedi soir. Décalés de
+  +2h, ces créneaux redeviennent ceux d'un vrai calendrier : jeunes 14h–16h30, séniors
+  20h–21h, dimanche 11h–16h.
+  → Cause probable : un instant UTC converti en `LocalDateTime` sans passer par
+  `Europe/Paris` (scraper ou sérialisation). Le correctif est **une conversion de fuseau**,
+  pas un « +2h » : au 25/10/2026 le pays repasse en heure d'hiver et l'écart devient 1h.
+  Le jeu de données actuel s'arrête au 18/10, il est donc entièrement en heure d'été — la
+  bascule ne s'est pas encore vue.
+  → Tranché le 15/09/2026 : correction **à la source**, le front n'a pas à rattraper ça.
+  Il continue d'afficher la chaîne reçue telle quelle (`src/lib/matchs.ts`), sans décalage
+  ni conversion — donc les horaires du site seront justes dès que l'API le sera.
 
 - [ ] **Doublon dans les données de matchs (côté API)** — `/api/matches` renvoie deux fois la
   même rencontre dans la poule 193544 : `SOMMIERES HBC` contre le club, le 19/09 à 14h30,
