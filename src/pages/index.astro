@@ -237,8 +237,10 @@ const articles = (await getArticlesPublies()).slice(0, 4);
 	   texte — c'était le cas d'une première version à 900px.
 
 	   En dessous du seuil, `display: none` : un ornement n'a pas à encombrer un
-	   écran qui n'a pas la place, et le composant rend une <img> classique donc
-	   la plupart des navigateurs évitent aussi le téléchargement. */
+	   écran qui n'a pas la place. Cela ne dispense PAS du téléchargement — les
+	   navigateurs chargent les <img> même masquées — mais c'est sans effet ici :
+	   c'est la même URL que le blason du header, donc une seule requête de toute
+	   façon, déjà faite. */
 	.hero :global(.hero-filigrane) {
 		display: none;
 	}

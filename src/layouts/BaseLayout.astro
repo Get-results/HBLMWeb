@@ -22,7 +22,7 @@ const {
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
-/* Déclinaisons du blason du club, générées depuis src/assets/logo.webp et
+/* Déclinaisons du blason du club, générées depuis le fichier Illustrator du club et
    servies telles quelles depuis public/ : le favicon et l'image de partage
    sont réclamés par des clients extérieurs (onglet du navigateur, robot
    Facebook) à une URL fixe, ils ne peuvent donc pas passer par le pipeline
@@ -30,6 +30,15 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const favicon = `${base}/favicon.ico`;
 const faviconPng = `${base}/favicon-32.png`;
 const appleIcon = `${base}/apple-touch-icon.png`;
+
+/* Le manifeste ne sert qu'à une chose ici : donner à Android le blason en 512px
+   quand un parent ajoute le site à son écran d'accueil. `display: browser` est
+   délibéré — c'est un site, pas une application, et l'ouvrir sans barre
+   d'adresse priverait le visiteur du bouton « précédent ».
+   Les chemins qu'il contient sont écrits en dur avec le préfixe /HBLMWeb : un
+   fichier statique de public/ ne passe pas par Astro, donc BASE_URL n'y est pas
+   substitué. Si `base` change dans astro.config.mjs, ce fichier suit à la main. */
+const manifest = `${base}/site.webmanifest`;
 
 /* Open Graph exige une URL absolue — un chemin relatif est ignoré par la
    plupart des aperçus. Astro.site porte le domaine, BASE_URL le sous-chemin. */
@@ -52,6 +61,7 @@ const umamiId = import.meta.env.PUBLIC_UMAMI_ID;
 		<link rel="icon" sizes="any" href={favicon} />
 		<link rel="icon" type="image/png" sizes="32x32" href={faviconPng} />
 		<link rel="apple-touch-icon" href={appleIcon} />
+		<link rel="manifest" href={manifest} />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
