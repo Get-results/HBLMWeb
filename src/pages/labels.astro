@@ -247,8 +247,21 @@ const dateReleveLisible = new Intl.DateTimeFormat('fr-FR', {
 		margin-bottom: 0;
 	}
 
+	/* Même motif de lien secondaire que sur l'accueil et la page 404 : sans lui,
+	   le navigateur applique son bleu souligné, hors charte. */
 	.lien-fiche {
+		color: var(--color-text);
 		font-weight: var(--weight-body-strong);
+		text-decoration: underline;
+		text-underline-offset: 4px;
+	}
+
+	.lien-fiche:hover {
+		color: var(--color-accent);
+	}
+
+	.lien-fiche:hover .nouvel-onglet {
+		color: inherit;
 	}
 
 	.nouvel-onglet {

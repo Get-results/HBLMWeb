@@ -241,12 +241,18 @@ const initiales = (nom: string) =>
 	.labels-apercu {
 		list-style: none;
 		padding: 0;
-		/* auto-fill + minmax plutôt qu'un nombre de colonnes fixe : sept pastilles
-		   ne se répartissent proprement sur aucune grille régulière, et le nombre
-		   de labels changera. La largeur minimale suit la pastille de 56px plus
-		   les noms longs (« Club Formateur ») sur deux lignes au pire. */
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+		/* Flex et non grille : une grille impose des colonnes de largeur égale, et
+		   sept pastilles n'en remplissent aucune proprement — la dernière tombait
+		   seule, calée à gauche sous une rangée de six, ce qui se lit comme un
+		   oubli plutôt que comme une liste.
+
+		   `space-around` répartit chaque rangée sur toute la largeur et, surtout,
+		   RECENTRE l'orpheline quand la place manque pour tout mettre de front :
+		   il n'y a plus de position bancale possible, quelle que soit la largeur
+		   d'écran ou le nombre de labels. */
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-around;
 		gap: var(--space-6) var(--space-4);
 		margin: var(--space-8) 0;
 	}
@@ -257,6 +263,18 @@ const initiales = (nom: string) =>
 		align-items: center;
 		gap: var(--space-2);
 		text-align: center;
+		/* 80px, et les deux bornes sont mesurées, pas choisies au jugé :
+		     - sur un écran large, les sept tiennent d'une seule rangée
+		       (7 × 80 + 6 × 16 de gouttière = 656 pour 768 disponibles) — ce qui
+		       est tout l'intérêt d'un palmarès : se lire d'un coup d'œil ;
+		     - sur un téléphone de 360px, il en passe trois par rangée au lieu de
+		       deux (3 × 80 + 32 = 272 pour 296 disponibles).
+		   À 96px, les deux basculaient d'un cran pour quelques pixels.
+		   Ce n'est pas une largeur maximale : « Féminisation » ne se coupe pas en
+		   deux, le mot impose sa largeur et la rangée s'ajuste. Et la base peut
+		   rétrécir (shrink 1) mais jamais s'étirer (grow 0) : une pastille étirée
+		   éloignerait son nom de son voisin sans rien gagner. */
+		flex: 0 1 80px;
 	}
 
 	/* Pastille claire fixe sous le pictogramme fédéral : son trait cyan est
@@ -284,8 +302,19 @@ const initiales = (nom: string) =>
 		line-height: 1.3;
 	}
 
+	/* Lien secondaire, au motif déjà employé par l'accueil et la page 404 :
+	   couleur du texte courant, souligné décollé, accent au survol. Sans style,
+	   il retombait sur le bleu souligné du navigateur — la seule tache de bleu
+	   d'une charte noir et jaune. */
 	.lien-labels {
+		color: var(--color-text);
 		font-weight: var(--weight-body-strong);
+		text-decoration: underline;
+		text-underline-offset: 4px;
+	}
+
+	.lien-labels:hover {
+		color: var(--color-accent);
 	}
 
 	/* Bureau & CA */
