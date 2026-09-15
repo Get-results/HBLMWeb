@@ -188,3 +188,143 @@ export function blocDate(
 		heure: `${heures}h${minutes}`,
 	};
 }
+
+/** Durée de la fenêtre « cette semaine », en jours. Une seule valeur pour
+    l'accueil et pour la page Matchs : les deux surfaces doivent découper la
+    même semaine, sinon un match annoncé sur l'une manque à l'autre. */
+export const FENETRE_SEMAINE_JOURS = 7;
+
+/** Les matchs du club dont le coup d'envoi tombe dans la fenêtre glissante
+    `[maintenant, maintenant + jours[`.
+
+    Fenêtre glissante et non semaine calendaire lundi→dimanche : une semaine
+    calendaire se vide le dimanche en fin d'après-midi, une fois les rencontres
+    jouées — précisément le moment où l'on vient chercher le week-end suivant.
+
+    Un match sans date est écarté : on ne peut pas affirmer qu'il tombe dans la
+    fenêtre, et l'accueil n'est pas l'endroit où poser la question. Il reste
+    visible sur /matchs, où la section « Date à préciser » le porte. */
+export async function getMatchsProchainsJours(
+	jours: number = FENETRE_SEMAINE_JOURS,
+	maintenant = new Date(),
+): Promise<MatchDuClub[]> {
+	const fenetre = fenetreProchainsJours(maintenant, jours);
+	return (await getMatchsDuClub()).filter((m) => estDansLaFenetre(m, fenetre));
+}
+
+/** Vrai si le coup d'envoi tombe dans la fenêtre.
+
+    Extrait de `getMatchsProchainsJours` pour que la page Matchs découpe sa
+    section « Cette semaine » avec exactement le même test : un match annoncé
+    sur l'accueil doit se retrouver là-bas au même endroit, et deux tests
+    séparés auraient divergé. */
+export function estDansLaFenetre(
+	match: MatchDuClub,
+	fenetre: { debut: string; fin: string },
+): boolean {
+	if (!match.dateHeure) return false;
+	/* Comparaison de chaînes ISO : leur ordre lexicographique EST l'ordre
+	   chronologique, et aucune des deux bornes ne passe par un `Date` — donc
+	   aucun fuseau ne s'invite. Même doctrine que `formaterDateMatch`. */
+	return match.dateHeure >= fenetre.debut && match.dateHeure <= fenetre.fin;
+}
+
+/* Fuseau du club. Les heures de l'API sont des heures de Paris écrites sans
+   décalage (« 2026-09-19T12:00:00 ») : les passer par `new Date()` leur
+   appliquerait le fuseau du serveur de build — UTC sur GitHub Actions — et
+   décalerait les bornes de deux heures l'été. */
+const FUSEAU_CLUB = 'Europe/Paris';
+
+/** L'instant donné, ramené à l'heure murale du club, au format de l'API.
+    `sv-SE` est la locale qui rend « 2026-09-14 21:05:00 », soit l'ISO à l'espace
+    près. */
+function heureClub(instant: Date): string {
+	const rendu = new Intl.DateTimeFormat('sv-SE', {
+		timeZone: FUSEAU_CLUB,
+		year: 'numeric',
+		month: '2-digit',
+		day: '2-digit',
+		hour: '2-digit',
+		minute: '2-digit',
+		second: '2-digit',
+		hour12: false,
+	}).format(instant);
+	return rendu.replace(' ', 'T');
+}
+
+/** Bornes de la fenêtre, en heures du club : de maintenant à la FIN du jour situé
+    `jours` plus loin.
+
+    La borne haute est la fin de journée et non l'instant exact à 7×24 h, parce
+    que le libellé affiché annonce ce jour-là. Avec une borne à 7×24 h — le site
+    étant construit vers 3 h du matin — le bandeau annonçait « du 14 au 21 » mais
+    s'arrêtait le 21 à 5 h : aucune rencontre du septième jour ne pouvait jamais
+    y figurer. Un parent qui cherche « samedi prochain » le samedi matin en
+    concluait qu'il n'y a pas de match. */
+export function fenetreProchainsJours(
+	maintenant = new Date(),
+	jours = 7,
+): { debut: string; fin: string } {
+	const debut = heureClub(maintenant);
+	/* Arithmétique de calendrier sur la date seule, en UTC : ajouter des jours à
+	   une date nue ne peut pas être perturbé par un changement d'heure. */
+	const finJour = new Date(`${debut.slice(0, 10)}T00:00:00Z`);
+	finJour.setUTCDate(finJour.getUTCDate() + jours);
+	return { debut, fin: `${finJour.toISOString().slice(0, 10)}T23:59:59` };
+}
+
+/** « du 14 au 21 septembre », « du 28 septembre au 5 octobre ».
+
+    Les dates réelles, jamais « cette semaine » : le site est rebuildé une fois
+    par jour (cron de deploy.yml). Si un build échoue, « cette semaine » devient
+    faux en silence, alors qu'une période datée reste vérifiable d'un coup d'œil.
+    Le mois de départ n'est répété que s'il diffère de celui d'arrivée. */
+export function libellePeriode(debut: string, fin: string): string {
+	/* Les deux bornes viennent de `fenetreProchainsJours`, donc déjà en heures du
+	   club. On les découpe plutôt que de les passer par un `Date`, pour la même
+	   raison qu'ailleurs dans ce fichier. */
+	const [, moisDebutNum, jourDebut] = debut.slice(0, 10).split('-');
+	const [, moisFinNum, jourFin] = fin.slice(0, 10).split('-');
+	const moisDebut = MOIS[Number(moisDebutNum) - 1];
+	const moisFin = MOIS[Number(moisFinNum) - 1];
+	const borneDebut =
+		moisDebut === moisFin ? `${Number(jourDebut)}` : `${Number(jourDebut)} ${moisDebut}`;
+	return `du ${borneDebut} au ${Number(jourFin)} ${moisFin}`;
+}
+
+
+/** Libellé d'équipe par poule : « -15 ans filles » seul, ou
+    « -15 ans filles · 2e Division » quand la catégorie engage plusieurs équipes.
+
+    La division n'est ajoutée que dans ce cas parce qu'elle est alors le SEUL
+    discriminant — « Lunel Marsillargues-Lansargues » désigne trois équipes — et
+    qu'elle alourdirait « -11 ans garçons », qui n'en a qu'une.
+
+    Les poules non rattachées à une fiche de catégorie sont absentes de la
+    table : l'appelant retombe sur le nom d'équipe brut de la FFHandball. */
+export function libellesParPoule(matchs: MatchDuClub[]): Map<string, string> {
+	const poulesParCategorie = new Map<string, Set<string>>();
+	for (const m of matchs) {
+		if (!m.categorieId) continue;
+		if (!poulesParCategorie.has(m.categorieId)) poulesParCategorie.set(m.categorieId, new Set());
+		poulesParCategorie.get(m.categorieId)!.add(m.poolId);
+	}
+
+	const table = new Map<string, string>();
+	for (const m of matchs) {
+		if (!m.categorieId || table.has(m.poolId)) continue;
+		const plusieurs = (poulesParCategorie.get(m.categorieId)?.size ?? 1) > 1;
+		table.set(
+			m.poolId,
+			plusieurs && m.division ? `${m.categorieLabel} · ${m.division}` : m.categorieLabel!,
+		);
+	}
+	return table;
+}
+
+/** « sam 19 ». Le jour et le quantième, sans le mois : dans une liste bornée à
+    sept jours, le mois ne lève aucune ambiguïté et coûte une colonne. */
+export function jourCourt(valeur: string | null): string | null {
+	const bloc = blocDate(valeur);
+	return bloc ? `${bloc.jour} ${bloc.numero}` : null;
+}

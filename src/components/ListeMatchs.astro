@@ -16,7 +16,17 @@
    au pire d'une journée, et la date est visible sur chaque carte.
 
    Aucun appel réseau côté client (AD-9, AD-10) : tout est rendu au build. */
-import { getMatchsDuClub, blocDate, estPasse, grouperParMois } from '../lib/matchs';
+import {
+	getMatchsDuClub,
+	blocDate,
+	estPasse,
+	estDansLaFenetre,
+	fenetreProchainsJours,
+	grouperParMois,
+	libellePeriode,
+	libellesParPoule,
+	FENETRE_SEMAINE_JOURS,
+} from '../lib/matchs';
 import GenericContact from './GenericContact.astro';
 import Carte from './CarteMatch.astro';
 
@@ -28,36 +38,30 @@ const aVenir = matchs.filter((m) => !estPasse(m, maintenant));
    pas celui d'il y a trois mois. */
 const passes = matchs.filter((m) => estPasse(m, maintenant)).reverse();
 
-const groupesAVenir = grouperParMois(aVenir);
+/* « Cette semaine » est EXTRAITE de « À venir », pas ajoutée devant : un même
+   match affiché deux fois sur le même écran fait douter le lecteur d'avoir bien
+   lu. « À venir » reprend donc après la fenêtre, et la page ne répète rien.
+
+   Même fenêtre et même test que le bandeau de l'accueil, par la même fonction :
+   un match annoncé là-bas doit se retrouver ici au même endroit. */
+const fenetre = fenetreProchainsJours(maintenant, FENETRE_SEMAINE_JOURS);
+const semaine = aVenir.filter((m) => estDansLaFenetre(m, fenetre));
+const plusTard = aVenir.filter((m) => !estDansLaFenetre(m, fenetre));
+const periodeSemaine = libellePeriode(fenetre.debut, fenetre.fin);
+
+const groupesAVenir = grouperParMois(plusTard);
 
 /* Le filtre porte sur la POULE, pas sur la catégorie : « Lunel
    Marsillargues-Lansargues » désigne trois équipes distinctes — -18F 1ère
    division, -18F 2e division et -15F 2e division. Filtrer par catégorie les
    mélangeait, et le nom d'équipe ne permettait pas de les distinguer.
 
-   Le libellé ne mentionne la division QUE si la catégorie compte plusieurs
-   équipes : inutile d'alourdir « -11 ans garçons », qui n'en a qu'une. */
-const parCategorie = new Map<string, number>();
-for (const m of matchs) {
-	if (m.categorieId) parCategorie.set(m.categorieId, (parCategorie.get(m.categorieId) ?? 0) + 1);
-}
-const poulesParCategorie = new Map<string, Set<string>>();
-for (const m of matchs) {
-	if (!m.categorieId) continue;
-	if (!poulesParCategorie.has(m.categorieId)) poulesParCategorie.set(m.categorieId, new Set());
-	poulesParCategorie.get(m.categorieId)!.add(m.poolId);
-}
-
-const equipes = [...new Map(
-	matchs
-		.filter((m) => m.categorieId)
-		.map((m) => {
-			const plusieurs = (poulesParCategorie.get(m.categorieId!)?.size ?? 1) > 1;
-			const libelle =
-				plusieurs && m.division ? `${m.categorieLabel} · ${m.division}` : m.categorieLabel!;
-			return [m.poolId, libelle] as const;
-		}),
-).entries()].sort((a, b) => a[1].localeCompare(b[1], 'fr'));
+   La fabrication du libellé vit dans src/lib/matchs.ts : le bandeau de
+   l'accueil nomme les équipes de la même façon, et deux copies de cette règle
+   auraient divergé à la première retouche. */
+const equipes = [...libellesParPoule(matchs).entries()].sort((a, b) =>
+	a[1].localeCompare(b[1], 'fr'),
+);
 ---
 
 {matchs.length === 0 ? (
@@ -101,6 +105,25 @@ const equipes = [...new Map(
 		    concernée — un seul exemplaire, jamais dupliqué. */}
 		<p class="badge" id="badge-prochain" hidden>Prochain match</p>
 
+		{/* Tête de page : la question la plus fréquente — « qui joue ce week-end ? »
+		    — avant le calendrier au long cours. Les rencontres y sont TOUTES, sans
+		    plafond : c'est la surface complète que le bandeau de l'accueil annonce
+		    en renvoyant ici. */}
+		<section class="section" id="section-semaine">
+			<h2>Cette semaine</h2>
+			<p class="periode">{periodeSemaine}</p>
+			<ul class="matchs">
+				{semaine.map((match) => (
+					<li class="match carte-match" data-equipe={match.poolId} data-debut={match.dateHeure ?? ''}>
+						<Carte match={match} />
+					</li>
+				))}
+			</ul>
+			<p class="vide" hidden={semaine.length > 0}>
+				Aucune rencontre {periodeSemaine} pour cette sélection.
+			</p>
+		</section>
+
 		<section class="section" id="section-a-venir">
 			<h2>À venir</h2>
 			{groupesAVenir.map((groupe) => (
@@ -108,7 +131,7 @@ const equipes = [...new Map(
 					<h3 class="mois-titre">{groupe.libelle}</h3>
 					<ul class="matchs">
 						{groupe.matchs.map((match) => (
-							<li class="match" data-equipe={match.poolId} data-debut={match.dateHeure ?? ''}>
+							<li class="match carte-match" data-equipe={match.poolId} data-debut={match.dateHeure ?? ''}>
 								{/* Le badge « Prochain match » est posé par le script sur la
 								    première carte visible : le calculer ici le figerait à
 								    l'heure du build, et le filtre le déplacerait de toute façon. */}
@@ -127,7 +150,7 @@ const equipes = [...new Map(
 				{passes.map((match) => {
 					const joue = match.scoreClub !== null && match.scoreAdversaire !== null;
 					return (
-						<li class="match" data-equipe={match.poolId} data-debut={match.dateHeure ?? ''}>
+						<li class="match carte-match" data-equipe={match.poolId} data-debut={match.dateHeure ?? ''}>
 							<Carte match={match} joue={joue} />
 							{!joue && (
 								/* Story 3.4 — réservé aux matchs DÉJÀ joués. Pour un match à
@@ -145,6 +168,7 @@ const equipes = [...new Map(
 
 <script is:inline>
 	(() => {
+		const sectionSemaine = document.getElementById('section-semaine');
 		const sectionAVenir = document.getElementById('section-a-venir');
 		const listeResultats = document.getElementById('liste-resultats');
 		if (!sectionAVenir || !listeResultats) return;
@@ -159,7 +183,10 @@ const equipes = [...new Map(
 		      dont le coup d'envoi est passé rejoint les résultats, en tête puisque
 		      la section va du plus récent au plus ancien. */
 		const maintenant = Date.now();
-		sectionAVenir.querySelectorAll('.match[data-debut]').forEach((carte) => {
+		/* « Cette semaine » d'abord : c'est la section qui porte les rencontres les
+		   plus proches, donc celle qui vieillit en premier au fil de la journée. */
+		const sectionsAVenir = [sectionSemaine, sectionAVenir].filter(Boolean);
+		sectionsAVenir.forEach((section) => section.querySelectorAll('.match[data-debut]').forEach((carte) => {
 			const debut = carte.dataset.debut;
 			if (!debut || new Date(debut).getTime() >= maintenant) return;
 /* La carte passe côté résultats sans score : c'est exactement le cas que
@@ -171,7 +198,7 @@ const equipes = [...new Map(
 				carte.querySelector('.meta')?.after(attente);
 			}
 			listeResultats.prepend(carte);
-		});
+		}));
 
 		const cartes = [...document.querySelectorAll('.match')];
 
@@ -201,7 +228,12 @@ const equipes = [...new Map(
 
 			/* 2. Le badge « Prochain match » va sur la première carte VISIBLE de la
 			      section À venir : il suit donc le filtre au lieu d'être figé. */
-			const prochain = sectionAVenir.querySelector('.match:not([hidden])');
+			/* Le badge suit l'ordre de lecture de la page : la première carte visible
+			   de « Cette semaine », et seulement à défaut celle de « À venir ». */
+			const prochain =
+				sectionsAVenir
+					.map((section) => section.querySelector('.match:not([hidden])'))
+					.find(Boolean) ?? null;
 			document
 				.querySelectorAll('.est-prochain')
 				.forEach((c) => c !== prochain && c.classList.remove('est-prochain'));
@@ -302,6 +334,15 @@ const equipes = [...new Map(
 		margin: 0 0 var(--space-4);
 	}
 
+	/* La période datée sous le titre : « Cette semaine » seul deviendrait faux en
+	   silence si un build quotidien échouait. Posée entre le h2 et la liste, elle
+	   reprend la marge du titre. */
+	.section h2 + .periode {
+		margin: calc(var(--space-4) * -1) 0 var(--space-4);
+		font-size: 0.875rem;
+		color: var(--color-text-muted);
+	}
+
 	.mois-titre {
 		font-family: var(--font-body);
 		font-weight: var(--weight-body-strong);
@@ -322,27 +363,6 @@ const equipes = [...new Map(
 		padding: 0;
 		display: grid;
 		gap: var(--space-3);
-	}
-
-	/* Deux colonnes : le bloc date sert de repère fixe, les détails occupent le
-	   reste. Le badge et l'état « résultat pas encore connu » traversent les deux. */
-	.match {
-		display: grid;
-		grid-template-columns: auto 1fr;
-		align-items: center;
-		gap: 0 var(--space-4);
-		padding: var(--space-4) var(--space-4);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-md);
-		background-color: var(--color-surface);
-	}
-
-	/* Indispensable depuis que .match a un `display` explicite : une règle
-	   `display` l'emporte sur l'attribut `hidden`, dont l'effet n'est qu'un
-	   `display: none` par défaut du navigateur. Sans cette ligne, le filtre
-	   marquait les cartes comme masquées sans qu'aucune ne disparaisse. */
-	.match[hidden] {
-		display: none;
 	}
 
 	.match > :global(.badge),

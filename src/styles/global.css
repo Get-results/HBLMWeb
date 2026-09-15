@@ -211,3 +211,27 @@ main:focus {
   text-decoration: underline;
   text-underline-offset: 4px;
 }
+
+/* Cadre d'une carte de match — la liste de /matchs et le bandeau de l'accueil.
+   Habillage partagé et non dupliqué, même motif que `.icon-button` ci-dessus :
+   le style scopé d'un composant Astro ne peut pas atteindre l'autre, donc deux
+   copies locales divergeraient à la première retouche. Le contenu de la carte
+   est rendu par CarteMatch.astro ; ceci n'en est que le cadre, porté par le
+   <li> de la liste qui la contient.
+   `[hidden]` doit être explicite : `display: grid` l'emporterait sinon sur le
+   `display: none` par défaut de l'attribut, et une carte masquée resterait
+   visible. */
+.carte-match {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0 var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+}
+
+.carte-match[hidden] {
+  display: none;
+}
