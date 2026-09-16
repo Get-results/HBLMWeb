@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/situer-sur-main.sh\" 2>/dev/null || true",
+            "timeout": 20,
+            "statusMessage": "Mise à jour des refs distantes…"
+          }
+        ]
+      }
+    ]
+  }
+}

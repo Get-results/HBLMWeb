@@ -44,6 +44,10 @@ Arborescence des répertoires et fichiers principaux :
 
 ```text
 HBLMWeb/
+├── .claude/
+│   ├── settings.json             # Configuration Claude Code du dépôt (hooks)
+│   └── hooks/
+│       └── situer-sur-main.sh    # Hook SessionStart : git fetch + écart de la branche courante avec origin/main
 ├── .github/
 │   └── workflows/
 │       ├── deploy.yml            # Déploiement automatique sur GitHub Pages à chaque push sur main (AD-5)
@@ -170,3 +174,30 @@ Le site est déployé automatiquement sur **GitHub Pages** :
   5. Téléversement et déploiement de l'artefact `./dist/` sur l'environnement GitHub Pages via `actions/deploy-pages`.
 - **URL de publication** : `https://get-results.github.io/HBLMWeb/`
 - **Domaine personnalisé** : Configuré directement via les paramètres GitHub Pages du dépôt et les enregistrements DNS associés (sans fichier `CNAME` dans le dépôt).
+
+---
+
+## Outillage Claude Code
+
+Le dépôt embarque une configuration Claude Code minimale, versionnée pour valoir
+pour toute personne qui travaille ici.
+
+### Hook `SessionStart` — se situer par rapport à `origin/main`
+
+À l'ouverture d'une session, l'agent reçoit un instantané de `git status` qui ne
+dit rien de l'écart avec le dépôt distant : une branche locale en retard de
+plusieurs dizaines de commits se lit alors comme l'état courant du projet. Un
+audit fait dessus conclut sur du code qui n'existe plus, et une branche créée
+dessus se fait fermer quand sa base disparaît à la fusion.
+
+[`.claude/hooks/situer-sur-main.sh`](./.claude/hooks/situer-sur-main.sh) lance
+donc un `git fetch origin` au démarrage, puis annonce en clair le retard et
+l'avance de la branche courante sur `origin/main`.
+
+- **Rien n'est modifié** : `fetch` met à jour les refs distantes, il ne fusionne
+  ni ne réécrit la copie de travail.
+- **Échec silencieux** : hors dépôt git, sans remote ou sans réseau, le hook sort
+  sans erreur et la session démarre normalement.
+- **Après modification** du hook ou de [`.claude/settings.json`](./.claude/settings.json),
+  ouvrir `/hooks` une fois ou relancer la session pour que la configuration soit
+  rechargée.
