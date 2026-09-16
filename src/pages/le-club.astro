@@ -241,23 +241,29 @@ const initiales = (nom: string) =>
 	.labels-apercu {
 		list-style: none;
 		padding: 0;
-		/* Flex qui s'enroule, et AUCUNE largeur calée sur un écran en particulier :
-		   les pastilles remplissent la rangée, passent à la suivante quand la
-		   place manque, et se réarrangent seules — sept aujourd'hui, dix demain,
-		   sur un téléphone comme sur un grand écran.
+		/* Quatre colonnes, à toutes les largeurs, et une pastille seule en bout de
+		   liste devient impossible.
 
-		   `center` plutôt que `space-between` ou `space-around` : les trois ne
-		   diffèrent que sur une rangée INCOMPLÈTE, et c'est justement là que les
-		   deux autres se trompent. Avec `space-between`, les trois pastilles
-		   restantes d'une rangée de quatre s'écartent d'un bord à l'autre et ne
-		   se lisent plus comme un groupe ; `space-around` les étale un peu moins
-		   mais les décale quand même par rapport à la rangée du dessus. Centrer
-		   garde les rangées alignées entre elles quel que soit le reste de la
-		   division — c'est le seul mode qui n'a pas de cas bancal. */
+		   Le raisonnement tient à un fait arithmétique, pas à un goût : SEPT EST
+		   UN NOMBRE PREMIER. Le découper en rangées égales ne laisse jamais de
+		   reste propre — 6+1, 5+2, 3+3+1, 2+2+2+1 abandonnent tous une ou deux
+		   pastilles en bas. Les deux seuls découpages qui n'isolent personne sont
+		   la rangée unique de sept, et 4+3. Comme la colonne de texte du site
+		   plafonne à 800px, sept de front n'y tiennent qu'en rognant la taille
+		   des pastilles — c'est précisément le réglage au pixel qu'on cherche à
+		   éviter. Reste 4+3, et c'est ce que cette règle impose.
+
+		   La largeur des éléments est donc un POURCENTAGE, pas des pixels : quatre
+		   par rangée sur un téléphone comme sur un grand écran, sans point de
+		   rupture à maintenir. Ce qui s'adapte, c'est la place que prend chaque
+		   pastille, pas leur nombre par rangée.
+
+		   `center` sert alors la rangée de trois : elle se pose sous la rangée de
+		   quatre, centrée, au lieu de se caler à gauche. */
 		display: flex;
 		flex-wrap: wrap;
 		justify-content: center;
-		gap: var(--space-6) var(--space-8);
+		row-gap: var(--space-6);
 		margin: var(--space-8) 0;
 	}
 
@@ -267,15 +273,17 @@ const initiales = (nom: string) =>
 		align-items: center;
 		gap: var(--space-2);
 		text-align: center;
-		/* Une largeur de confort, pas un calcul d'encombrement : 96px, c'est la
-		   place qu'il faut à « Club Formateur » pour tenir sur deux lignes
-		   lisibles sous une pastille de 56px. Ce n'est plus un nombre à réajuster
-		   quand la rangée déborde — c'est le retour à la ligne qui absorbe le
-		   manque de place, et il se fait tout seul.
-		   Ni étirement ni compression (`0 0 auto` implicite côté grow) : les
-		   pastilles gardent le même écart d'une rangée à l'autre, et un mot plus
-		   long qu'attendu pousse simplement la largeur de son élément. */
-		flex: 0 0 96px;
+		/* Un quart de la largeur disponible, gouttière comprise — d'où l'absence
+		   de `column-gap` sur la liste : l'espacement horizontal vient de la
+		   place libre autour de chaque pastille, pas d'un écart ajouté qui ferait
+		   déborder la quatrième.
+
+		   `min-width: 0` est indispensable : sans lui, un élément flex refuse de
+		   passer sous la largeur de son plus long mot (« Féminisation »), et la
+		   quatrième pastille sauterait à la ligne sur un écran étroit — ce qui
+		   ramènerait l'orpheline qu'on vient d'éliminer. */
+		flex: 0 0 25%;
+		min-width: 0;
 	}
 
 	/* Pastille claire fixe sous le pictogramme fédéral : son trait cyan est
@@ -298,9 +306,17 @@ const initiales = (nom: string) =>
 	}
 
 	.label-nom {
-		font-size: 0.875rem;
+		/* Le nom doit tenir dans un quart de la largeur, et ce quart vaut 72px sur
+		   un téléphone de 320px. « Féminisation » est un mot d'un seul tenant : à
+		   14px il déborde, à 12px il passe. D'où le `clamp`, qui rend au nom sa
+		   taille pleine dès qu'il y a la place.
+		   `hyphens` est le filet de sécurité pour le jour où un label au nom plus
+		   long arrivera : il coupera proprement avec un trait d'union plutôt que
+		   de mordre sur sa voisine. */
+		font-size: clamp(0.75rem, 3vw, 0.875rem);
 		color: var(--color-text-muted);
 		line-height: 1.3;
+		hyphens: auto;
 	}
 
 	/* Lien secondaire, au motif déjà employé par l'accueil et la page 404 :
