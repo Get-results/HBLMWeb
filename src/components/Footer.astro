@@ -37,6 +37,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 				<li><a href={`${base}/inscription`}>Inscription</a></li>
 				<li><a href={`${base}/stages`}>Stages</a></li>
 				<li><a href={`${base}/le-club`}>Le club</a></li>
+				{/* « Nos labels » n'est pas dans le header — cinq entrées y suffisent, et
+				    c'est un approfondissement de la page « Le club », d'où l'on y accède.
+				    Le plan du site, lui, se doit d'être complet : une page joignable par
+				    aucun des deux menus n'existe que pour qui connaît déjà son adresse. */}
+				<li><a href={`${base}/labels`}>Nos labels</a></li>
 				<li><a href={`${base}/matchs`}>Matchs</a></li>
 			</ul>
 		</nav>
