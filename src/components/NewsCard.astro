@@ -17,6 +17,8 @@
  *   date        — label de date affiché dans le badge accent
  *   category    — label de catégorie (badge sombre)
  *   coverPhoto  — photo de couverture et son alt, ou null (Story 4.2)
+ *   href        — adresse de l'article ; sans elle la carte reste inerte
+ *   brouillon   — marque « non publié », visible en développement seulement
  *   icon        — HTML SVG du placeholder (slot nommé "icon", optionnel)
  *
  * Story 4.2 : le visuel placeholder (rayures + icône) existait déjà ici, il n'y
@@ -33,12 +35,22 @@ interface Props {
 	date: string;
 	category: string;
 	coverPhoto?: { src: ImageMetadata; alt: string } | null;
+	href?: string | null;
+	brouillon?: boolean;
 }
 
-const { title, description, date, category, coverPhoto = null } = Astro.props;
+const {
+	title,
+	description,
+	date,
+	category,
+	coverPhoto = null,
+	href = null,
+	brouillon = false,
+} = Astro.props;
 ---
 
-<article class="news-card">
+<article class:list={['news-card', { 'news-card--lien': href }]}>
 	<div class="card-visual">
 		{coverPhoto ? (
 			/* `widths` couvre les deux largeurs réellement rendues (320px de carte,
@@ -65,8 +77,16 @@ const { title, description, date, category, coverPhoto = null } = Astro.props;
 		<div class="badge-row">
 			<span class="badge badge-accent">{date}</span>
 			<span class="badge badge-category">{category}</span>
+			{brouillon && <span class="badge badge-brouillon">Brouillon</span>}
 		</div>
-		<h3 class="card-title">{title}</h3>
+		{/* Le lien porte le TITRE et non la carte entière : une synthèse vocale
+		    qui liste les liens d'une page annonce alors « Reprise des
+		    entraînements » et non le paragraphe complet. La zone cliquable, elle,
+		    est étendue à toute la carte par `.card-lien::after` — le confort au
+		    doigt sans le coût pour le lecteur d'écran. */}
+		<h3 class="card-title">
+			{href ? <a class="card-lien" href={href}>{title}</a> : title}
+		</h3>
 		<p class="card-desc">{description}</p>
 	</div>
 </article>
@@ -166,6 +186,71 @@ const { title, description, date, category, coverPhoto = null } = Astro.props;
 		font-size: 20px;
 		line-height: 1.22;
 		margin: var(--space-1) 0 0;
+		/* Un titre d'article peut être long et ne comporter aucune espace utile
+		   pour couper ; sans ça il déborderait de la carte de 320px. */
+		overflow-wrap: anywhere;
+	}
+
+	/* Carte cliquable ------------------------------------------------------- */
+
+	.news-card--lien {
+		/* Ancre de positionnement du `::after` ci-dessous. */
+		position: relative;
+		transition: border-color 120ms ease, transform 120ms ease;
+	}
+
+	.news-card--lien:hover {
+		border-color: var(--color-accent);
+		transform: translateY(-2px);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.news-card--lien { transition: border-color 120ms ease; }
+		.news-card--lien:hover { transform: none; }
+	}
+
+	.card-lien {
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.card-lien:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+
+	/* Étend la zone cliquable du lien à toute la carte. Le `z-index: 1` le place
+	   au-dessus du visuel et des badges, mais le texte reste sélectionnable
+	   au-dessus de lui — c'est le compromis habituel de ce motif. */
+	.card-lien::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+	}
+
+	/* Le focus clavier se dessine sur la CARTE et non sur le titre seul : c'est
+	   la carte entière qui est la cible, un contour autour de trois mots
+	   désignerait mal ce qu'on s'apprête à activer (NFR3). */
+	.card-lien:focus-visible {
+		outline: none;
+	}
+
+	.news-card--lien:has(.card-lien:focus-visible) {
+		outline: 3px solid var(--color-accent);
+		outline-offset: 3px;
+	}
+
+	/* Badge « Brouillon » — jamais rendu en production (voir src/lib/articles.ts).
+	   Volontairement dissonant : il doit se lire comme un avertissement de
+	   travail en cours, pas comme une catégorie éditoriale de plus. */
+	.badge-brouillon {
+		background: transparent;
+		color: var(--color-text);
+		border: 1px dashed var(--color-text-muted);
+		box-shadow: none;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
 	}
 
 	.card-desc {

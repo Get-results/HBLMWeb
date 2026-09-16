@@ -5,7 +5,13 @@ import QuickLink from '../components/QuickLink.astro';
 import NewsCard from '../components/NewsCard.astro';
 import Logo from '../components/Logo.astro';
 import MatchsDeLaSemaine from '../components/MatchsDeLaSemaine.astro';
-import { getArticlesPublies, formaterDateArticle, libelleCategorie } from '../lib/articles';
+import {
+	getArticlesAffichables,
+	formaterDateArticle,
+	libelleCategorie,
+	estBrouillon,
+	urlArticle,
+} from '../lib/articles';
 import { licencies } from '../lib/club';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
@@ -20,7 +26,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
    Quatre articles : le carrousel en montrait quatre, et c'est ce que la bande
    défilante accueille sans que la dernière carte soit coupée trop tôt. */
-const articles = (await getArticlesPublies()).slice(0, 4);
+const articles = (await getArticlesAffichables()).slice(0, 4);
 ---
 
 <BaseLayout title="Handball Lunel-Marsillargues">
@@ -135,6 +141,8 @@ const articles = (await getArticlesPublies()).slice(0, 4);
 							date={formaterDateArticle(article.data.date)}
 							category={libelleCategorie(article.data.category)}
 							coverPhoto={article.data.coverPhoto}
+							href={urlArticle(article)}
+							brouillon={estBrouillon(article)}
 						/>
 					))}
 				</div>
