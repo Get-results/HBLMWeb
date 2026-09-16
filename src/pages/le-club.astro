@@ -241,19 +241,23 @@ const initiales = (nom: string) =>
 	.labels-apercu {
 		list-style: none;
 		padding: 0;
-		/* Flex et non grille : une grille impose des colonnes de largeur égale, et
-		   sept pastilles n'en remplissent aucune proprement — la dernière tombait
-		   seule, calée à gauche sous une rangée de six, ce qui se lit comme un
-		   oubli plutôt que comme une liste.
+		/* Flex qui s'enroule, et AUCUNE largeur calée sur un écran en particulier :
+		   les pastilles remplissent la rangée, passent à la suivante quand la
+		   place manque, et se réarrangent seules — sept aujourd'hui, dix demain,
+		   sur un téléphone comme sur un grand écran.
 
-		   `space-around` répartit chaque rangée sur toute la largeur et, surtout,
-		   RECENTRE l'orpheline quand la place manque pour tout mettre de front :
-		   il n'y a plus de position bancale possible, quelle que soit la largeur
-		   d'écran ou le nombre de labels. */
+		   `center` plutôt que `space-between` ou `space-around` : les trois ne
+		   diffèrent que sur une rangée INCOMPLÈTE, et c'est justement là que les
+		   deux autres se trompent. Avec `space-between`, les trois pastilles
+		   restantes d'une rangée de quatre s'écartent d'un bord à l'autre et ne
+		   se lisent plus comme un groupe ; `space-around` les étale un peu moins
+		   mais les décale quand même par rapport à la rangée du dessus. Centrer
+		   garde les rangées alignées entre elles quel que soit le reste de la
+		   division — c'est le seul mode qui n'a pas de cas bancal. */
 		display: flex;
 		flex-wrap: wrap;
-		justify-content: space-around;
-		gap: var(--space-6) var(--space-4);
+		justify-content: center;
+		gap: var(--space-6) var(--space-8);
 		margin: var(--space-8) 0;
 	}
 
@@ -263,18 +267,15 @@ const initiales = (nom: string) =>
 		align-items: center;
 		gap: var(--space-2);
 		text-align: center;
-		/* 80px, et les deux bornes sont mesurées, pas choisies au jugé :
-		     - sur un écran large, les sept tiennent d'une seule rangée
-		       (7 × 80 + 6 × 16 de gouttière = 656 pour 768 disponibles) — ce qui
-		       est tout l'intérêt d'un palmarès : se lire d'un coup d'œil ;
-		     - sur un téléphone de 360px, il en passe trois par rangée au lieu de
-		       deux (3 × 80 + 32 = 272 pour 296 disponibles).
-		   À 96px, les deux basculaient d'un cran pour quelques pixels.
-		   Ce n'est pas une largeur maximale : « Féminisation » ne se coupe pas en
-		   deux, le mot impose sa largeur et la rangée s'ajuste. Et la base peut
-		   rétrécir (shrink 1) mais jamais s'étirer (grow 0) : une pastille étirée
-		   éloignerait son nom de son voisin sans rien gagner. */
-		flex: 0 1 80px;
+		/* Une largeur de confort, pas un calcul d'encombrement : 96px, c'est la
+		   place qu'il faut à « Club Formateur » pour tenir sur deux lignes
+		   lisibles sous une pastille de 56px. Ce n'est plus un nombre à réajuster
+		   quand la rangée déborde — c'est le retour à la ligne qui absorbe le
+		   manque de place, et il se fait tout seul.
+		   Ni étirement ni compression (`0 0 auto` implicite côté grow) : les
+		   pastilles gardent le même écart d'une rangée à l'autre, et un mot plus
+		   long qu'attendu pousse simplement la largeur de son élément. */
+		flex: 0 0 96px;
 	}
 
 	/* Pastille claire fixe sous le pictogramme fédéral : son trait cyan est
