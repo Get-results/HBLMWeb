@@ -39,8 +39,45 @@ Paragraphes, **gras**, *italique*, listes et liens fonctionnent normalement :
 - un premier point ;
 - un second point.
 
-Pour publier un vrai article : copier ce fichier sous un nom en kebab-case
-(`reprise-des-entrainements.md`), remplacer les métadonnées et le texte, puis
-passer `publicationStatus` à `publie`. Tant que cette valeur n'est pas `publie`,
-l'article n'apparaît nulle part sur le site — c'est ce qui permet de pousser un
-brouillon sans le mettre en ligne.
+## Lier une page du site
+
+Le site est publié dans un sous-dossier (`/HBLMWeb`). Un lien vers une page
+interne doit donc porter ce préfixe :
+
+- ✅ `[le planning](/HBLMWeb/planning)`
+- ❌ `[le planning](/planning)` — sort du site et renvoie une page 404.
+
+L'oubli ne peut pas atteindre la production : `npm run build` échoue avec le
+message du garde-fou `check:paths`. Les liens externes (`https://…`) s'écrivent
+normalement, ils ne sont pas concernés.
+
+## Publier
+
+Copier ce fichier sous un nom en kebab-case (`reprise-des-entrainements.md`),
+remplacer les métadonnées et le texte, puis passer `publicationStatus` à
+`publie`. Tant que cette valeur n'est pas `publie`, l'article n'apparaît nulle
+part sur le site en ligne — c'est ce qui permet de pousser un brouillon sans le
+mettre en ligne.
+
+Le nom du fichier fait l'adresse de l'article :
+`reprise-des-entrainements.md` se lit sur `/HBLMWeb/vie-du-club/reprise-des-entrainements`.
+Le renommer change donc l'adresse — à éviter une fois l'article partagé.
+
+Pour RELIRE un brouillon avant de le publier : `npm run dev`. Les brouillons y
+apparaissent sur l'accueil et sur « Vie du club », marqués d'un badge
+**Brouillon**. Ils ne sortent jamais d'un `npm run build`.
+
+### Les quatre statuts
+
+| Statut | En ligne ? | Pour quoi faire |
+| --- | --- | --- |
+| `exemple` | jamais | ce fichier-ci, qui documente le schéma |
+| `brouillon` | non (visible en local) | écrire et relire avant de publier |
+| `demonstration` | **oui, avec avertissement rouge** | montrer la rubrique avant qu'un vrai article existe |
+| `publie` | oui | un vrai article du club |
+
+`demonstration` est le seul statut qui met en ligne un contenu non fiable. Les
+pages qui l'affichent portent alors automatiquement un avertissement rouge, et
+la page de l'article est en `noindex` — elle reste accessible à qui a le lien,
+mais ne remonte pas dans les moteurs de recherche. Ces articles-là sont à
+supprimer dès que de vrais articles existent.

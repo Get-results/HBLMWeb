@@ -1,0 +1,91 @@
+---
+/* Avertissement « contenu de démonstration ».
+ *
+ * Un article en `publicationStatus: demonstration` est EN LIGNE, sur un site
+ * public, et ne relate aucun fait réel du club. Le site est en construction et
+ * ses adresses ne sont partagées qu'au bureau — mais une adresse partagée est
+ * une adresse qui circule, et un visiteur arrivé là par hasard n'a aucun moyen
+ * de deviner que ce qu'il lit est faux. C'est à ce visiteur-là que ce bloc
+ * s'adresse.
+ *
+ * Un composant unique, et pas un paragraphe recopié dans chaque page : c'est ce
+ * qui garantit que l'avertissement dit la même chose partout, et qu'il suffira
+ * de supprimer ce fichier le jour où le statut `demonstration` disparaîtra.
+ *
+ * Props :
+ *   compact — version courte, pour une carte de liste
+ */
+interface Props {
+	compact?: boolean;
+}
+
+const { compact = false } = Astro.props;
+---
+
+{compact ? (
+	/* `role="note"` plutôt que `role="alert"` : une alerte est annoncée
+	   immédiatement et interrompt la lecture en cours. Ici l'information est
+	   importante mais statique, et il y en a une par carte — les empiler en
+	   annonces intempestives rendrait la page inutilisable au lecteur d'écran. */
+	<p class="avertissement avertissement--compact" role="note">
+		<span aria-hidden="true">⚠</span> Article fictif — site en construction
+	</p>
+) : (
+	<aside class="avertissement" role="note" aria-label="Avertissement sur la fiabilité de cet article">
+		<p class="avertissement-titre">
+			<span aria-hidden="true">⚠</span> Article fictif, créé pour le développement du site
+		</p>
+		<p class="avertissement-corps">
+			Ce texte ne relate <strong>aucun fait réel</strong> du club&nbsp;: ni date, ni
+			événement, ni chiffre ne sont exacts. Il sert uniquement à montrer à quoi
+			ressemblera la rubrique « Vie du club » une fois de vrais articles publiés.
+			Le site est <strong>en cours de construction</strong> et aucune information
+			qu'il contient n'est fiable pour l'instant.
+		</p>
+	</aside>
+)}
+
+<style>
+	/* Le seul rouge du site (voir tokens.css). Filet épais à gauche plutôt qu'un
+	   aplat plein : lisible comme un avertissement sans écraser l'article. */
+	.avertissement {
+		border: 1px solid var(--color-alerte);
+		border-left-width: 5px;
+		border-radius: var(--radius-md);
+		background: var(--color-alerte-fond);
+		padding: var(--space-4);
+		margin: 0;
+	}
+
+	.avertissement-titre {
+		margin: 0 0 var(--space-2);
+		font-family: var(--font-heading);
+		font-weight: var(--weight-heading);
+		font-size: 1rem;
+		/* Le message est porté par le TEXTE, pas par la couleur : il reste entier
+		   pour qui ne distingue pas le rouge, ou lit une capture en niveaux de
+		   gris (NFR3). Le rouge ne fait qu'accélérer la lecture. */
+		color: var(--color-alerte);
+		text-transform: uppercase;
+		letter-spacing: 0.03em;
+	}
+
+	.avertissement-corps {
+		margin: 0;
+		font-size: 0.95rem;
+		line-height: var(--leading-body);
+		color: var(--color-text);
+	}
+
+	.avertissement--compact {
+		padding: var(--space-2) var(--space-3);
+		font-family: var(--font-body);
+		font-weight: var(--weight-body-strong);
+		font-size: 12px;
+		line-height: 1.35;
+		color: var(--color-alerte);
+		/* Au-dessus du lien qui couvre la carte, pour rester sélectionnable. */
+		position: relative;
+		z-index: 2;
+	}
+</style>

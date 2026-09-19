@@ -13,9 +13,20 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import NewsCard from '../components/NewsCard.astro';
 import GenericContact from '../components/GenericContact.astro';
-import { getArticlesPublies, formaterDateArticle, libelleCategorie } from '../lib/articles';
+import {
+  getArticlesAffichables,
+  formaterDateArticle,
+  libelleCategorie,
+  estBrouillon,
+  estDemonstration,
+  urlArticle,
+} from '../lib/articles';
 
-const articles = await getArticlesPublies();
+/* `getArticlesAffichables` et non `getArticlesPublies` : en production les deux
+   rendent exactement la même chose, mais sous `astro dev` la première ajoute les
+   brouillons pour qu'on puisse les relire avant publication. Le filtre de
+   publication reste entier — voir src/lib/articles.ts. */
+const articles = await getArticlesAffichables();
 ---
 
 <BaseLayout title="Vie du club | HBLM">
@@ -54,6 +65,9 @@ const articles = await getArticlesPublies();
                 date={formaterDateArticle(article.data.date)}
                 category={libelleCategorie(article.data.category)}
                 coverPhoto={article.data.coverPhoto}
+                href={urlArticle(article)}
+                brouillon={estBrouillon(article)}
+                demonstration={estDemonstration(article)}
               />
             </li>
           ))}
