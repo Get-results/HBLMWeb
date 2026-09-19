@@ -1,7 +1,7 @@
 ---
 /*
  * Bloc-lien rapide pour la section "raccourcis" de l'accueil.
- * Carte avec coin griffé, icône décorative, titre et description courte.
+ * Carte avec icône décorative, titre et description courte.
  *
  * Props :
  *   href        — URL de destination
@@ -44,16 +44,7 @@ const { href, title, description } = Astro.props;
 		transition: transform 0.15s ease;
 	}
 
-	/* Ni coin griffé ni griffures ici, et c'est une règle, pas un oubli :
-	   DESIGN.md > Do's and Don'ts — « Don't appliquer le motif griffé à un
-	   élément interactif (bouton, champ) — il identifie uniquement le contenu ».
-	   Ce composant rend un <a href> ; il en portait un malgré tout.
-
-	   La raison d'être du motif est de dire « ceci est du contenu ». Posé sur un
-	   lien, il ne dit plus rien — il devient un ornement que seul son auteur
-	   déchiffre, et un visiteur qui passe quarante secondes sur le site n'en a
-	   aucune chance. Le relief au survol suffit à signaler que c'est cliquable. */
-
+	/* Le relief au survol suffit à signaler que la carte est cliquable. */
 	.quick-link:hover {
 		transform: translateY(-2px);
 	}

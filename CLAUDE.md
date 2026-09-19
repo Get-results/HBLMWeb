@@ -55,7 +55,7 @@ existent chacune en réponse à un défaut réel qui était parti en production.
 ## 4. Design system
 
 Les règles complètes sont dans `DESIGN.md` (`_bmad-output/planning-artifacts/ux-designs/`).
-Les quatre qui ont déjà été violées :
+Les trois qui ont déjà été violées :
 
 - **Tokens uniquement.** Aucune couleur, taille ou espacement en dur — `check:tokens` le
   vérifie, et `src/styles/tokens.css` est la seule source.
@@ -64,8 +64,6 @@ Les quatre qui ont déjà été violées :
   état « succès » ou « attention » : utiliser la graisse ou une icône.
 - **Texte sur accent = `--color-on-accent`**, jamais `--color-text`. L'accent ne change pas
   entre les thèmes : un texte qui suit le thème tombe à 1,47:1 en sombre.
-- **Le motif « griffé » n'est jamais posé sur un élément interactif** (lien, bouton, champ).
-  Il dit « ceci est du contenu » ; sur un lien il ne dit plus rien.
 
 Mobile-first partout : styles petits écrans d'abord. Quand la mise en page dépend de la
 largeur d'un composant et non de la fenêtre, utiliser une **requête de conteneur**.
