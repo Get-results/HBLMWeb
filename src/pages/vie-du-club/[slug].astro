@@ -19,12 +19,14 @@
 import { render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import GenericContact from '../../components/GenericContact.astro';
+import AvertissementDemonstration from '../../components/AvertissementDemonstration.astro';
 import { Image } from 'astro:assets';
 import {
 	getArticlesAffichables,
 	formaterDateArticle,
 	libelleCategorie,
 	estBrouillon,
+	estDemonstration,
 	type Article,
 } from '../../lib/articles';
 
@@ -49,15 +51,34 @@ const { Content } = await render(article);
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const brouillon = estBrouillon(article);
+const demonstration = estDemonstration(article);
+
+/* Un article de démonstration ne doit pas se retrouver dans un moteur de
+   recherche : il est en ligne pour être MONTRÉ à qui a le lien, pas pour être
+   trouvé par quelqu'un qui cherche le club. Le `noindex` ne cache rien — la
+   page reste accessible à qui a l'adresse — il empêche seulement qu'elle
+   devienne un résultat de recherche sur le nom du club. L'avertissement rouge
+   reste donc la vraie protection ; ceci en réduit l'exposition. */
+const description = demonstration
+	? `ARTICLE FICTIF — site en construction. ${article.data.description}`
+	: article.data.description;
 ---
 
-<BaseLayout title={`${article.data.title} | HBLM`} description={article.data.description}>
+<BaseLayout title={`${article.data.title} | HBLM`} description={description} noindex={demonstration}>
 	<article class="page">
 		<div class="entete">
 			{/* Fil de retour plutôt qu'un fil d'Ariane complet : le site n'a qu'un
 			    seul niveau au-dessus d'un article, une chaîne « Accueil › Vie du
 			    club › Titre » ne dirait rien de plus que ce lien. */}
 			<a class="retour" href={`${base}/vie-du-club`}>← Vie du club</a>
+
+			{/* AVANT le titre, et non après le texte : un visiteur doit savoir que
+			    ce qu'il lit est faux avant de l'avoir lu, pas après. */}
+			{demonstration && (
+				<div class="avertissement-haut">
+					<AvertissementDemonstration />
+				</div>
+			)}
 
 			<p class="meta">
 				<span class="badge badge-accent">{formaterDateArticle(article.data.date)}</span>
@@ -100,6 +121,11 @@ const brouillon = estBrouillon(article);
 		</div>
 
 		<div class="pied">
+			{/* Répété en fin de lecture : le lecteur arrivé ici a parcouru tout le
+			    texte, et c'est au moment de le retenir — ou de le transmettre —
+			    qu'il doit se rappeler qu'il est fictif. */}
+			{demonstration && <AvertissementDemonstration />}
+
 			<GenericContact
 				intro="Une précision à apporter sur cet article&nbsp;? Écrivez-nous."
 				discret
@@ -145,6 +171,14 @@ const brouillon = estBrouillon(article);
 		color: var(--color-text);
 		text-decoration: underline;
 		text-underline-offset: 4px;
+	}
+
+	.avertissement-haut {
+		margin: 0 0 var(--space-6);
+	}
+
+	.pied :global(aside) {
+		margin-bottom: var(--space-6);
 	}
 
 	.meta {

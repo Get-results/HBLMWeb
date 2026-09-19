@@ -1,11 +1,14 @@
 ---
 # ARTICLE FICTIF — écrit uniquement pour tester le rendu d'un titre et d'une
-# description très longs. À supprimer avant toute mise en ligne réelle.
+# description très longs.
+# EN LIGNE via `publicationStatus: demonstration`, pour montrer la rubrique au
+# bureau. Chaque page qui l'affiche porte un avertissement rouge automatique.
+# À SUPPRIMER avant le premier vrai article : il ne relate aucun fait du club.
 title: "Appel aux bénévoles pour la saison : le club recherche des mains volontaires pour tenir la table de marque, la buvette et les déplacements du samedi"
 date: "2026-09-02"
 category: vie-du-club
 description: "Le club lance son appel annuel aux bénévoles pour accompagner les équipes tout au long de la saison. Quelques heures données de temps en temps suffisent à faire tourner un week-end de matchs. Aucune expérience n'est demandée : tout s'apprend sur place, aux côtés de celles et ceux qui le font déjà."
-publicationStatus: brouillon
+publicationStatus: demonstration
 ---
 
 La saison reprend, et avec elle son lot de samedis rythmés par les matchs à

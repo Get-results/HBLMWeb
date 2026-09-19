@@ -24,6 +24,13 @@
 	   illisible en sombre (1.47:1). Ne jamais utiliser var(--color-text) sur
 	   un fond accent. Règle stricte DESIGN.md > Colors. */
 	--color-on-accent: #222220;
+
+	/* Alerte — le SEUL rouge du site, et volontairement le seul : il ne sert
+	   qu'à dire « n'accordez pas foi à ce qui suit » (contenu de démonstration).
+	   S'il servait aussi à décorer, il cesserait d'être un signal.
+	   #FF6B5E sur --color-bg : 5.6:1, au-dessus du 4.5:1 exigé (NFR3). */
+	--color-alerte: #FF6B5E;
+	--color-alerte-fond: #3A2320;
 }
 
 /* Thème clair — uniquement quand la bascule l'a forcé et persisté. */
@@ -42,6 +49,11 @@
 	--color-visual-a: #DAD7D1;
 	--color-visual-b: #CFCCC5;
 	/* --color-on-accent n'est volontairement PAS redéfini ici. */
+
+	/* Le rouge d'alerte, lui, DOIT basculer : #FF6B5E sur un fond clair ne
+	   vaut que 2.9:1. Ce ton soutenu rend 5.1:1 sur --color-bg clair. */
+	--color-alerte: #B3261E;
+	--color-alerte-fond: #FBEAE8;
 }
 
 /* ---------------------------------------------------------------------------

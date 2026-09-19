@@ -28,6 +28,7 @@
  */
 import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
+import AvertissementDemonstration from './AvertissementDemonstration.astro';
 
 interface Props {
 	title: string;
@@ -37,6 +38,7 @@ interface Props {
 	coverPhoto?: { src: ImageMetadata; alt: string } | null;
 	href?: string | null;
 	brouillon?: boolean;
+	demonstration?: boolean;
 }
 
 const {
@@ -47,6 +49,7 @@ const {
 	coverPhoto = null,
 	href = null,
 	brouillon = false,
+	demonstration = false,
 } = Astro.props;
 ---
 
@@ -88,6 +91,10 @@ const {
 			{href ? <a class="card-lien" href={href}>{title}</a> : title}
 		</h3>
 		<p class="card-desc">{description}</p>
+		{/* Sous la description et non au-dessus du titre : la carte reste lisible
+		    comme une carte, et l'avertissement se lit juste avant qu'on décide de
+		    cliquer. La page de l'article, elle, porte la version complète. */}
+		{demonstration && <AvertissementDemonstration compact />}
 	</div>
 </article>
 

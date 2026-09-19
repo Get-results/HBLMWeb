@@ -16,8 +16,22 @@ export type Article = CollectionEntry<'articles'>;
     À égalité de date, l'`id` (le nom du fichier) départage : sans ça l'ordre
     dépendrait de celui du système de fichiers, qui varie entre machines. */
 export async function getArticlesPublies(): Promise<Article[]> {
-	const entrees = await getCollection('articles', ({ data }) => data.publicationStatus === 'publie');
+	const entrees = await getCollection('articles', ({ data }) => EN_LIGNE.has(data.publicationStatus));
 	return entrees.sort((a, b) => b.data.date.localeCompare(a.data.date) || a.id.localeCompare(b.id));
+}
+
+/* Les deux seuls statuts qui sortent du build. `demonstration` en fait partie
+   au même titre que `publie` — c'est justement son objet : montrer la rubrique
+   au bureau avant qu'un vrai article existe. Ce qui le distingue n'est pas sa
+   visibilité mais l'avertissement qui l'accompagne partout (voir
+   `estDemonstration`), et le `noindex` de sa page. */
+const EN_LIGNE = new Set(['publie', 'demonstration']);
+
+/** Article de démonstration : en ligne, mais sans aucune valeur d'information.
+    Tout affichage qui le rend visible doit le signaler — c'est la contrepartie
+    non négociable de sa mise en ligne. */
+export function estDemonstration(article: Article): boolean {
+	return article.data.publicationStatus === 'demonstration';
 }
 
 /* Libellés lisibles des catégories d'articles. Ils vivent ici et non dans le
@@ -65,7 +79,7 @@ const PREVISUALISER_LES_BROUILLONS = import.meta.env.DEV;
     Les pages s'en servent pour l'AFFICHER comme tel, jamais pour décider s'il
     paraît : cette décision-là se prend ici, et une seule fois. */
 export function estBrouillon(article: Article): boolean {
-	return article.data.publicationStatus !== 'publie';
+	return !EN_LIGNE.has(article.data.publicationStatus);
 }
 
 /** Articles à afficher, du plus récent au plus ancien.

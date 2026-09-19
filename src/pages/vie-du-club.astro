@@ -18,6 +18,7 @@ import {
   formaterDateArticle,
   libelleCategorie,
   estBrouillon,
+  estDemonstration,
   urlArticle,
 } from '../lib/articles';
 
@@ -66,6 +67,7 @@ const articles = await getArticlesAffichables();
                 coverPhoto={article.data.coverPhoto}
                 href={urlArticle(article)}
                 brouillon={estBrouillon(article)}
+                demonstration={estDemonstration(article)}
               />
             </li>
           ))}

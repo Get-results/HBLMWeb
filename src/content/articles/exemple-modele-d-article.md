@@ -66,3 +66,18 @@ Le renommer change donc l'adresse — à éviter une fois l'article partagé.
 Pour RELIRE un brouillon avant de le publier : `npm run dev`. Les brouillons y
 apparaissent sur l'accueil et sur « Vie du club », marqués d'un badge
 **Brouillon**. Ils ne sortent jamais d'un `npm run build`.
+
+### Les quatre statuts
+
+| Statut | En ligne ? | Pour quoi faire |
+| --- | --- | --- |
+| `exemple` | jamais | ce fichier-ci, qui documente le schéma |
+| `brouillon` | non (visible en local) | écrire et relire avant de publier |
+| `demonstration` | **oui, avec avertissement rouge** | montrer la rubrique avant qu'un vrai article existe |
+| `publie` | oui | un vrai article du club |
+
+`demonstration` est le seul statut qui met en ligne un contenu non fiable. Les
+pages qui l'affichent portent alors automatiquement un avertissement rouge, et
+la page de l'article est en `noindex` — elle reste accessible à qui a le lien,
+mais ne remonte pas dans les moteurs de recherche. Ces articles-là sont à
+supprimer dès que de vrais articles existent.

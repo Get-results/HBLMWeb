@@ -18,6 +18,18 @@ Dernière mise à jour : 15/09/2026
 
 Rien ici ne demande le bureau, mais rien ne peut être fait depuis le dépôt.
 
+- [ ] **Supprimer les trois articles de démonstration** — `src/content/articles/test-*.md`,
+  mis en ligne le 19/09/2026 pour montrer la rubrique « Vie du club » au bureau avant
+  qu'un vrai article existe.
+  → Ils sont **publics** : ils portent `publicationStatus: demonstration`, donc un
+  avertissement rouge sur chaque page qui les affiche et un `noindex` sur leur page.
+  Ils ne relatent aucun fait réel du club.
+  → À supprimer dès que le premier vrai article est écrit, ou dès que la démonstration
+  au bureau est faite — c'est une échéance, pas un état durable.
+  → Une fois les trois fichiers retirés, le statut `demonstration` n'a plus d'usage :
+  il peut disparaître de `src/content.config.ts`, avec `src/components/AvertissementDemonstration.astro`
+  et `estDemonstration()` dans `src/lib/articles.ts`.
+
 - [ ] **Créer la clé Web3Forms** — sur [web3forms.com](https://web3forms.com), saisir l'adresse
   mail du club. La clé arrive par mail.
   → à coller dans `.env` (`PUBLIC_CONTACT_ACCESS_KEY`), voir `.env.example`.

@@ -1,11 +1,13 @@
 ---
 # ARTICLE FICTIF — écrit uniquement pour tester le rendu d'un article minimal.
-# À supprimer avant toute mise en ligne réelle : il ne relate aucun fait du club.
+# EN LIGNE via `publicationStatus: demonstration`, pour montrer la rubrique au
+# bureau. Chaque page qui l'affiche porte un avertissement rouge automatique.
+# À SUPPRIMER avant le premier vrai article : il ne relate aucun fait du club.
 title: "La reprise des entraînements approche"
 date: "2026-09-08"
 category: actualite
 description: "Les créneaux de la saison 2026-2027 reprennent dans les gymnases de Lunel et de Marsillargues. L'occasion de retrouver le parquet et de découvrir le club pour les nouveaux venus."
-publicationStatus: brouillon
+publicationStatus: demonstration
 ---
 
 La saison 2026-2027 démarre, et avec elle le retour des entraînements dans les

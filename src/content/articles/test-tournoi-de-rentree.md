@@ -1,6 +1,8 @@
 ---
 # ARTICLE FICTIF — écrit uniquement pour tester le rendu typographique d'un article complet.
-# Il ne relate aucun fait réel du club et doit être supprimé avant toute mise en ligne réelle.
+# EN LIGNE via `publicationStatus: demonstration`, pour montrer la rubrique au
+# bureau. Chaque page qui l'affiche porte un avertissement rouge automatique.
+# À SUPPRIMER avant le premier vrai article : il ne relate aucun fait du club.
 title: "Un tournoi de rentrée pour lancer la saison"
 date: "2026-09-13"
 
@@ -11,7 +13,7 @@ description: "Le club organise un tournoi de rentrée ouvert aux catégories de 
 
 # Pas de coverPhoto : le dépôt ne porte aucune photo du club.
 
-publicationStatus: brouillon
+publicationStatus: demonstration
 ---
 
 La reprise est toujours un moment un peu particulier. Après quelques semaines

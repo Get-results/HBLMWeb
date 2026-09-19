@@ -252,8 +252,20 @@ const articles = defineCollection({
 			   Le mécanisme, lui, est identique et c'est ce qui compte : seul
 			   `publie` sort du build (voir src/lib/articles.ts), la valeur par
 			   défaut ne publie pas, et `exemple` marque les fichiers de
-			   démonstration du schéma, qui ne doivent jamais paraître. */
-			publicationStatus: z.enum(['exemple', 'brouillon', 'publie']).default('brouillon'),
+			   démonstration du schéma, qui ne doivent jamais paraître.
+
+			   `demonstration` est le seul statut qui met en ligne un contenu
+			   NON FIABLE, et il existe pour une situation précise : montrer au
+			   bureau à quoi ressemblera la rubrique avant qu'un vrai article
+			   soit écrit. Un tel article s'affiche donc TOUJOURS accompagné d'un
+			   avertissement rouge, et la page qu'il produit est en `noindex`.
+			   Ce couplage est porté par le statut et non par le rédacteur :
+			   « publier en prévenant » ne doit pas dépendre de quelqu'un qui
+			   pense à écrire l'avertissement, ni pouvoir être retiré en
+			   laissant le contenu en place. */
+			publicationStatus: z
+				.enum(['exemple', 'brouillon', 'demonstration', 'publie'])
+				.default('brouillon'),
 		}),
 });
 

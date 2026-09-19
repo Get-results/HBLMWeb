@@ -10,6 +10,7 @@ import {
 	formaterDateArticle,
 	libelleCategorie,
 	estBrouillon,
+	estDemonstration,
 	urlArticle,
 } from '../lib/articles';
 import { licencies } from '../lib/club';
@@ -143,6 +144,7 @@ const articles = (await getArticlesAffichables()).slice(0, 4);
 							coverPhoto={article.data.coverPhoto}
 							href={urlArticle(article)}
 							brouillon={estBrouillon(article)}
+							demonstration={estDemonstration(article)}
 						/>
 					))}
 				</div>
